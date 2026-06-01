@@ -186,7 +186,7 @@ function StockOutContent() {
       </div>
 
       {part && (
-        <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-gray-200/80 p-5 shadow-sm">
+        <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-gray-200/80 p-5 sm:p-8 shadow-sm mt-4 sm:mt-6">
           <div className="flex items-center gap-3 mb-5">
             <div className="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center">
               <FileText className="w-4 h-4 text-red-600" />

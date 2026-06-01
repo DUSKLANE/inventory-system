@@ -186,7 +186,7 @@ function StockInContent() {
       </div>
 
       {part && (
-        <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-gray-200/80 p-8 shadow-sm">
+        <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-gray-200/80 p-5 sm:p-8 shadow-sm mt-4 sm:mt-6">
           <div className="flex items-center gap-4 mb-6">
             <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
               <FileText className="w-5 h-5 text-blue-600" />

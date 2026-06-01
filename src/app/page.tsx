@@ -222,13 +222,13 @@ export default function Home() {
                 router.push(`/parts?q=${encodeURIComponent(searchQuery.trim())}`);
               }
             }}
-            className="w-full pl-14 pr-28 py-5 bg-white rounded-2xl border border-gray-200/80 text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent hover:border-blue-300 hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-300"
+            className="w-full pl-16 pr-32 py-5 bg-white rounded-2xl border border-gray-200/80 text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent hover:border-blue-300 hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-300"
             placeholder="搜索器件名称、编码、品牌... 按回车搜索"
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery("")}
-              className="absolute right-20 top-1/2 -translate-y-1/2 p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all duration-200"
+              className="absolute right-24 top-1/2 -translate-y-1/2 p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all duration-200"
             >
               <X className="w-4 h-4" />
             </button>
@@ -239,7 +239,7 @@ export default function Home() {
                 router.push(`/parts?q=${encodeURIComponent(searchQuery.trim())}`);
               }
             }}
-            className="absolute right-2 top-1/2 -translate-y-1/2 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl text-sm font-medium hover:from-blue-700 hover:to-blue-800 transition-all duration-200 flex items-center gap-2 shadow-md shadow-blue-500/20"
+            className="absolute right-2 top-1/2 -translate-y-1/2 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl text-sm font-medium hover:from-blue-700 hover:to-blue-800 transition-all duration-200 flex items-center gap-2 shadow-md shadow-blue-500/20"
           >
             <Search className="w-4 h-4" /> 搜索
           </button>
