@@ -60,6 +60,11 @@ function PartsPageContent() {
   const [searchHistory, setSearchHistory] = useState<string[]>([]);
   const [savedSearches, setSavedSearches] = useState<Array<{ name: string; params: Record<string, string> }>>([]);
   const [showSearchHistory, setShowSearchHistory] = useState(false);
+  
+  // Import/Export state
+  const [showImportExport, setShowImportExport] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const [importResult, setImportResult] = useState<{ success: boolean; message: string } | null>(null);
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -174,6 +179,67 @@ function PartsPageContent() {
     const newSaved = savedSearches.filter((_, i) => i !== index);
     setSavedSearches(newSaved);
     localStorage.setItem("savedSearches", JSON.stringify(newSaved));
+  };
+
+  // Export data
+  const handleExport = async (format: "csv" | "json") => {
+    try {
+      const res = await fetch(`/api/export?format=${format}&type=parts`);
+      if (format === "csv") {
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `parts_${new Date().toISOString().split("T")[0]}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+      } else {
+        const data = await res.json();
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `parts_${new Date().toISOString().split("T")[0]}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+      }
+    } catch (e) {
+      console.error(e);
+      alert("导出失败");
+    }
+  };
+
+  // Import data
+  const handleImport = async (file: File) => {
+    setImporting(true);
+    setImportResult(null);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("type", "parts");
+      
+      const res = await fetch("/api/export", {
+        method: "POST",
+        body: formData,
+      });
+      const result = await res.json();
+      
+      if (res.ok) {
+        setImportResult({ success: true, message: result.message });
+        fetchParts();
+      } else {
+        setImportResult({ success: false, message: result.error });
+      }
+    } catch (e) {
+      console.error(e);
+      setImportResult({ success: false, message: "导入失败" });
+    } finally {
+      setImporting(false);
+    }
   };
 
   // Clear all filters
@@ -336,12 +402,20 @@ function PartsPageContent() {
             <p className="text-gray-500 mt-1">共 {data?.total ?? 0} 个器件</p>
           </div>
         </div>
-        <button
-          onClick={() => { setEditPart(null); setShowAdd(true); }}
-          className="inline-flex items-center gap-2 px-7 py-3.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl text-sm font-semibold hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30"
-        >
-          <Plus className="w-5 h-5" /> 新增器件
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setShowImportExport(true)}
+            className="inline-flex items-center gap-2 px-5 py-3.5 border border-gray-200 text-gray-700 rounded-xl text-sm font-medium hover:bg-gray-50 hover:border-gray-300 transition-all duration-200"
+          >
+            <ArrowDownToLine className="w-4 h-4" /> 导入/导出
+          </button>
+          <button
+            onClick={() => { setEditPart(null); setShowAdd(true); }}
+            className="inline-flex items-center gap-2 px-7 py-3.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl text-sm font-semibold hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30"
+          >
+            <Plus className="w-5 h-5" /> 新增器件
+          </button>
+        </div>
       </div>
 
       {/* Search & Filter */}
@@ -932,6 +1006,17 @@ function PartsPageContent() {
           processing={batchProcessing}
         />
       )}
+
+      {/* Import/Export Modal */}
+      {showImportExport && (
+        <ImportExportModal
+          onClose={() => { setShowImportExport(false); setImportResult(null); }}
+          onExport={handleExport}
+          onImport={handleImport}
+          importing={importing}
+          importResult={importResult}
+        />
+      )}
     </div>
   );
 }
@@ -1273,6 +1358,138 @@ function BatchMovementModal({
             </button>
           </div>
         </form>
+      </div>
+    </div>
+  );
+}
+
+function ImportExportModal({
+  onClose,
+  onExport,
+  onImport,
+  importing,
+  importResult,
+}: {
+  onClose: () => void;
+  onExport: (format: "csv" | "json") => void;
+  onImport: (file: File) => void;
+  importing: boolean;
+  importResult: { success: boolean; message: string } | null;
+}) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [dragOver, setDragOver] = useState(false);
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOver(false);
+    const file = e.dataTransfer.files[0];
+    if (file && file.name.endsWith(".csv")) {
+      onImport(file);
+    } else {
+      alert("请上传 CSV 文件");
+    }
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      onImport(file);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 modal-backdrop z-50 flex items-center justify-center p-4 animate-fade-in">
+      <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl border border-gray-200/80">
+        <div className="px-8 py-6 border-b border-gray-100 flex items-center justify-between rounded-t-2xl">
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center">
+              <ArrowDownToLine className="w-5 h-5 text-green-600" />
+            </div>
+            <h2 className="text-xl font-semibold text-gray-900">导入/导出</h2>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-2.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-all duration-200"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        
+        <div className="p-8 space-y-6">
+          {/* Export Section */}
+          <div>
+            <h3 className="text-sm font-semibold text-gray-700 mb-3">导出数据</h3>
+            <div className="flex gap-3">
+              <button
+                onClick={() => onExport("csv")}
+                className="flex-1 px-4 py-3 bg-blue-50 text-blue-700 rounded-xl text-sm font-medium hover:bg-blue-100 transition-all duration-200 flex items-center justify-center gap-2"
+              >
+                <Package className="w-4 h-4" />
+                导出 CSV
+              </button>
+              <button
+                onClick={() => onExport("json")}
+                className="flex-1 px-4 py-3 bg-purple-50 text-purple-700 rounded-xl text-sm font-medium hover:bg-purple-100 transition-all duration-200 flex items-center justify-center gap-2"
+              >
+                <Package className="w-4 h-4" />
+                导出 JSON
+              </button>
+            </div>
+          </div>
+
+          {/* Import Section */}
+          <div>
+            <h3 className="text-sm font-semibold text-gray-700 mb-3">导入数据</h3>
+            <div
+              className={`border-2 border-dashed rounded-xl p-8 text-center transition-all duration-200 ${
+                dragOver
+                  ? "border-blue-400 bg-blue-50"
+                  : "border-gray-200 hover:border-gray-300"
+              }`}
+              onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+              onDragLeave={() => setDragOver(false)}
+              onDrop={handleDrop}
+            >
+              <ArrowUpFromLine className="w-10 h-10 text-gray-400 mx-auto mb-3" />
+              <p className="text-sm text-gray-600 mb-2">
+                拖拽 CSV 文件到此处，或
+              </p>
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+              >
+                点击选择文件
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".csv"
+                onChange={handleFileSelect}
+                className="hidden"
+              />
+              <p className="text-xs text-gray-400 mt-3">
+                支持格式：CSV（编码, 名称, 分类, 封装, 品牌, 型号, 单位, 最低库存, 仓位, 备注）
+              </p>
+            </div>
+          </div>
+
+          {/* Import Result */}
+          {importResult && (
+            <div className={`p-4 rounded-xl ${
+              importResult.success ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700"
+            }`}>
+              <p className="text-sm font-medium">{importResult.message}</p>
+            </div>
+          )}
+
+          {/* Loading */}
+          {importing && (
+            <div className="flex items-center justify-center gap-2 text-blue-600">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span className="text-sm">导入中...</span>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
