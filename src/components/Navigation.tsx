@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Package, ArrowDownToLine, ArrowUpFromLine, Cpu, Settings, HelpCircle, BarChart3, FileText, Sun, Moon } from "lucide-react";
+import { LayoutDashboard, Package, ArrowDownToLine, ArrowUpFromLine, Cpu, Settings, HelpCircle, BarChart3, FileText, Sun, Moon, Clock } from "lucide-react";
 import { useTheme } from "./ThemeProvider";
 
 const mainLinks = [
@@ -12,6 +12,7 @@ const mainLinks = [
   { href: "/stock-out", label: "出库", icon: ArrowUpFromLine },
   { href: "/analytics", label: "数据分析", icon: BarChart3 },
   { href: "/boms", label: "BOM清单", icon: FileText },
+  { href: "/logs", label: "操作日志", icon: Clock },
 ];
 
 const bottomLinks = [

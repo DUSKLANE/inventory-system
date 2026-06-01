@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import db from "@/lib/db";
 import { partSchema } from "@/lib/validations";
+import { logOperation } from "@/lib/logger";
 
 // GET /api/parts/:id
 export async function GET(
@@ -80,6 +81,15 @@ export async function PUT(
       WHERE p.id = ?
     `).get(id);
 
+    // Log operation
+    logOperation({
+      action: "UPDATE",
+      entityType: "PART",
+      entityId: id,
+      entityName: (existing.name as string) || "",
+      details: `更新器件: ${Object.keys(data).join(", ")}`,
+    });
+
     return NextResponse.json({ ...(part as Record<string, unknown>), stock: { quantity: (part as Record<string, unknown>).stockQuantity ?? 0 } });
   } catch (error) {
     console.error("PUT /api/parts/[id] error:", error);
@@ -94,7 +104,21 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
+    
+    // Get part info before deletion
+    const part = db.prepare("SELECT * FROM parts WHERE id = ?").get(id) as Record<string, unknown> | undefined;
+    
     db.prepare("DELETE FROM parts WHERE id = ?").run(id);
+    
+    // Log operation
+    logOperation({
+      action: "DELETE",
+      entityType: "PART",
+      entityId: id,
+      entityName: (part?.name as string) || "",
+      details: `删除器件: ${part?.code || ""} - ${part?.name || ""}`,
+    });
+    
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("DELETE /api/parts/[id] error:", error);

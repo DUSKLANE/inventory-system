@@ -79,6 +79,17 @@ db.exec(`
     FOREIGN KEY (partId) REFERENCES parts(id) ON DELETE CASCADE
   );
 
+  CREATE TABLE IF NOT EXISTS operation_logs (
+    id TEXT PRIMARY KEY,
+    action TEXT NOT NULL,
+    entityType TEXT NOT NULL,
+    entityId TEXT,
+    entityName TEXT,
+    details TEXT DEFAULT '',
+    operator TEXT DEFAULT 'system',
+    createdAt TEXT DEFAULT (datetime('now'))
+  );
+
   CREATE INDEX IF NOT EXISTS idx_parts_code ON parts(code);
   CREATE INDEX IF NOT EXISTS idx_parts_category ON parts(category);
   CREATE INDEX IF NOT EXISTS idx_stock_movements_partId ON stock_movements(partId);
@@ -86,6 +97,8 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_favorites_partId ON favorites(partId);
   CREATE INDEX IF NOT EXISTS idx_bom_items_bomId ON bom_items(bomId);
   CREATE INDEX IF NOT EXISTS idx_bom_items_partId ON bom_items(partId);
+  CREATE INDEX IF NOT EXISTS idx_operation_logs_createdAt ON operation_logs(createdAt);
+  CREATE INDEX IF NOT EXISTS idx_operation_logs_entityType ON operation_logs(entityType);
 `);
 
 export default db;

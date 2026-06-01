@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import db from "@/lib/db";
 import { partSchema, searchSchema } from "@/lib/validations";
 import { randomUUID } from "crypto";
+import { logOperation } from "@/lib/logger";
 
 // GET /api/parts - list/search parts
 export async function GET(request: NextRequest) {
@@ -119,6 +120,15 @@ export async function POST(request: NextRequest) {
       FROM parts p LEFT JOIN stock s ON s.partId = p.id
       WHERE p.id = ?
     `).get(id) as Record<string, unknown>;
+
+    // Log operation
+    logOperation({
+      action: "CREATE",
+      entityType: "PART",
+      entityId: id,
+      entityName: data.name,
+      details: `创建器件: ${data.code} - ${data.name}`,
+    });
 
     return NextResponse.json({ ...part, stock: { quantity: 0 } }, { status: 201 });
   } catch (error) {
