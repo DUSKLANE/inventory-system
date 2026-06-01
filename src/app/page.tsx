@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { AlertTriangle, ArrowDownToLine, ArrowUpFromLine, ArrowRight, Clock, TrendingDown, TrendingUp, Search, Activity, Boxes, ArrowDown, ArrowUp, X, Package, Zap } from "lucide-react";
+import { AlertTriangle, ArrowDownToLine, ArrowUpFromLine, ArrowRight, Clock, TrendingDown, TrendingUp, Search, Activity, Boxes, ArrowDown, ArrowUp, X, Package, Zap, Bell, ChevronRight } from "lucide-react";
 
 interface RecentPart {
   id: string;
@@ -13,6 +13,24 @@ interface RecentPart {
   unit: string;
   stock: number | null;
   lastUsedAt: string;
+}
+
+interface AlertPart {
+  id: string;
+  code: string;
+  name: string;
+  category: string;
+  unit: string;
+  minStock: number;
+  currentStock: number;
+  stockPercentage: number;
+}
+
+interface MovementTrend {
+  date: string;
+  totalIn: number;
+  totalOut: number;
+  movementCount: number;
 }
 
 interface DashboardData {
@@ -31,16 +49,35 @@ interface DashboardData {
   recentParts: RecentPart[];
 }
 
+interface AlertsData {
+  lowStockParts: AlertPart[];
+  outOfStockParts: Array<{ id: string; code: string; name: string; category: string; unit: string }>;
+  recentMovements: MovementTrend[];
+  stats: {
+    totalParts: number;
+    outOfStockCount: number;
+    lowStockCount: number;
+    criticalCount: number;
+  };
+}
+
 export default function Home() {
   const router = useRouter();
   const [data, setData] = useState<DashboardData | null>(null);
+  const [alerts, setAlerts] = useState<AlertsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [showAlerts, setShowAlerts] = useState(false);
 
   useEffect(() => {
-    fetch("/api/dashboard")
-      .then((r) => r.json())
-      .then(setData)
+    Promise.all([
+      fetch("/api/dashboard").then(r => r.json()),
+      fetch("/api/alerts").then(r => r.json()),
+    ])
+      .then(([dashboardData, alertsData]) => {
+        setData(dashboardData);
+        setAlerts(alertsData);
+      })
       .catch(console.error)
       .finally(() => setLoading(false));
   }, []);
@@ -200,6 +237,119 @@ export default function Home() {
           );
         })}
       </div>
+
+      {/* Alerts Section */}
+      {alerts && alerts.lowStockParts.length > 0 && (
+        <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-6 section">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center">
+                <Bell className="w-5 h-5 text-amber-600" />
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900">库存预警</h2>
+                <p className="text-sm text-gray-500">{alerts.lowStockParts.length} 个器件库存不足</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowAlerts(!showAlerts)}
+              className="text-sm text-amber-700 hover:text-amber-800 font-medium flex items-center gap-1"
+            >
+              {showAlerts ? "收起" : "展开"}
+              <ChevronRight className={`w-4 h-4 transition-transform ${showAlerts ? "rotate-90" : ""}`} />
+            </button>
+          </div>
+          
+          <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 ${showAlerts ? "" : "max-h-[120px] overflow-hidden"}`}>
+            {alerts.lowStockParts.slice(0, showAlerts ? undefined : 3).map((part) => (
+              <Link
+                key={part.id}
+                href={`/parts/${part.id}`}
+                className="flex items-center gap-3 p-3 bg-white/80 rounded-xl hover:bg-white transition-colors"
+              >
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-900 truncate">{part.name}</p>
+                  <p className="text-xs text-gray-500 font-mono">{part.code}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm font-bold text-red-600">{part.currentStock}</p>
+                  <p className="text-xs text-gray-500">/ {part.minStock}</p>
+                </div>
+                <div className="w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
+                  <div 
+                    className={`h-full rounded-full ${
+                      part.stockPercentage < 50 ? "bg-red-500" : "bg-amber-500"
+                    }`}
+                    style={{ width: `${Math.min(100, part.stockPercentage)}%` }}
+                  />
+                </div>
+              </Link>
+            ))}
+          </div>
+          
+          {!showAlerts && alerts.lowStockParts.length > 3 && (
+            <p className="text-center text-sm text-amber-600 mt-3">
+              还有 {alerts.lowStockParts.length - 3} 个器件库存不足
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* Inventory Trend Chart */}
+      {alerts && alerts.recentMovements.length > 0 && (
+        <div className="bg-white rounded-2xl border border-gray-200/80 p-6 section">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
+              <Activity className="w-5 h-5 text-blue-600" />
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900">库存趋势</h2>
+              <p className="text-sm text-gray-500">最近 7 天出入库统计</p>
+            </div>
+          </div>
+          
+          <div className="flex items-end gap-2 h-40">
+            {alerts.recentMovements.map((day, i) => {
+              const maxVal = Math.max(
+                ...alerts.recentMovements.map(d => Math.max(d.totalIn, d.totalOut))
+              );
+              const inHeight = maxVal > 0 ? (day.totalIn / maxVal) * 100 : 0;
+              const outHeight = maxVal > 0 ? (day.totalOut / maxVal) * 100 : 0;
+              const date = new Date(day.date);
+              const dayName = date.toLocaleDateString("zh-CN", { weekday: "short" });
+              
+              return (
+                <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                  <div className="w-full flex items-end justify-center gap-1 h-32">
+                    <div 
+                      className="flex-1 bg-emerald-200 rounded-t-md transition-all duration-500"
+                      style={{ height: `${inHeight}%`, minHeight: day.totalIn > 0 ? "4px" : "0" }}
+                      title={`入库: ${day.totalIn}`}
+                    />
+                    <div 
+                      className="flex-1 bg-red-200 rounded-t-md transition-all duration-500"
+                      style={{ height: `${outHeight}%`, minHeight: day.totalOut > 0 ? "4px" : "0" }}
+                      title={`出库: ${day.totalOut}`}
+                    />
+                  </div>
+                  <span className="text-xs text-gray-500">{dayName}</span>
+                </div>
+              );
+            })}
+          </div>
+          
+          <div className="flex items-center justify-center gap-6 mt-4 pt-4 border-t border-gray-100">
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 bg-emerald-200 rounded-sm" />
+              <span className="text-sm text-gray-600">入库</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 bg-red-200 rounded-sm" />
+              <span className="text-sm text-gray-600">出库</span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Quick actions */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 section">
