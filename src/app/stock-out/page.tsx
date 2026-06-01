@@ -233,7 +233,7 @@ function StockOutContent() {
             </div>
           )}
 
-          <div className="space-y-4 sm:space-y-7">
+          <div className="flex flex-col gap-4 sm:gap-7">
             <div>
               <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5 sm:mb-3">出库数量 *</label>
               <div className="flex items-center gap-1.5 sm:gap-3">

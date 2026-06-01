@@ -233,7 +233,7 @@ function StockInContent() {
             </div>
           )}
 
-          <div className="space-y-5 sm:space-y-8">
+          <div className="flex flex-col gap-5 sm:gap-8">
             <div>
               <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-2 sm:mb-4">入库数量 *</label>
               <div className="flex items-center gap-2 sm:gap-4">
