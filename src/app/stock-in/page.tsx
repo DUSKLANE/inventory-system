@@ -114,29 +114,29 @@ function StockInContent() {
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl border border-gray-200/80 p-8 section shadow-sm">
-        <div className="flex gap-5 mb-6">
+      <div className="bg-white rounded-2xl border border-gray-200/80 p-4 sm:p-8 section shadow-sm">
+        <div className="flex gap-2 sm:gap-5 mb-4 sm:mb-6">
           <button
             onClick={() => setShowScanner(true)}
-            className="flex items-center gap-2 px-7 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl text-sm font-semibold hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 shrink-0"
+            className="flex items-center gap-2 px-4 sm:px-7 py-3 sm:py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl text-sm font-semibold hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 shrink-0"
           >
-            <ScanBarcode className="w-5 h-5" /> 扫码
+            <ScanBarcode className="w-4 h-4 sm:w-5 sm:h-5" /> 扫码
           </button>
-          <div className="flex-1 flex gap-3">
+          <div className="flex-1 flex gap-2 sm:gap-3">
             <div className="flex-1 relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <Search className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
               <input
                 type="text"
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Enter") lookupPart(code); }}
-                className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white transition-all duration-200"
+                className="w-full pl-9 sm:pl-12 pr-3 sm:pr-4 py-3 sm:py-4 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white transition-all duration-200"
                 placeholder="输入器件编码"
               />
             </div>
             <button
               onClick={() => lookupPart(code)}
-              className="px-6 py-4 border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all duration-200"
+              className="px-4 sm:px-6 py-3 sm:py-4 border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all duration-200"
             >
               查询
             </button>

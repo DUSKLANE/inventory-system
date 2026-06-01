@@ -788,54 +788,126 @@ th, td {
 /* Mobile optimizations */
 @media (max-width: 640px) {
   /* Reduce card padding on mobile */
-  .bg-white.rounded-2xl {
-    padding: 12px;
+  .bg-white.rounded-2xl,
+  .bg-white.rounded-xl {
+    padding: 8px;
   }
   
   /* Reduce header padding */
   .px-8, .px-10 {
-    padding-left: 12px;
-    padding-right: 12px;
+    padding-left: 10px;
+    padding-right: 10px;
   }
   
   .py-8, .py-10 {
-    padding-top: 12px;
-    padding-bottom: 12px;
-  }
-  
-  /* Reduce table cell padding on mobile */
-  th, td {
-    padding: 8px 12px;
-  }
-  
-  /* Reduce input padding on mobile */
-  .py-4, .py-5 {
     padding-top: 10px;
     padding-bottom: 10px;
   }
   
-  .px-4, .px-5 {
+  /* Reduce table cell padding on mobile */
+  th, td {
+    padding: 6px 8px;
+  }
+  
+  /* Reduce input padding on mobile */
+  .py-4 {
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+  
+  .py-5 {
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+  
+  .px-4 {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+  
+  .px-5 {
     padding-left: 12px;
     padding-right: 12px;
   }
   
   /* Make grid more compact on mobile */
   .gap-5, .gap-6 {
-    gap: 12px;
+    gap: 8px;
   }
   
   /* Reduce section spacing on mobile */
   .p-6, .p-7, .p-8 {
-    padding: 12px;
+    padding: 10px;
   }
   
   /* Fix modal padding on mobile */
   .modal-backdrop .p-8 {
-    padding: 16px;
+    padding: 12px;
+  }
+  
+  /* Reduce button padding on mobile */
+  .px-7, .px-6 {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+  
+  .py-3\.5, .py-3 {
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+  
+  /* Stock in/out page specific */
+  .flex-1.flex.gap-3 {
+    gap: 6px;
+  }
+  
+  /* Search input in stock pages */
+  .pl-12 {
+    padding-left: 36px;
+  }
+  
+  .pl-14 {
+    padding-left: 40px;
+  }
+  
+  /* Icon size in input */
+  .absolute.left-4 svg,
+  .absolute.left-5 svg {
+    width: 16px;
+    height: 16px;
   }
 }
 
 /* Dark mode for sticky header */
 [data-theme="dark"] thead.sticky th {
   background: #161b22;
+}
+
+/* Fix white line in dark mode - divide colors */
+[data-theme="dark"] .divide-y > * + * {
+  border-top-color: var(--card-border) !important;
+}
+
+[data-theme="dark"] .divide-gray-100 > * + * {
+  border-top-color: var(--card-border) !important;
+}
+
+[data-theme="dark"] .border-b,
+[data-theme="dark"] .border-t,
+[data-theme="dark"] .border {
+  border-color: var(--card-border) !important;
+}
+
+/* Dark mode table borders */
+[data-theme="dark"] table {
+  border-color: var(--card-border) !important;
+}
+
+[data-theme="dark"] tr {
+  border-color: var(--card-border) !important;
+}
+
+[data-theme="dark"] th,
+[data-theme="dark"] td {
+  border-color: var(--card-border) !important;
 }

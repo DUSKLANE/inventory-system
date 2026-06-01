@@ -408,47 +408,47 @@ export default function Home() {
       {/* Recent parts - quick access */}
       {data.recentParts && data.recentParts.length > 0 && (
         <div className="section">
-          <div className="flex items-center justify-between mb-5">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-lg bg-violet-100 flex items-center justify-center">
-                <Zap className="w-5 h-5 text-violet-600" />
+          <div className="flex items-center justify-between mb-3 sm:mb-5">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-violet-100 flex items-center justify-center">
+                <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-violet-600" />
               </div>
-              <h2 className="text-lg font-semibold text-gray-900">常用器件</h2>
+              <h2 className="text-base sm:text-lg font-semibold text-gray-900">常用器件</h2>
             </div>
-            <span className="text-sm text-gray-400">点击快速操作</span>
+            <span className="text-xs sm:text-sm text-gray-400">点击快速操作</span>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-5">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-5">
             {data.recentParts.map((part) => (
               <div
                 key={part.id}
                 onClick={() => router.push(`/parts/${part.id}`)}
-                className="bg-white rounded-xl border border-gray-200/80 p-7 hover:shadow-md hover:border-blue-300 transition-all duration-200 group cursor-pointer"
+                className="bg-white rounded-xl border border-gray-200/80 p-3 sm:p-5 hover:shadow-md hover:border-blue-300 transition-all duration-200 group cursor-pointer"
               >
-                <div className="flex items-center justify-between mb-5">
-                  <Package className="w-6 h-6 text-gray-400 group-hover:text-blue-500 transition-colors" />
+                <div className="flex items-center justify-between mb-2 sm:mb-4">
+                  <Package className="w-5 h-5 text-gray-400 group-hover:text-blue-500 transition-colors" />
                   {part.category && (
-                    <span className="text-[11px] px-3 py-1 bg-gray-100 text-gray-500 rounded-md font-medium">
+                    <span className="text-[10px] sm:text-[11px] px-2 py-0.5 bg-gray-100 text-gray-500 rounded-md font-medium">
                       {part.category}
                     </span>
                   )}
                 </div>
-                <p className="text-sm font-semibold text-gray-900 truncate">{part.name}</p>
-                <p className="text-xs text-gray-500 font-mono mt-2">{part.code}</p>
-                <div className="flex items-center justify-between mt-5 pt-3 border-t border-gray-100">
-                  <span className="text-xs text-gray-400">库存</span>
-                  <span className="text-sm font-bold text-gray-900">{part.stock ?? 0}</span>
+                <p className="text-xs sm:text-sm font-semibold text-gray-900 truncate">{part.name}</p>
+                <p className="text-[10px] sm:text-xs text-gray-500 font-mono mt-1">{part.code}</p>
+                <div className="flex items-center justify-between mt-2 sm:mt-4 pt-2 border-t border-gray-100">
+                  <span className="text-[10px] sm:text-xs text-gray-400">库存</span>
+                  <span className="text-xs sm:text-sm font-bold text-gray-900">{part.stock ?? 0}</span>
                 </div>
-                <div className="flex gap-2 mt-4">
+                <div className="flex gap-1.5 sm:gap-2 mt-2 sm:mt-3">
                   <Link
                     href={`/stock-in?code=${encodeURIComponent(part.code)}`}
-                    className="flex-1 text-center text-xs py-2.5 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors font-medium"
+                    className="flex-1 text-center text-[10px] sm:text-xs py-1.5 sm:py-2.5 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors font-medium"
                     onClick={(e) => e.stopPropagation()}
                   >
                     入库
                   </Link>
                   <Link
                     href={`/stock-out?code=${encodeURIComponent(part.code)}`}
-                    className="flex-1 text-center text-xs py-2.5 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors font-medium"
+                    className="flex-1 text-center text-[10px] sm:text-xs py-1.5 sm:py-2.5 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors font-medium"
                     onClick={(e) => e.stopPropagation()}
                   >
                     出库
