@@ -186,19 +186,19 @@ function StockOutContent() {
       )}
 
       {part && (
-        <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-gray-200/80 p-5 sm:p-8 shadow-sm mt-4 sm:mt-6">
-          <div className="flex items-center gap-3 mb-5">
-            <div className="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center">
-              <FileText className="w-4 h-4 text-red-600" />
+        <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-gray-200/80 p-4 sm:p-8 shadow-sm mt-4 sm:mt-6">
+          <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-5">
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-md sm:rounded-lg bg-red-50 flex items-center justify-center">
+              <FileText className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-red-600" />
             </div>
-            <h2 className="font-semibold text-gray-900">出库信息</h2>
+            <h2 className="text-sm sm:font-semibold font-semibold text-gray-900">出库信息</h2>
           </div>
 
           {success && (
-            <div className="mb-5 p-5 bg-emerald-50 border border-emerald-200 rounded-xl">
-              <div className="flex items-center gap-3 mb-3">
-                <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-                <p className="text-sm text-emerald-700 font-semibold">出库成功！库存已更新为 {part.stock?.quantity ?? 0} {part.unit}</p>
+            <div className="mb-3 sm:mb-5 p-3 sm:p-5 bg-emerald-50 border border-emerald-200 rounded-lg sm:rounded-xl">
+              <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
+                <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600" />
+                <p className="text-xs sm:text-sm text-emerald-700 font-semibold">出库成功！库存已更新为 {part.stock?.quantity ?? 0} {part.unit}</p>
               </div>
               <div className="flex gap-2">
                 <button
@@ -207,7 +207,7 @@ function StockOutContent() {
                     setQuantity(1);
                     setSuccess(false);
                   }}
-                  className="flex-1 px-3 py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700 transition-all duration-200"
+                  className="flex-1 px-2 py-2 sm:px-4 sm:py-3 bg-emerald-600 text-white rounded-lg sm:rounded-xl text-xs sm:text-sm font-medium hover:bg-emerald-700 transition-all duration-200"
                 >
                   继续出库同一器件
                 </button>
@@ -218,7 +218,7 @@ function StockOutContent() {
                     setCode("");
                     setSuccess(false);
                   }}
-                  className="flex-1 px-3 py-2 bg-white border border-emerald-300 text-emerald-700 rounded-lg text-sm font-medium hover:bg-emerald-50 transition-all duration-200"
+                  className="flex-1 px-2 py-2 sm:px-4 sm:py-3 bg-white border border-emerald-300 text-emerald-700 rounded-lg sm:rounded-xl text-xs sm:text-sm font-medium hover:bg-emerald-50 transition-all duration-200"
                 >
                   出库其他器件
                 </button>
@@ -227,22 +227,22 @@ function StockOutContent() {
           )}
 
           {error && (
-            <div className="mb-5 p-4 bg-red-50 border border-red-200 rounded-xl flex items-center gap-3">
-              <XCircle className="w-5 h-5 text-red-600 shrink-0" />
-              <p className="text-sm text-red-700">{error}</p>
+            <div className="mb-3 sm:mb-5 p-3 sm:p-4 bg-red-50 border border-red-200 rounded-lg sm:rounded-xl flex items-center gap-2 sm:gap-3">
+              <XCircle className="w-4 h-4 sm:w-5 sm:h-5 text-red-600 shrink-0" />
+              <p className="text-xs sm:text-sm text-red-700">{error}</p>
             </div>
           )}
 
-          <div className="space-y-7">
+          <div className="space-y-4 sm:space-y-7">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2 sm:mb-3">出库数量 *</label>
-              <div className="flex items-center gap-2 sm:gap-3">
+              <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5 sm:mb-3">出库数量 *</label>
+              <div className="flex items-center gap-1.5 sm:gap-3">
                 <button
                   type="button"
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-gray-50 border border-gray-200 rounded-lg sm:rounded-xl text-gray-600 hover:bg-gray-100 hover:border-gray-300 transition-all duration-200"
+                  className="w-9 h-9 sm:w-12 sm:h-12 flex items-center justify-center bg-gray-50 border border-gray-200 rounded-lg sm:rounded-xl text-gray-600 hover:bg-gray-100 hover:border-gray-300 transition-all duration-200"
                 >
-                  <Minus className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <Minus className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
                 </button>
                 <input
                   type="number"
@@ -251,50 +251,50 @@ function StockOutContent() {
                   required
                   value={quantity}
                   onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
-                  className="flex-1 px-3 py-2.5 sm:px-4 sm:py-3 bg-gray-50 border border-gray-200 rounded-lg sm:rounded-xl text-xl sm:text-2xl font-bold text-center focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent focus:bg-white transition-all duration-200"
+                  className="flex-1 px-2 py-1.5 sm:px-4 sm:py-3 bg-gray-50 border border-gray-200 rounded-lg sm:rounded-xl text-base sm:text-2xl font-bold text-center focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent focus:bg-white transition-all duration-200"
                 />
                 <button
                   type="button"
                   onClick={() => setQuantity(Math.min(part.stock?.quantity ?? 0, quantity + 1))}
-                  className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-gray-50 border border-gray-200 rounded-lg sm:rounded-xl text-gray-600 hover:bg-gray-100 hover:border-gray-300 transition-all duration-200"
+                  className="w-9 h-9 sm:w-12 sm:h-12 flex items-center justify-center bg-gray-50 border border-gray-200 rounded-lg sm:rounded-xl text-gray-600 hover:bg-gray-100 hover:border-gray-300 transition-all duration-200"
                 >
-                  <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <Plus className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
                 </button>
               </div>
-              <div className="flex items-center justify-between mt-2 sm:mt-3">
-                <p className="text-sm text-gray-500">
+              <div className="flex items-center justify-between mt-1.5 sm:mt-3">
+                <p className="text-xs sm:text-sm text-gray-500">
                   可出库: <span className="font-bold text-gray-900">{part.stock?.quantity ?? 0}</span> {part.unit}
                 </p>
                 <button
                   type="button"
                   onClick={() => setQuantity(part.stock?.quantity ?? 0)}
-                  className="text-sm text-red-600 hover:text-red-700 font-semibold transition-colors duration-200"
+                  className="text-xs sm:text-sm text-red-600 hover:text-red-700 font-semibold transition-colors duration-200"
                 >
                   全部出库
                 </button>
               </div>
             </div>
             <div>
-              <label className="text-sm font-semibold text-gray-700 mb-1.5 sm:mb-2 flex items-center gap-2">
-                <User className="w-4 h-4 text-gray-500" /> 操作人
+              <label className="text-xs sm:text-sm font-semibold text-gray-700 mb-1 sm:mb-2 flex items-center gap-1.5 sm:gap-2">
+                <User className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-500" /> 操作人
               </label>
               <input
                 type="text"
                 value={operator}
                 onChange={(e) => setOperator(e.target.value)}
-                className="w-full px-3 py-2.5 sm:px-4 sm:py-3 bg-gray-50 border border-gray-200 rounded-lg sm:rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent focus:bg-white transition-all duration-200"
+                className="w-full px-3 py-2 sm:px-4 sm:py-3 bg-gray-50 border border-gray-200 rounded-lg sm:rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent focus:bg-white transition-all duration-200"
                 placeholder="可选"
               />
             </div>
             <div>
-              <label className="text-sm font-semibold text-gray-700 mb-1.5 sm:mb-2 flex items-center gap-2">
-                <FileText className="w-4 h-4 text-gray-500" /> 出库原因
+              <label className="text-xs sm:text-sm font-semibold text-gray-700 mb-1 sm:mb-2 flex items-center gap-1.5 sm:gap-2">
+                <FileText className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-500" /> 出库原因
               </label>
               <input
                 type="text"
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
-                className="w-full px-3 py-2.5 sm:px-4 sm:py-3 bg-gray-50 border border-gray-200 rounded-lg sm:rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent focus:bg-white transition-all duration-200"
+                className="w-full px-3 py-2 sm:px-4 sm:py-3 bg-gray-50 border border-gray-200 rounded-lg sm:rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent focus:bg-white transition-all duration-200"
                 placeholder="如：生产使用、维修等"
               />
             </div>
@@ -303,7 +303,7 @@ function StockOutContent() {
           <button
             type="submit"
             disabled={submitting}
-            className="w-full mt-6 px-4 py-3.5 bg-gradient-to-r from-red-600 to-rose-700 text-white rounded-xl text-sm font-semibold hover:from-red-700 hover:to-rose-800 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-red-500/25 hover:shadow-xl hover:shadow-red-500/30"
+            className="w-full mt-4 sm:mt-6 px-3 py-2.5 sm:px-4 sm:py-3.5 bg-gradient-to-r from-red-600 to-rose-700 text-white rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold hover:from-red-700 hover:to-rose-800 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-red-500/25 hover:shadow-xl hover:shadow-red-500/30"
           >
             {submitting ? (
               <>
