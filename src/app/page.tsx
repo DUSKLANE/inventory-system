@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { AlertTriangle, ArrowDownToLine, ArrowUpFromLine, ArrowRight, Clock, TrendingDown, TrendingUp, Search, Activity, Boxes, ArrowDown, ArrowUp, X, Package, Zap, Bell, ChevronRight } from "lucide-react";
+import { AlertTriangle, ArrowDownToLine, ArrowUpFromLine, ArrowRight, Clock, TrendingDown, TrendingUp, Search, Activity, Boxes, ArrowDown, ArrowUp, X, Package, Zap, Bell, ChevronRight, Star } from "lucide-react";
 
 interface RecentPart {
   id: string;
@@ -31,6 +31,17 @@ interface MovementTrend {
   totalIn: number;
   totalOut: number;
   movementCount: number;
+}
+
+interface FavoritePart {
+  id: string;
+  code: string;
+  name: string;
+  category: string;
+  unit: string;
+  location: string;
+  stock: number;
+  favoritedAt: string;
 }
 
 interface DashboardData {
@@ -65,6 +76,7 @@ export default function Home() {
   const router = useRouter();
   const [data, setData] = useState<DashboardData | null>(null);
   const [alerts, setAlerts] = useState<AlertsData | null>(null);
+  const [favorites, setFavorites] = useState<FavoritePart[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [showAlerts, setShowAlerts] = useState(false);
@@ -73,14 +85,37 @@ export default function Home() {
     Promise.all([
       fetch("/api/dashboard").then(r => r.json()),
       fetch("/api/alerts").then(r => r.json()),
+      fetch("/api/favorites").then(r => r.json()),
     ])
-      .then(([dashboardData, alertsData]) => {
+      .then(([dashboardData, alertsData, favoritesData]) => {
         setData(dashboardData);
         setAlerts(alertsData);
+        setFavorites(favoritesData.favorites || []);
       })
       .catch(console.error)
       .finally(() => setLoading(false));
   }, []);
+
+  const toggleFavorite = async (partId: string) => {
+    try {
+      const res = await fetch("/api/favorites", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ partId }),
+      });
+      const result = await res.json();
+      if (result.favorited) {
+        // Refresh favorites
+        const favRes = await fetch("/api/favorites");
+        const favData = await favRes.json();
+        setFavorites(favData.favorites || []);
+      } else {
+        setFavorites(prev => prev.filter(f => f.id !== partId));
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   if (loading) {
     return (
@@ -402,6 +437,62 @@ export default function Home() {
                 <div className="flex items-center justify-between mt-5 pt-3 border-t border-gray-100">
                   <span className="text-xs text-gray-400">库存</span>
                   <span className="text-sm font-bold text-gray-900">{part.stock ?? 0}</span>
+                </div>
+                <div className="flex gap-2 mt-4">
+                  <Link
+                    href={`/stock-in?code=${encodeURIComponent(part.code)}`}
+                    className="flex-1 text-center text-xs py-2.5 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors font-medium"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    入库
+                  </Link>
+                  <Link
+                    href={`/stock-out?code=${encodeURIComponent(part.code)}`}
+                    className="flex-1 text-center text-xs py-2.5 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors font-medium"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    出库
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Favorites - quick access */}
+      {favorites.length > 0 && (
+        <div className="section">
+          <div className="flex items-center justify-between mb-5">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-amber-100 flex items-center justify-center">
+                <Star className="w-5 h-5 text-amber-600" />
+              </div>
+              <h2 className="text-lg font-semibold text-gray-900">收藏器件</h2>
+            </div>
+            <span className="text-sm text-gray-400">{favorites.length} 个收藏</span>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-5">
+            {favorites.map((part) => (
+              <div
+                key={part.id}
+                onClick={() => router.push(`/parts/${part.id}`)}
+                className="bg-white rounded-xl border border-amber-200/80 p-7 hover:shadow-md hover:border-amber-300 transition-all duration-200 group cursor-pointer"
+              >
+                <div className="flex items-center justify-between mb-5">
+                  <Package className="w-6 h-6 text-amber-400 group-hover:text-amber-500 transition-colors" />
+                  <button
+                    onClick={(e) => { e.stopPropagation(); toggleFavorite(part.id); }}
+                    className="text-amber-500 hover:text-amber-600"
+                  >
+                    <Star className="w-5 h-5 fill-amber-500" />
+                  </button>
+                </div>
+                <p className="text-sm font-semibold text-gray-900 truncate">{part.name}</p>
+                <p className="text-xs text-gray-500 font-mono mt-2">{part.code}</p>
+                <div className="flex items-center justify-between mt-5 pt-3 border-t border-gray-100">
+                  <span className="text-xs text-gray-400">库存</span>
+                  <span className="text-sm font-bold text-gray-900">{part.stock}</span>
                 </div>
                 <div className="flex gap-2 mt-4">
                   <Link

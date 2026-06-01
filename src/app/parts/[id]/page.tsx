@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowDownToLine, ArrowUpFromLine, Tag, Package, MapPin, Building2, FileText, Ruler, Hash, AlertTriangle, Clock, TrendingDown, TrendingUp, Settings, Edit, Boxes, Activity, X, Loader2 } from "lucide-react";
+import { ArrowDownToLine, ArrowUpFromLine, Tag, Package, MapPin, Building2, FileText, Ruler, Hash, AlertTriangle, Clock, TrendingDown, TrendingUp, Settings, Edit, Boxes, Activity, X, Loader2, Star } from "lucide-react";
 import Breadcrumb from "@/components/Breadcrumb";
 
 interface PartDetail {
@@ -36,6 +36,7 @@ export default function PartDetailPage() {
   const [part, setPart] = useState<PartDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [showEdit, setShowEdit] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(false);
 
   const fetchPart = async () => {
     if (!params.id) return;
@@ -48,10 +49,30 @@ export default function PartDetailPage() {
         return;
       }
       setPart(data);
+      
+      // Check if favorited
+      const favRes = await fetch("/api/favorites");
+      const favData = await favRes.json();
+      setIsFavorite(favData.favorites?.some((f: { id: string }) => f.id === params.id) || false);
     } catch (e) {
       console.error(e);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const toggleFavorite = async () => {
+    if (!part) return;
+    try {
+      const res = await fetch("/api/favorites", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ partId: part.id }),
+      });
+      const result = await res.json();
+      setIsFavorite(result.favorited);
+    } catch (e) {
+      console.error(e);
     }
   };
 
@@ -124,6 +145,17 @@ export default function PartDetailPage() {
             </div>
           </div>
           <div className="flex gap-3">
+            <button
+              onClick={toggleFavorite}
+              className={`px-4 py-3.5 border rounded-xl text-sm font-medium transition-all duration-200 flex items-center gap-2 ${
+                isFavorite
+                  ? "border-amber-300 bg-amber-50 text-amber-700"
+                  : "border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300"
+              }`}
+            >
+              <Star className={`w-4 h-4 ${isFavorite ? "fill-amber-500" : ""}`} />
+              {isFavorite ? "已收藏" : "收藏"}
+            </button>
             <button
               onClick={() => setShowEdit(true)}
               className="px-6 py-3.5 border border-gray-200 text-gray-700 rounded-xl text-sm font-medium hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 flex items-center gap-2"

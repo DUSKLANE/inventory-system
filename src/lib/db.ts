@@ -54,10 +54,18 @@ db.exec(`
     FOREIGN KEY (partId) REFERENCES parts(id) ON DELETE CASCADE
   );
 
+  CREATE TABLE IF NOT EXISTS favorites (
+    id TEXT PRIMARY KEY,
+    partId TEXT UNIQUE NOT NULL,
+    createdAt TEXT DEFAULT (datetime('now')),
+    FOREIGN KEY (partId) REFERENCES parts(id) ON DELETE CASCADE
+  );
+
   CREATE INDEX IF NOT EXISTS idx_parts_code ON parts(code);
   CREATE INDEX IF NOT EXISTS idx_parts_category ON parts(category);
   CREATE INDEX IF NOT EXISTS idx_stock_movements_partId ON stock_movements(partId);
   CREATE INDEX IF NOT EXISTS idx_stock_movements_createdAt ON stock_movements(createdAt);
+  CREATE INDEX IF NOT EXISTS idx_favorites_partId ON favorites(partId);
 `);
 
 export default db;
