@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Package, ArrowDownToLine, ArrowUpFromLine, Cpu, Settings, HelpCircle, BarChart3, FileText, Sun, Moon, Clock, Warehouse } from "lucide-react";
+import { LayoutDashboard, Package, ArrowDownToLine, ArrowUpFromLine, Cpu, Settings, HelpCircle, BarChart3, FileText, Sun, Moon, Clock, Warehouse, MoreHorizontal } from "lucide-react";
 import { useTheme } from "./ThemeProvider";
+import { useState } from "react";
 
 const mainLinks = [
   { href: "/", label: "仪表盘", icon: LayoutDashboard },
@@ -16,6 +17,15 @@ const mainLinks = [
   { href: "/logs", label: "操作日志", icon: Clock },
 ];
 
+// Mobile navigation - show only important links
+const mobileLinks = [
+  { href: "/", label: "首页", icon: LayoutDashboard },
+  { href: "/parts", label: "器件", icon: Package },
+  { href: "/stock-in", label: "入库", icon: ArrowDownToLine },
+  { href: "/stock-out", label: "出库", icon: ArrowUpFromLine },
+  { href: "#", label: "更多", icon: MoreHorizontal },
+];
+
 const bottomLinks = [
   { href: "#", label: "设置", icon: Settings },
   { href: "#", label: "帮助", icon: HelpCircle },
@@ -24,6 +34,7 @@ const bottomLinks = [
 export default function Navigation() {
   const pathname = usePathname();
   const { theme, toggleTheme } = useTheme();
+  const [showMoreMenu, setShowMoreMenu] = useState(false);
 
   return (
     <>
@@ -125,29 +136,82 @@ export default function Navigation() {
       </aside>
 
       {/* Mobile bottom tab bar */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-gray-200/80 z-40 flex justify-around py-2.5 safe-area-pb shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
-        {mainLinks.map((link) => {
-          const active = link.href === "/" ? pathname === "/" : pathname.startsWith(link.href);
-          const Icon = link.icon;
-          return (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={`relative flex flex-col items-center py-1.5 px-3.5 text-xs font-medium transition-all duration-300 ${
-                active ? "text-blue-600" : "text-gray-500"
-              }`}
-            >
-              {active && (
-                <div className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-10 h-0.5 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 shadow-sm shadow-blue-500/30" />
-              )}
-              <div className={`p-1.5 rounded-xl transition-all duration-300 ${active ? "bg-blue-50 shadow-sm shadow-blue-500/10" : ""}`}>
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-gray-200/80 z-40 safe-area-pb shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
+        <div className="flex justify-around items-center h-14">
+          {mobileLinks.map((link) => {
+            const isMore = link.href === "#";
+            const active = !isMore && (link.href === "/" ? pathname === "/" : pathname.startsWith(link.href));
+            const Icon = link.icon;
+            
+            if (isMore) {
+              return (
+                <button
+                  key="more"
+                  onClick={() => setShowMoreMenu(!showMoreMenu)}
+                  className="relative flex flex-col items-center justify-center w-14 h-full text-xs font-medium text-gray-500"
+                >
+                  <Icon className="w-5 h-5" />
+                  <span className="mt-0.5 text-[10px]">更多</span>
+                </button>
+              );
+            }
+            
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="relative flex flex-col items-center justify-center w-14 h-full text-xs font-medium"
+              >
+                {active && (
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 rounded-full bg-blue-600" />
+                )}
                 <Icon className={`w-5 h-5 ${active ? "text-blue-600" : "text-gray-400"}`} />
-              </div>
-              <span className={`mt-0.5 ${active ? "font-semibold" : ""}`}>{link.label}</span>
-            </Link>
-          );
-        })}
+                <span className={`mt-0.5 text-[10px] ${active ? "text-blue-600 font-semibold" : "text-gray-500"}`}>{link.label}</span>
+              </Link>
+            );
+          })}
+        </div>
+        
+        {/* More menu popup */}
+        {showMoreMenu && (
+          <div className="absolute bottom-full left-0 right-0 bg-white border-t border-gray-200 shadow-lg rounded-t-2xl p-4 pb-6">
+            <div className="grid grid-cols-4 gap-3">
+              {mainLinks.slice(4).map((link) => {
+                const Icon = link.icon;
+                const active = link.href === "/" ? pathname === "/" : pathname.startsWith(link.href);
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    onClick={() => setShowMoreMenu(false)}
+                    className={`flex flex-col items-center gap-1 p-3 rounded-xl ${
+                      active ? "bg-blue-50 text-blue-600" : "text-gray-600 hover:bg-gray-50"
+                    }`}
+                  >
+                    <Icon className="w-5 h-5" />
+                    <span className="text-[10px] font-medium">{link.label}</span>
+                  </Link>
+                );
+              })}
+              <button
+                onClick={() => { toggleTheme(); setShowMoreMenu(false); }}
+                className="flex flex-col items-center gap-1 p-3 rounded-xl text-gray-600 hover:bg-gray-50"
+              >
+                {theme === "light" ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+                <span className="text-[10px] font-medium">{theme === "light" ? "深色" : "浅色"}</span>
+              </button>
+            </div>
+          </div>
+        )}
       </nav>
+      
+      {/* Overlay for more menu */}
+      {showMoreMenu && (
+        <div 
+          className="md:hidden fixed inset-0 bg-black/20 z-30"
+          onClick={() => setShowMoreMenu(false)}
+        />
+      )}
     </>
   );
 }

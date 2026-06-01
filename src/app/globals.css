@@ -695,12 +695,14 @@ mark {
 .main-content {
   margin-left: 0;
   padding: 0;
+  padding-bottom: 56px; /* Space for mobile bottom nav */
 }
 
 @media (min-width: 768px) {
   .main-content {
     margin-left: 240px; /* w-60 = 15rem = 240px */
     padding: 0 24px;
+    padding-bottom: 0;
   }
 }
 
@@ -714,7 +716,13 @@ mark {
 .page-container {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 32px 20px;
+  padding: 16px 12px;
+}
+
+@media (min-width: 640px) {
+  .page-container {
+    padding: 24px 16px;
+  }
 }
 
 @media (min-width: 768px) {
@@ -725,7 +733,13 @@ mark {
 
 /* Section spacing */
 .section {
-  margin-bottom: 32px;
+  margin-bottom: 16px;
+}
+
+@media (min-width: 640px) {
+  .section {
+    margin-bottom: 24px;
+  }
 }
 
 @media (min-width: 768px) {
@@ -769,4 +783,59 @@ th, td {
 
 .btn-lg {
   padding: 16px 32px;
+}
+
+/* Mobile optimizations */
+@media (max-width: 640px) {
+  /* Reduce card padding on mobile */
+  .bg-white.rounded-2xl {
+    padding: 12px;
+  }
+  
+  /* Reduce header padding */
+  .px-8, .px-10 {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+  
+  .py-8, .py-10 {
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+  
+  /* Reduce table cell padding on mobile */
+  th, td {
+    padding: 8px 12px;
+  }
+  
+  /* Reduce input padding on mobile */
+  .py-4, .py-5 {
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+  
+  .px-4, .px-5 {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+  
+  /* Make grid more compact on mobile */
+  .gap-5, .gap-6 {
+    gap: 12px;
+  }
+  
+  /* Reduce section spacing on mobile */
+  .p-6, .p-7, .p-8 {
+    padding: 12px;
+  }
+  
+  /* Fix modal padding on mobile */
+  .modal-backdrop .p-8 {
+    padding: 16px;
+  }
+}
+
+/* Dark mode for sticky header */
+[data-theme="dark"] thead.sticky th {
+  background: #161b22;
 }
