@@ -27,6 +27,13 @@ export const searchSchema = z.object({
   category: z.string().optional(),
   package: z.string().optional(),
   location: z.string().optional(),
+  brand: z.string().optional(),
+  stockMin: z.coerce.number().int().min(0).optional(),
+  stockMax: z.coerce.number().int().min(0).optional(),
+  hasStock: z.coerce.boolean().optional(),
+  lowStock: z.coerce.boolean().optional(),
   page: z.coerce.number().int().min(1).default(1),
   pageSize: z.coerce.number().int().min(1).max(100).default(20),
 });
+
+export type SearchParams = z.infer<typeof searchSchema>;

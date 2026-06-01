@@ -12,6 +12,11 @@ export async function GET(request: NextRequest) {
       category: searchParams.get("category") || undefined,
       package: searchParams.get("package") || undefined,
       location: searchParams.get("location") || undefined,
+      brand: searchParams.get("brand") || undefined,
+      stockMin: searchParams.get("stockMin") || undefined,
+      stockMax: searchParams.get("stockMax") || undefined,
+      hasStock: searchParams.get("hasStock") || undefined,
+      lowStock: searchParams.get("lowStock") || undefined,
       page: searchParams.get("page") || "1",
       pageSize: searchParams.get("pageSize") || "20",
     });
@@ -20,9 +25,9 @@ export async function GET(request: NextRequest) {
     const queryParams: unknown[] = [];
 
     if (params.q) {
-      where += " AND (p.name LIKE ? OR p.code LIKE ? OR p.brand LIKE ? OR p.model LIKE ?)";
+      where += " AND (p.name LIKE ? OR p.code LIKE ? OR p.brand LIKE ? OR p.model LIKE ? OR p.location LIKE ?)";
       const q = `%${params.q}%`;
-      queryParams.push(q, q, q, q);
+      queryParams.push(q, q, q, q, q);
     }
     if (params.category) {
       where += " AND p.category = ?";
@@ -33,11 +38,29 @@ export async function GET(request: NextRequest) {
       queryParams.push(params.package);
     }
     if (params.location) {
-      where += " AND p.location = ?";
-      queryParams.push(params.location);
+      where += " AND p.location LIKE ?";
+      queryParams.push(`%${params.location}%`);
+    }
+    if (params.brand) {
+      where += " AND p.brand LIKE ?";
+      queryParams.push(`%${params.brand}%`);
+    }
+    if (params.stockMin !== undefined) {
+      where += " AND COALESCE(s.quantity, 0) >= ?";
+      queryParams.push(params.stockMin);
+    }
+    if (params.stockMax !== undefined) {
+      where += " AND COALESCE(s.quantity, 0) <= ?";
+      queryParams.push(params.stockMax);
+    }
+    if (params.hasStock === true) {
+      where += " AND COALESCE(s.quantity, 0) > 0";
+    }
+    if (params.lowStock === true) {
+      where += " AND p.minStock > 0 AND COALESCE(s.quantity, 0) < p.minStock";
     }
 
-    const countSql = `SELECT COUNT(*) as total FROM parts p ${where}`;
+    const countSql = `SELECT COUNT(*) as total FROM parts p LEFT JOIN stock s ON s.partId = p.id ${where}`;
     const totalRow = db.prepare(countSql).get(...queryParams) as { total: number };
     const total = totalRow.total;
 
