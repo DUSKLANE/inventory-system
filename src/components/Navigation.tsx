@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Package, ArrowDownToLine, ArrowUpFromLine, Cpu, Settings, HelpCircle } from "lucide-react";
+import { LayoutDashboard, Package, ArrowDownToLine, ArrowUpFromLine, Cpu, Settings, HelpCircle, BarChart3 } from "lucide-react";
 
 const mainLinks = [
   { href: "/", label: "仪表盘", icon: LayoutDashboard },
   { href: "/parts", label: "器件列表", icon: Package },
   { href: "/stock-in", label: "入库", icon: ArrowDownToLine },
   { href: "/stock-out", label: "出库", icon: ArrowUpFromLine },
+  { href: "/analytics", label: "数据分析", icon: BarChart3 },
 ];
 
 const bottomLinks = [
