@@ -61,11 +61,31 @@ db.exec(`
     FOREIGN KEY (partId) REFERENCES parts(id) ON DELETE CASCADE
   );
 
+  CREATE TABLE IF NOT EXISTS boms (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    description TEXT DEFAULT '',
+    createdAt TEXT DEFAULT (datetime('now')),
+    updatedAt TEXT DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS bom_items (
+    id TEXT PRIMARY KEY,
+    bomId TEXT NOT NULL,
+    partId TEXT NOT NULL,
+    quantity INTEGER DEFAULT 1,
+    note TEXT DEFAULT '',
+    FOREIGN KEY (bomId) REFERENCES boms(id) ON DELETE CASCADE,
+    FOREIGN KEY (partId) REFERENCES parts(id) ON DELETE CASCADE
+  );
+
   CREATE INDEX IF NOT EXISTS idx_parts_code ON parts(code);
   CREATE INDEX IF NOT EXISTS idx_parts_category ON parts(category);
   CREATE INDEX IF NOT EXISTS idx_stock_movements_partId ON stock_movements(partId);
   CREATE INDEX IF NOT EXISTS idx_stock_movements_createdAt ON stock_movements(createdAt);
   CREATE INDEX IF NOT EXISTS idx_favorites_partId ON favorites(partId);
+  CREATE INDEX IF NOT EXISTS idx_bom_items_bomId ON bom_items(bomId);
+  CREATE INDEX IF NOT EXISTS idx_bom_items_partId ON bom_items(partId);
 `);
 
 export default db;
