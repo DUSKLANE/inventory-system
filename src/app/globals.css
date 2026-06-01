@@ -857,6 +857,44 @@ th, td {
   color: #f59e0b !important;
 }
 
+/* Dark mode utility classes */
+[data-theme="dark"] .dark-card {
+  background-color: #161b22 !important;
+  border-color: #30363d !important;
+}
+
+[data-theme="dark"] .dark-text {
+  color: #e6edf3 !important;
+}
+
+[data-theme="dark"] .dark-muted {
+  color: #8b949e !important;
+}
+
+[data-theme="dark"] .dark-icon-bg {
+  background-color: #21262d !important;
+}
+
+[data-theme="dark"] .bg-emerald-50 {
+  background-color: #0d2818 !important;
+}
+
+[data-theme="dark"] .bg-emerald-100 {
+  background-color: #1a3a25 !important;
+}
+
+[data-theme="dark"] .bg-blue-50 {
+  background-color: #0d1b2e !important;
+}
+
+[data-theme="dark"] .bg-blue-100 {
+  background-color: #1a2d42 !important;
+}
+
+[data-theme="dark"] .bg-red-50 {
+  background-color: #2d0f0f !important;
+}
+
 /* Responsive adjustments */
 @media (min-width: 768px) {
   .section {

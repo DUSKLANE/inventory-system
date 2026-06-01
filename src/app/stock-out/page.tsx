@@ -144,14 +144,14 @@ function StockOutContent() {
         </div>
 
         {part && (
-          <div className="p-5 bg-blue-50 border border-blue-200 rounded-xl">
+          <div className="mt-4 p-5 bg-blue-50 dark-card border border-blue-200 rounded-xl">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center">
+              <div className="w-12 h-12 rounded-xl bg-blue-100 dark-icon-bg flex items-center justify-center">
                 <Package className="w-6 h-6 text-blue-600" />
               </div>
               <div className="flex-1">
-                <p className="font-semibold text-gray-900">{part.name}</p>
-                <p className="text-sm text-gray-500 font-mono mt-0.5">{part.code}</p>
+                <p className="font-semibold dark-text">{part.name}</p>
+                <p className="text-sm dark-muted font-mono mt-0.5">{part.code}</p>
                 {part.category && (
                   <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-blue-100 text-blue-700 mt-1.5">
                     {part.category}
@@ -159,9 +159,9 @@ function StockOutContent() {
                 )}
               </div>
               <div className="text-right">
-                <p className="text-xs text-gray-500 mb-1">当前库存</p>
-                <p className="text-2xl font-bold text-gray-900">{part.stock?.quantity ?? 0}</p>
-                <p className="text-xs text-gray-500">{part.unit}</p>
+                <p className="text-xs dark-muted mb-1">当前库存</p>
+                <p className="text-2xl font-bold dark-text">{part.stock?.quantity ?? 0}</p>
+                <p className="text-xs dark-muted">{part.unit}</p>
               </div>
             </div>
           </div>
@@ -233,7 +233,7 @@ function StockOutContent() {
             </div>
           )}
 
-          <div className="space-y-5">
+          <div className="space-y-7">
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-3">出库数量 *</label>
               <div className="flex items-center gap-3">
