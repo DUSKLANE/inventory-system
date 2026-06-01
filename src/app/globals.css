@@ -134,6 +134,92 @@
   --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.6);
 }
 
+/* Dark mode overrides for common components */
+[data-theme="dark"] .bg-white {
+  background-color: var(--card) !important;
+}
+
+[data-theme="dark"] .bg-gray-50,
+[data-theme="dark"] .bg-gray-50\/80,
+[data-theme="dark"] .bg-gray-50\/50 {
+  background-color: var(--background-subtle) !important;
+}
+
+[data-theme="dark"] .bg-gray-100,
+[data-theme="dark"] .bg-gray-100\/80 {
+  background-color: var(--background-muted) !important;
+}
+
+[data-theme="dark"] .text-gray-900 {
+  color: var(--card-foreground) !important;
+}
+
+[data-theme="dark"] .text-gray-700,
+[data-theme="dark"] .text-gray-600 {
+  color: var(--foreground-muted) !important;
+}
+
+[data-theme="dark"] .text-gray-500,
+[data-theme="dark"] .text-gray-400 {
+  color: var(--foreground-subtle) !important;
+}
+
+[data-theme="dark"] .border-gray-200,
+[data-theme="dark"] .border-gray-200\/80,
+[data-theme="dark"] .border-gray-100,
+[data-theme="dark"] .border-gray-100\/80 {
+  border-color: var(--card-border) !important;
+}
+
+[data-theme="dark"] .divide-gray-100 > * + * {
+  border-color: var(--card-border) !important;
+}
+
+[data-theme="dark"] .shadow-sm {
+  box-shadow: var(--shadow-sm) !important;
+}
+
+[data-theme="dark"] .shadow-md {
+  box-shadow: var(--shadow-md) !important;
+}
+
+[data-theme="dark"] .shadow-lg {
+  box-shadow: var(--shadow-lg) !important;
+}
+
+/* Dark mode input styles */
+[data-theme="dark"] input,
+[data-theme="dark"] select,
+[data-theme="dark"] textarea {
+  background-color: var(--background-muted) !important;
+  border-color: var(--border) !important;
+  color: var(--foreground) !important;
+}
+
+[data-theme="dark"] input:focus,
+[data-theme="dark"] select:focus,
+[data-theme="dark"] textarea:focus {
+  background-color: var(--background-subtle) !important;
+  border-color: var(--primary) !important;
+}
+
+[data-theme="dark"] input::placeholder,
+[data-theme="dark"] textarea::placeholder {
+  color: var(--foreground-subtle) !important;
+}
+
+/* Dark mode sidebar */
+[data-theme="dark"] aside {
+  background-color: rgba(22, 27, 34, 0.95) !important;
+  border-color: var(--card-border) !important;
+}
+
+/* Dark mode mobile nav */
+[data-theme="dark"] nav.fixed {
+  background-color: rgba(13, 17, 23, 0.95) !important;
+  border-color: var(--card-border) !important;
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
