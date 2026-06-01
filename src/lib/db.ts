@@ -90,6 +90,27 @@ db.exec(`
     createdAt TEXT DEFAULT (datetime('now'))
   );
 
+  CREATE TABLE IF NOT EXISTS warehouses (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    location TEXT DEFAULT '',
+    description TEXT DEFAULT '',
+    isDefault INTEGER DEFAULT 0,
+    createdAt TEXT DEFAULT (datetime('now')),
+    updatedAt TEXT DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS stock_warehouse (
+    id TEXT PRIMARY KEY,
+    partId TEXT NOT NULL,
+    warehouseId TEXT NOT NULL,
+    quantity INTEGER DEFAULT 0,
+    updatedAt TEXT DEFAULT (datetime('now')),
+    FOREIGN KEY (partId) REFERENCES parts(id) ON DELETE CASCADE,
+    FOREIGN KEY (warehouseId) REFERENCES warehouses(id) ON DELETE CASCADE,
+    UNIQUE(partId, warehouseId)
+  );
+
   CREATE INDEX IF NOT EXISTS idx_parts_code ON parts(code);
   CREATE INDEX IF NOT EXISTS idx_parts_category ON parts(category);
   CREATE INDEX IF NOT EXISTS idx_stock_movements_partId ON stock_movements(partId);
@@ -99,6 +120,8 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_bom_items_partId ON bom_items(partId);
   CREATE INDEX IF NOT EXISTS idx_operation_logs_createdAt ON operation_logs(createdAt);
   CREATE INDEX IF NOT EXISTS idx_operation_logs_entityType ON operation_logs(entityType);
+  CREATE INDEX IF NOT EXISTS idx_stock_warehouse_partId ON stock_warehouse(partId);
+  CREATE INDEX IF NOT EXISTS idx_stock_warehouse_warehouseId ON stock_warehouse(warehouseId);
 `);
 
 export default db;
