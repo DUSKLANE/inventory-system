@@ -72,6 +72,68 @@
   --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
 }
 
+/* Dark mode */
+[data-theme="dark"] {
+  /* Background & Surface */
+  --background: #0d1117;
+  --background-subtle: #161b22;
+  --background-muted: #21262d;
+  
+  /* Foreground */
+  --foreground: #e6edf3;
+  --foreground-muted: #8b949e;
+  --foreground-subtle: #6e7681;
+  
+  /* Card */
+  --card: #161b22;
+  --card-foreground: #e6edf3;
+  --card-border: #30363d;
+  
+  /* Primary - Blue */
+  --primary: #58a6ff;
+  --primary-hover: #79c0ff;
+  --primary-foreground: #0d1117;
+  --primary-subtle: rgba(56, 139, 253, 0.15);
+  --primary-muted: rgba(56, 139, 253, 0.3);
+  
+  /* Accent - Orange */
+  --accent: #f0883e;
+  --accent-hover: #fda371;
+  --accent-foreground: #0d1117;
+  
+  /* Success - Green */
+  --success: #3fb950;
+  --success-foreground: #0d1117;
+  --success-subtle: rgba(63, 185, 80, 0.15);
+  
+  /* Warning - Yellow */
+  --warning: #d29922;
+  --warning-foreground: #0d1117;
+  --warning-subtle: rgba(210, 153, 34, 0.15);
+  
+  /* Error - Red */
+  --error: #f85149;
+  --error-foreground: #0d1117;
+  --error-subtle: rgba(248, 81, 73, 0.15);
+  
+  /* Muted */
+  --muted: #21262d;
+  --muted-foreground: #8b949e;
+  
+  /* Border */
+  --border: #30363d;
+  --border-hover: #484f58;
+  
+  /* Ring */
+  --ring: #58a6ff;
+  
+  /* Shadow */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
+  --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.6);
+}
+
 * {
   box-sizing: border-box;
   margin: 0;

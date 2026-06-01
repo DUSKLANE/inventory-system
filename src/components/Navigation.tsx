@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Package, ArrowDownToLine, ArrowUpFromLine, Cpu, Settings, HelpCircle, BarChart3, FileText } from "lucide-react";
+import { LayoutDashboard, Package, ArrowDownToLine, ArrowUpFromLine, Cpu, Settings, HelpCircle, BarChart3, FileText, Sun, Moon } from "lucide-react";
+import { useTheme } from "./ThemeProvider";
 
 const mainLinks = [
   { href: "/", label: "仪表盘", icon: LayoutDashboard },
@@ -20,6 +21,7 @@ const bottomLinks = [
 
 export default function Navigation() {
   const pathname = usePathname();
+  const { theme, toggleTheme } = useTheme();
 
   return (
     <>
@@ -74,6 +76,21 @@ export default function Navigation() {
 
         {/* Bottom links */}
         <div className="px-3 py-4 border-t border-gray-100/80 space-y-1">
+          {/* Theme toggle */}
+          <button
+            onClick={toggleTheme}
+            className="w-full group flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50/80 hover:text-gray-900 transition-all duration-200"
+          >
+            <div className="p-1.5 rounded-lg group-hover:bg-gray-100/80 transition-colors duration-200">
+              {theme === "light" ? (
+                <Moon className="w-[18px] h-[18px] flex-shrink-0 text-gray-400 group-hover:text-gray-500 transition-colors duration-200" />
+              ) : (
+                <Sun className="w-[18px] h-[18px] flex-shrink-0 text-gray-400 group-hover:text-gray-500 transition-colors duration-200" />
+              )}
+            </div>
+            <span>{theme === "light" ? "深色模式" : "浅色模式"}</span>
+          </button>
+          
           {bottomLinks.map((link) => {
             const Icon = link.icon;
             return (
