@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Plus, Search, Edit, Trash2, MapPin, X, Loader2, Package, ChevronLeft, ChevronRight, ChevronDown, Eye, Tag, Boxes, Filter } from "lucide-react";
+import { Plus, Search, Edit, Trash2, MapPin, X, Loader2, Package, ChevronLeft, ChevronRight, ChevronDown, Eye, Tag, Boxes, Filter, CheckSquare, Square, ArrowDownToLine, ArrowUpFromLine } from "lucide-react";
 
 interface Part {
   id: string;
@@ -43,6 +43,12 @@ function PartsPageContent() {
   const [sortField, setSortField] = useState<SortField>("name");
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
   const searchTimeoutRef = useRef<NodeJS.Timeout>(undefined);
+  
+  // Batch operations state
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [showBatchMovement, setShowBatchMovement] = useState(false);
+  const [batchMovementType, setBatchMovementType] = useState<"IN" | "OUT">("IN");
+  const [batchProcessing, setBatchProcessing] = useState(false);
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -133,6 +139,94 @@ function PartsPageContent() {
     }
   };
 
+  // Batch selection helpers
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === sortedParts.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(sortedParts.map(p => p.id)));
+    }
+  };
+
+  const clearSelection = () => {
+    setSelectedIds(new Set());
+  };
+
+  // Batch delete
+  const handleBatchDelete = async () => {
+    if (selectedIds.size === 0) return;
+    if (!confirm(`确定删除选中的 ${selectedIds.size} 个器件？此操作不可撤销。`)) return;
+
+    setBatchProcessing(true);
+    try {
+      const res = await fetch("/api/parts/batch", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "delete",
+          ids: Array.from(selectedIds),
+        }),
+      });
+      const result = await res.json();
+      if (res.ok) {
+        alert(result.message);
+        clearSelection();
+        fetchParts();
+      } else {
+        alert(result.error || "批量删除失败");
+      }
+    } catch (e) {
+      console.error(e);
+      alert("批量删除失败");
+    } finally {
+      setBatchProcessing(false);
+    }
+  };
+
+  // Batch movement (stock in/out)
+  const handleBatchMovement = async (items: Array<{ partId: string; quantity: number }>) => {
+    setBatchProcessing(true);
+    try {
+      const res = await fetch("/api/parts/batch", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "movement",
+          items,
+          type: batchMovementType,
+          operator: "管理员",
+          reason: `批量${batchMovementType === "IN" ? "入库" : "出库"}`,
+        }),
+      });
+      const result = await res.json();
+      if (res.ok) {
+        alert(result.message);
+        setShowBatchMovement(false);
+        clearSelection();
+        fetchParts();
+      } else {
+        alert(result.error || "批量操作失败");
+      }
+    } catch (e) {
+      console.error(e);
+      alert("批量操作失败");
+    } finally {
+      setBatchProcessing(false);
+    }
+  };
+
   return (
     <div className="page-container">
       {/* Header */}
@@ -199,6 +293,48 @@ function PartsPageContent() {
         </div>
       </div>
 
+      {/* Batch Operations Toolbar */}
+      {selectedIds.size > 0 && (
+        <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 section flex items-center justify-between animate-fade-in">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center">
+              <CheckSquare className="w-4 h-4 text-blue-600" />
+            </div>
+            <span className="text-sm font-medium text-blue-900">
+              已选择 <span className="font-bold">{selectedIds.size}</span> 个器件
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => { setBatchMovementType("IN"); setShowBatchMovement(true); }}
+              className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-medium hover:bg-emerald-700 transition-all duration-200 shadow-sm"
+            >
+              <ArrowDownToLine className="w-4 h-4" /> 批量入库
+            </button>
+            <button
+              onClick={() => { setBatchMovementType("OUT"); setShowBatchMovement(true); }}
+              className="inline-flex items-center gap-2 px-4 py-2.5 bg-amber-600 text-white rounded-xl text-sm font-medium hover:bg-amber-700 transition-all duration-200 shadow-sm"
+            >
+              <ArrowUpFromLine className="w-4 h-4" /> 批量出库
+            </button>
+            <button
+              onClick={handleBatchDelete}
+              disabled={batchProcessing}
+              className="inline-flex items-center gap-2 px-4 py-2.5 bg-red-600 text-white rounded-xl text-sm font-medium hover:bg-red-700 transition-all duration-200 shadow-sm disabled:opacity-50"
+            >
+              {batchProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+              批量删除
+            </button>
+            <button
+              onClick={clearSelection}
+              className="px-4 py-2.5 text-gray-600 hover:text-gray-900 hover:bg-white rounded-xl text-sm font-medium transition-all duration-200"
+            >
+              取消选择
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Parts list */}
       <div className="bg-white rounded-2xl border border-gray-200/80 overflow-hidden shadow-sm">
         {loading ? (
@@ -230,6 +366,18 @@ function PartsPageContent() {
               <table className="w-full">
                 <thead className="sticky top-0 z-10">
                   <tr className="bg-gray-50/80 border-b border-gray-200">
+                    <th className="px-4 py-5 text-left">
+                      <button
+                        onClick={toggleSelectAll}
+                        className="p-1 text-gray-400 hover:text-blue-600 transition-colors"
+                      >
+                        {selectedIds.size === sortedParts.length && sortedParts.length > 0 ? (
+                          <CheckSquare className="w-5 h-5 text-blue-600" />
+                        ) : (
+                          <Square className="w-5 h-5" />
+                        )}
+                      </button>
+                    </th>
                     <th 
                       className="px-8 py-5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
                       onClick={() => handleSort("code")}
@@ -303,8 +451,21 @@ function PartsPageContent() {
                   {sortedParts.map((part) => {
                     const qty = part.stock?.quantity ?? 0;
                     const lowStock = part.minStock > 0 && qty < part.minStock;
+                    const isSelected = selectedIds.has(part.id);
                     return (
-                      <tr key={part.id} className="hover:bg-gray-50/80 transition-colors duration-150">
+                      <tr key={part.id} className={`hover:bg-gray-50/80 transition-colors duration-150 ${isSelected ? 'bg-blue-50/50' : ''}`}>
+                        <td className="px-4 py-5">
+                          <button
+                            onClick={(e) => { e.stopPropagation(); toggleSelect(part.id); }}
+                            className="p-1 text-gray-400 hover:text-blue-600 transition-colors"
+                          >
+                            {isSelected ? (
+                              <CheckSquare className="w-5 h-5 text-blue-600" />
+                            ) : (
+                              <Square className="w-5 h-5" />
+                            )}
+                          </button>
+                        </td>
                         <td className="px-8 py-5">
                           <Link href={`/parts/${part.id}`} className="font-mono text-sm text-blue-600 hover:text-blue-700 hover:underline font-medium">
                             {part.code}
@@ -449,6 +610,17 @@ function PartsPageContent() {
           part={editPart}
           onClose={() => { setShowAdd(false); setEditPart(null); }}
           onSaved={() => { setShowAdd(false); setEditPart(null); fetchParts(); }}
+        />
+      )}
+
+      {/* Batch Movement Modal */}
+      {showBatchMovement && (
+        <BatchMovementModal
+          type={batchMovementType}
+          parts={sortedParts.filter(p => selectedIds.has(p.id))}
+          onClose={() => setShowBatchMovement(false)}
+          onSubmit={handleBatchMovement}
+          processing={batchProcessing}
         />
       )}
     </div>
@@ -658,6 +830,136 @@ function AddEditModal({ part, onClose, onSaved }: { part: Part | null; onClose: 
                 </>
               ) : (
                 isEdit ? "保存修改" : "创建器件"
+              )}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function BatchMovementModal({
+  type,
+  parts,
+  onClose,
+  onSubmit,
+  processing,
+}: {
+  type: "IN" | "OUT";
+  parts: Part[];
+  onClose: () => void;
+  onSubmit: (items: Array<{ partId: string; quantity: number }>) => void;
+  processing: boolean;
+}) {
+  const [quantities, setQuantities] = useState<Record<string, number>>(
+    Object.fromEntries(parts.map(p => [p.id, 1]))
+  );
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const items = parts
+      .filter(p => quantities[p.id] > 0)
+      .map(p => ({ partId: p.id, quantity: quantities[p.id] }));
+    
+    if (items.length === 0) {
+      alert("请至少输入一个数量");
+      return;
+    }
+    onSubmit(items);
+  };
+
+  const updateQuantity = (id: string, value: string) => {
+    const num = parseInt(value) || 0;
+    setQuantities(prev => ({ ...prev, [id]: Math.max(0, num) }));
+  };
+
+  return (
+    <div className="fixed inset-0 modal-backdrop z-50 flex items-center justify-center p-4 animate-fade-in">
+      <div className="bg-white rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-200/80">
+        <div className="px-8 py-6 border-b border-gray-100 flex items-center justify-between sticky top-0 bg-white z-10 rounded-t-2xl">
+          <div className="flex items-center gap-4">
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${type === "IN" ? "bg-emerald-50" : "bg-amber-50"}`}>
+              {type === "IN" ? (
+                <ArrowDownToLine className="w-5 h-5 text-emerald-600" />
+              ) : (
+                <ArrowUpFromLine className="w-5 h-5 text-amber-600" />
+              )}
+            </div>
+            <h2 className="text-xl font-semibold text-gray-900">
+              批量{type === "IN" ? "入库" : "出库"} - {parts.length} 个器件
+            </h2>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-2.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-all duration-200"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        <form onSubmit={handleSubmit} className="p-8">
+          <div className="space-y-4 mb-8">
+            {parts.map((part) => {
+              const qty = part.stock?.quantity ?? 0;
+              return (
+                <div key={part.id} className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-gray-900 truncate">{part.name}</p>
+                    <p className="text-xs text-gray-500 font-mono">{part.code}</p>
+                    <p className="text-xs text-gray-500 mt-1">当前库存: {qty} {part.unit}</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => updateQuantity(part.id, String(Math.max(0, (quantities[part.id] || 0) - 1)))}
+                      className="w-8 h-8 flex items-center justify-center bg-white border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50"
+                    >
+                      -
+                    </button>
+                    <input
+                      type="number"
+                      min="0"
+                      value={quantities[part.id] || 0}
+                      onChange={(e) => updateQuantity(part.id, e.target.value)}
+                      className="w-20 px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => updateQuantity(part.id, String((quantities[part.id] || 0) + 1))}
+                      className="w-8 h-8 flex items-center justify-center bg-white border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50"
+                    >
+                      +
+                    </button>
+                    <span className="text-sm text-gray-500 w-10">{part.unit}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <div className="flex gap-4">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 px-5 py-4 border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all duration-200"
+            >
+              取消
+            </button>
+            <button
+              type="submit"
+              disabled={processing}
+              className={`flex-1 px-5 py-4 text-white rounded-xl text-sm font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg ${
+                type === "IN"
+                  ? "bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 shadow-emerald-500/25"
+                  : "bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 shadow-amber-500/25"
+              }`}
+            >
+              {processing ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  处理中...
+                </>
+              ) : (
+                `确认批量${type === "IN" ? "入库" : "出库"}`
               )}
             </button>
           </div>
