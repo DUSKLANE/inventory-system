@@ -382,7 +382,7 @@ export default function QRScanner({ onScan, onClose, continuous = false, embedde
 
   return (
     <div className="fixed inset-0 bg-black/95 backdrop-blur-sm z-50 flex flex-col animate-fade-in">
-      <div className="flex items-center justify-between p-4">
+      <div className="relative z-20 flex items-center justify-between p-4">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
             <Camera className="w-5 h-5 text-white" />
