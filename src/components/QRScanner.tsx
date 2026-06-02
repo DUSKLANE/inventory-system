@@ -33,8 +33,8 @@ export default function QRScanner({ onScan, onClose, continuous = false, embedde
     navigator.mediaDevices && 
     typeof navigator.mediaDevices.getUserMedia === "function";
 
-  const handleScanResult = useCallback((code: string) => {
-    const now = Date.now();
+  const handleScanResult = useCallback((code: string, timestamp?: number) => {
+    const now = timestamp || Date.now();
     if (continuous && code === lastCodeRef.current && now - lastScanTimeRef.current < DUPLICATE_TIMEOUT) {
       return;
     }
@@ -108,7 +108,7 @@ export default function QRScanner({ onScan, onClose, continuous = false, embedde
 
                 const code = jsQR(imageData.data, imageData.width, imageData.height);
                 if (code && code.data) {
-                  handleScanResult(code.data);
+                  handleScanResult(code.data, timestamp);
                   if (!continuous) return;
                 }
               }
@@ -148,7 +148,7 @@ export default function QRScanner({ onScan, onClose, continuous = false, embedde
 
   function handleManualSubmit() {
     if (manualCode.trim()) {
-      handleScanResult(manualCode.trim());
+      handleScanResult(manualCode.trim(), Date.now());
       setManualCode("");
       if (!continuous) {
         setShowManualInput(false);
