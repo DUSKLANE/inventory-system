@@ -121,13 +121,13 @@ function StockOutContent() {
             <ArrowUpFromLine className="w-7 h-7 text-white" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 tracking-tight">出库</h1>
-            <p className="text-gray-500 mt-1">扫描二维码或手动输入编码查找器件</p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-[var(--card-foreground)] tracking-tight">出库</h1>
+            <p className="text-gray-500 dark:text-[var(--foreground-subtle)] mt-1">扫描二维码或手动输入编码查找器件</p>
           </div>
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl border border-gray-200/80 p-4 sm:p-6 section shadow-sm">
+      <div className="bg-white dark:bg-[var(--card)] rounded-2xl border border-gray-200/80 dark:border-[var(--card-border)] p-4 sm:p-6 section shadow-sm">
         <div className="flex gap-2 sm:gap-4 mb-4 sm:mb-5">
           <button
             onClick={() => setShowScanner(true)}
@@ -137,19 +137,19 @@ function StockOutContent() {
           </button>
           <div className="flex-1 flex gap-2 sm:gap-3">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
+              <Search className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400 dark:text-[var(--foreground-subtle)]" />
               <input
                 type="text"
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Enter") lookupPart(code); }}
-                className="w-full pl-9 sm:pl-12 pr-3 sm:pr-4 py-3 sm:py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent focus:bg-white transition-all duration-200"
+                className="w-full pl-9 sm:pl-12 pr-3 sm:pr-4 py-3 sm:py-3.5 bg-gray-50 dark:bg-[var(--background-subtle)] border border-gray-200 dark:border-[var(--card-border)] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent focus:bg-white dark:focus:bg-[var(--card)] transition-all duration-200"
                 placeholder="输入器件编码"
               />
             </div>
             <button
               onClick={() => lookupPart(code)}
-              className="px-4 sm:px-6 py-3 sm:py-3.5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all duration-200"
+              className="px-4 sm:px-6 py-3 sm:py-3.5 border border-gray-200 dark:border-[var(--card-border)] rounded-xl text-sm font-semibold text-gray-700 dark:text-[var(--foreground-muted)] hover:bg-gray-50 dark:hover:bg-[var(--background-subtle)] hover:border-gray-300 dark:hover:border-[var(--card-border)] transition-all duration-200"
             >
               查询
             </button>
@@ -158,16 +158,16 @@ function StockOutContent() {
       </div>
 
       {part && (
-        <div className="p-5 bg-blue-50 dark-card border border-blue-200 rounded-xl section">
+        <div className="p-5 bg-blue-50 dark:bg-blue-500/10 dark-card border border-blue-200 dark:border-blue-500/20 rounded-xl section">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-blue-100 dark-icon-bg flex items-center justify-center">
-              <Package className="w-6 h-6 text-blue-600" />
+            <div className="w-12 h-12 rounded-xl bg-blue-100 dark:bg-blue-500/20 dark-icon-bg flex items-center justify-center">
+              <Package className="w-6 h-6 text-blue-600 dark:text-blue-400" />
             </div>
             <div className="flex-1">
               <p className="font-semibold dark-text">{part.name}</p>
               <p className="text-sm dark-muted font-mono mt-0.5">{part.code}</p>
               {part.category && (
-                <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-blue-100 text-blue-700 mt-1.5">
+                <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400 mt-1.5">
                   {part.category}
                 </span>
               )}
@@ -182,16 +182,16 @@ function StockOutContent() {
       )}
 
       {notFound && (
-        <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl section">
+        <div className="p-4 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 rounded-xl section">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center shrink-0">
-              <AlertTriangle className="w-5 h-5 text-amber-600" />
+            <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-500/20 flex items-center justify-center shrink-0">
+              <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400" />
             </div>
             <div>
-              <p className="text-sm font-semibold text-amber-800">未找到器件</p>
-              <p className="text-xs text-amber-600 mt-1">
+              <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">未找到器件</p>
+              <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
                 编码 <span className="font-mono font-medium">{code}</span> 不存在，请先{" "}
-                <Link href="/parts" className="underline font-medium hover:text-amber-700">新增器件</Link>
+                <Link href="/parts" className="underline font-medium hover:text-amber-700 dark:hover:text-amber-300">新增器件</Link>
               </p>
             </div>
           </div>
@@ -199,19 +199,19 @@ function StockOutContent() {
       )}
 
       {part && (
-        <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-gray-200/80 p-4 sm:p-8 shadow-sm mt-4 sm:mt-6">
+        <form onSubmit={handleSubmit} className="bg-white dark:bg-[var(--card)] rounded-2xl border border-gray-200/80 dark:border-[var(--card-border)] p-4 sm:p-8 shadow-sm mt-4 sm:mt-6">
           <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-5">
-            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-md sm:rounded-lg bg-red-50 flex items-center justify-center">
-              <FileText className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-red-600" />
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-md sm:rounded-lg bg-red-50 dark:bg-red-500/10 flex items-center justify-center">
+              <FileText className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-red-600 dark:text-red-400" />
             </div>
-            <h2 className="text-sm sm:font-semibold font-semibold text-gray-900">出库信息</h2>
+            <h2 className="text-sm sm:font-semibold font-semibold text-gray-900 dark:text-[var(--card-foreground)]">出库信息</h2>
           </div>
 
           {success && (
-            <div className="mb-3 sm:mb-5 p-3 sm:p-5 bg-emerald-50 border border-emerald-200 rounded-lg sm:rounded-xl">
+            <div className="mb-3 sm:mb-5 p-3 sm:p-5 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 rounded-lg sm:rounded-xl">
               <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
-                <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600" />
-                <p className="text-xs sm:text-sm text-emerald-700 font-semibold">出库成功！库存已更新为 {part.stock?.quantity ?? 0} {part.unit}</p>
+                <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600 dark:text-emerald-400" />
+                <p className="text-xs sm:text-sm text-emerald-700 dark:text-emerald-300 font-semibold">出库成功！库存已更新为 {part.stock?.quantity ?? 0} {part.unit}</p>
               </div>
               <div className="flex gap-2">
                 <button
@@ -231,7 +231,7 @@ function StockOutContent() {
                     setCode("");
                     setSuccess(false);
                   }}
-                  className="flex-1 px-2 py-2 sm:px-4 sm:py-3 bg-white border border-emerald-300 text-emerald-700 rounded-lg sm:rounded-xl text-xs sm:text-sm font-medium hover:bg-emerald-50 transition-all duration-200"
+                  className="flex-1 px-2 py-2 sm:px-4 sm:py-3 bg-white dark:bg-[var(--card)] border border-emerald-300 dark:border-emerald-500/30 text-emerald-700 dark:text-emerald-400 rounded-lg sm:rounded-xl text-xs sm:text-sm font-medium hover:bg-emerald-50 dark:hover:bg-emerald-500/10 transition-all duration-200"
                 >
                   出库其他器件
                 </button>
@@ -240,20 +240,20 @@ function StockOutContent() {
           )}
 
           {error && (
-            <div className="mb-3 sm:mb-5 p-3 sm:p-4 bg-red-50 border border-red-200 rounded-lg sm:rounded-xl flex items-center gap-2 sm:gap-3">
-              <XCircle className="w-4 h-4 sm:w-5 sm:h-5 text-red-600 shrink-0" />
-              <p className="text-xs sm:text-sm text-red-700">{error}</p>
+            <div className="mb-3 sm:mb-5 p-3 sm:p-4 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-lg sm:rounded-xl flex items-center gap-2 sm:gap-3">
+              <XCircle className="w-4 h-4 sm:w-5 sm:h-5 text-red-600 dark:text-red-400 shrink-0" />
+              <p className="text-xs sm:text-sm text-red-700 dark:text-red-300">{error}</p>
             </div>
           )}
 
           <div className="flex flex-col gap-4 sm:gap-7">
             <div>
-              <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5 sm:mb-3">出库数量 *</label>
+              <label className="block text-xs sm:text-sm font-semibold text-gray-700 dark:text-[var(--foreground-muted)] mb-1.5 sm:mb-3">出库数量 *</label>
               <div className="flex items-center gap-1.5 sm:gap-3">
                 <button
                   type="button"
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="w-9 h-9 sm:w-12 sm:h-12 flex items-center justify-center bg-gray-50 border border-gray-200 rounded-lg sm:rounded-xl text-gray-600 hover:bg-gray-100 hover:border-gray-300 transition-all duration-200"
+                  className="w-9 h-9 sm:w-12 sm:h-12 flex items-center justify-center bg-gray-50 dark:bg-[var(--background-subtle)] border border-gray-200 dark:border-[var(--card-border)] rounded-lg sm:rounded-xl text-gray-600 dark:text-[var(--foreground-muted)] hover:bg-gray-100 dark:hover:bg-[var(--background-muted)] hover:border-gray-300 dark:hover:border-[var(--card-border)] transition-all duration-200"
                 >
                   <Minus className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
                 </button>
@@ -264,50 +264,50 @@ function StockOutContent() {
                   required
                   value={quantity}
                   onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
-                  className="flex-1 px-2 py-1.5 sm:px-4 sm:py-3 bg-gray-50 border border-gray-200 rounded-lg sm:rounded-xl text-base sm:text-2xl font-bold text-center focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent focus:bg-white transition-all duration-200"
+                  className="flex-1 px-2 py-1.5 sm:px-4 sm:py-3 bg-gray-50 dark:bg-[var(--background-subtle)] border border-gray-200 dark:border-[var(--card-border)] rounded-lg sm:rounded-xl text-base sm:text-2xl font-bold text-center focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent focus:bg-white dark:focus:bg-[var(--card)] transition-all duration-200"
                 />
                 <button
                   type="button"
                   onClick={() => setQuantity(Math.min(part.stock?.quantity ?? 0, quantity + 1))}
-                  className="w-9 h-9 sm:w-12 sm:h-12 flex items-center justify-center bg-gray-50 border border-gray-200 rounded-lg sm:rounded-xl text-gray-600 hover:bg-gray-100 hover:border-gray-300 transition-all duration-200"
+                  className="w-9 h-9 sm:w-12 sm:h-12 flex items-center justify-center bg-gray-50 dark:bg-[var(--background-subtle)] border border-gray-200 dark:border-[var(--card-border)] rounded-lg sm:rounded-xl text-gray-600 dark:text-[var(--foreground-muted)] hover:bg-gray-100 dark:hover:bg-[var(--background-muted)] hover:border-gray-300 dark:hover:border-[var(--card-border)] transition-all duration-200"
                 >
                   <Plus className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
                 </button>
               </div>
               <div className="flex items-center justify-between mt-1.5 sm:mt-3">
-                <p className="text-xs sm:text-sm text-gray-500">
-                  可出库: <span className="font-bold text-gray-900">{part.stock?.quantity ?? 0}</span> {part.unit}
+                <p className="text-xs sm:text-sm text-gray-500 dark:text-[var(--foreground-subtle)]">
+                  可出库: <span className="font-bold text-gray-900 dark:text-[var(--card-foreground)]">{part.stock?.quantity ?? 0}</span> {part.unit}
                 </p>
                 <button
                   type="button"
                   onClick={() => setQuantity(part.stock?.quantity ?? 0)}
-                  className="text-xs sm:text-sm text-red-600 hover:text-red-700 font-semibold transition-colors duration-200"
+                  className="text-xs sm:text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 font-semibold transition-colors duration-200"
                 >
                   全部出库
                 </button>
               </div>
             </div>
             <div>
-              <label className="text-xs sm:text-sm font-semibold text-gray-700 mb-1 sm:mb-2 flex items-center gap-1.5 sm:gap-2">
-                <User className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-500" /> 操作人
+              <label className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-[var(--foreground-muted)] mb-1 sm:mb-2 flex items-center gap-1.5 sm:gap-2">
+                <User className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-500 dark:text-[var(--foreground-subtle)]" /> 操作人
               </label>
               <input
                 type="text"
                 value={operator}
                 onChange={(e) => setOperator(e.target.value)}
-                className="w-full px-3 py-2 sm:px-4 sm:py-3 bg-gray-50 border border-gray-200 rounded-lg sm:rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent focus:bg-white transition-all duration-200"
+                className="w-full px-3 py-2 sm:px-4 sm:py-3 bg-gray-50 dark:bg-[var(--background-subtle)] border border-gray-200 dark:border-[var(--card-border)] rounded-lg sm:rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent focus:bg-white dark:focus:bg-[var(--card)] transition-all duration-200"
                 placeholder="可选"
               />
             </div>
             <div>
-              <label className="text-xs sm:text-sm font-semibold text-gray-700 mb-1 sm:mb-2 flex items-center gap-1.5 sm:gap-2">
-                <FileText className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-500" /> 出库原因
+              <label className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-[var(--foreground-muted)] mb-1 sm:mb-2 flex items-center gap-1.5 sm:gap-2">
+                <FileText className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-500 dark:text-[var(--foreground-subtle)]" /> 出库原因
               </label>
               <input
                 type="text"
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
-                className="w-full px-3 py-2 sm:px-4 sm:py-3 bg-gray-50 border border-gray-200 rounded-lg sm:rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent focus:bg-white transition-all duration-200"
+                className="w-full px-3 py-2 sm:px-4 sm:py-3 bg-gray-50 dark:bg-[var(--background-subtle)] border border-gray-200 dark:border-[var(--card-border)] rounded-lg sm:rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent focus:bg-white dark:focus:bg-[var(--card)] transition-all duration-200"
                 placeholder="如：生产使用、维修等"
               />
             </div>

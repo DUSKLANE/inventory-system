@@ -326,12 +326,12 @@ export default function ScanPage() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <ScanBarcode className="w-7 h-7 text-indigo-500" />
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">扫码入库</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-[var(--card-foreground)]">扫码入库</h1>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={() => setShowManualInput(true)}
-            className="flex items-center gap-1 px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-[var(--background-subtle)] rounded-lg transition-colors"
+            className="flex items-center gap-1 px-3 py-2 text-sm text-gray-600 dark:text-[var(--foreground-muted)] hover:bg-gray-100 dark:hover:bg-[var(--background-subtle)] rounded-lg transition-colors"
           >
             <Keyboard className="w-4 h-4" />
             手动输入
@@ -380,10 +380,10 @@ export default function ScanPage() {
           <div className="w-20 h-20 rounded-full bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center mx-auto mb-4">
             <Package className="w-10 h-10 text-indigo-500" />
           </div>
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-[var(--card-foreground)] mb-2">
             开始扫码入库
           </h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+          <p className="text-sm text-gray-500 dark:text-[var(--foreground-subtle)] mb-6">
             扫描元器件包装上的二维码，自动获取产品信息
           </p>
           <button
@@ -412,12 +412,12 @@ export default function ScanPage() {
 
           <div className="sticky bottom-20 md:bottom-4 bg-white dark:bg-[var(--card)] rounded-2xl border border-gray-200 dark:border-[var(--card-border)] p-4 shadow-lg">
             <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+              <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-[var(--foreground-muted)]">
                 <span>
-                  共 <span className="font-semibold text-gray-900 dark:text-gray-100">{pendingItems.length}</span> 件
+                  共 <span className="font-semibold text-gray-900 dark:text-[var(--card-foreground)]">{pendingItems.length}</span> 件
                 </span>
                 <span>
-                  数量: <span className="font-semibold text-gray-900 dark:text-gray-100">{totalQuantity}</span>
+                  数量: <span className="font-semibold text-gray-900 dark:text-[var(--card-foreground)]">{totalQuantity}</span>
                 </span>
                 <span>
                   就绪: <span className="font-semibold text-emerald-600 dark:text-emerald-400">{readyCount}</span>
@@ -448,17 +448,17 @@ export default function ScanPage() {
       {showManualInput && (
         <div className="fixed inset-0 modal-backdrop z-50 flex items-center justify-center p-4 animate-fade-in">
           <div className="bg-white dark:bg-[var(--card)] rounded-2xl p-6 w-full max-w-md shadow-xl">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-[var(--card-foreground)] mb-2">
               手动输入
             </h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+            <p className="text-sm text-gray-500 dark:text-[var(--foreground-subtle)] mb-4">
               输入立创编号（如 C2907002）或完整二维码内容
             </p>
             <textarea
               value={manualCode}
               onChange={(e) => setManualCode(e.target.value)}
               placeholder="C2907002 或 {on:...,pc:C2907002,...}"
-              className="w-full h-24 px-4 py-3 border border-gray-300 dark:border-[var(--card-border)] rounded-xl bg-white dark:bg-[var(--background-subtle)] text-gray-900 dark:text-gray-100 resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full h-24 px-4 py-3 border border-gray-300 dark:border-[var(--card-border)] rounded-xl bg-white dark:bg-[var(--card)] text-gray-900 dark:text-[var(--card-foreground)] resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500"
               autoFocus
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
@@ -473,7 +473,7 @@ export default function ScanPage() {
                   setShowManualInput(false);
                   setManualCode("");
                 }}
-                className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[var(--background-subtle)] rounded-lg transition-colors"
+                className="px-4 py-2 text-gray-700 dark:text-[var(--foreground-muted)] hover:bg-gray-100 dark:hover:bg-[var(--background-subtle)] rounded-lg transition-colors"
               >
                 取消
               </button>
@@ -521,26 +521,26 @@ function PendingItemCard({
         <div className="flex items-start justify-between mb-2">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-xs font-mono px-2 py-0.5 bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 rounded">
+              <span className="text-xs font-mono px-2 py-0.5 bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-[var(--foreground-muted)] rounded">
                 {item.scanData.pc}
               </span>
               {item.existingPartId && (
-                <span className="text-xs px-2 py-0.5 bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 rounded">
+                <span className="text-xs px-2 py-0.5 bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-[var(--foreground-muted)] rounded">
                   已有库存
                 </span>
               )}
               {item.status === "loading" && (
-                <Loader2 className="w-4 h-4 text-gray-400 animate-spin" />
+                <Loader2 className="w-4 h-4 text-gray-400 dark:text-[var(--foreground-subtle)] animate-spin" />
               )}
               {item.status === "ready" && (
-                <span className="flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400">
+                <span className="flex items-center gap-1 text-xs text-emerald-600 dark:text-[var(--foreground-muted)]">
                   <Check className="w-3 h-3" /> 就绪
                 </span>
               )}
               {hasError && (
                 <button
                   onClick={() => onRetry(item.id)}
-                  className="flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400 hover:underline"
+                  className="flex items-center gap-1 text-xs text-amber-600 dark:text-[var(--foreground-muted)] hover:underline"
                 >
                   <RefreshCw className="w-3 h-3" /> 重试
                 </button>
@@ -550,18 +550,18 @@ function PendingItemCard({
               type="text"
               value={displayName}
               onChange={(e) => onUpdateName(item.id, e.target.value)}
-              className="w-full font-medium text-gray-900 dark:text-gray-100 bg-transparent border-none outline-none focus:bg-gray-50 dark:focus:bg-[var(--background-subtle)] rounded px-1 -mx-1 transition-colors"
+              className="w-full font-medium text-gray-900 dark:text-[var(--card-foreground)] bg-transparent border-none outline-none focus:bg-gray-50 dark:focus:bg-[var(--background-subtle)] rounded px-1 -mx-1 transition-colors"
               placeholder="器件名称"
             />
             {item.errorMessage && (
-              <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+              <p className="text-xs text-amber-600 dark:text-[var(--foreground-muted)] mt-1">
                 {item.errorMessage}
               </p>
             )}
           </div>
           <button
             onClick={() => onRemove(item.id)}
-            className="p-1 text-gray-400 hover:text-red-500 rounded transition-colors"
+            className="p-1 text-gray-400 dark:text-[var(--foreground-subtle)] hover:text-red-500 rounded transition-colors"
           >
             <Trash2 className="w-4 h-4" />
           </button>
@@ -570,17 +570,17 @@ function PendingItemCard({
         {info && (
           <div className="flex flex-wrap gap-1.5 mb-3 text-xs">
             {info.brand && (
-              <span className="px-2 py-0.5 bg-gray-100 dark:bg-[var(--background-subtle)] text-gray-600 dark:text-gray-400 rounded">
+              <span className="px-2 py-0.5 bg-gray-100 dark:bg-[var(--background-muted)] text-gray-600 dark:text-[var(--foreground-muted)] rounded">
                 {info.brand}
               </span>
             )}
             {info.package && (
-              <span className="px-2 py-0.5 bg-gray-100 dark:bg-[var(--background-subtle)] text-gray-600 dark:text-gray-400 rounded">
+              <span className="px-2 py-0.5 bg-gray-100 dark:bg-[var(--background-muted)] text-gray-600 dark:text-[var(--foreground-muted)] rounded">
                 {info.package}
               </span>
             )}
             {info.category && (
-              <span className="px-2 py-0.5 bg-gray-100 dark:bg-[var(--background-subtle)] text-gray-600 dark:text-gray-400 rounded">
+              <span className="px-2 py-0.5 bg-gray-100 dark:bg-[var(--background-muted)] text-gray-600 dark:text-[var(--foreground-muted)] rounded">
                 {info.category}
               </span>
             )}
@@ -604,7 +604,7 @@ function PendingItemCard({
                   onUpdateQuantity(item.id, val - item.quantity);
                 }
               }}
-              className="w-16 text-center py-1 border border-gray-200 dark:border-[var(--card-border)] rounded-lg bg-white dark:bg-[var(--background-subtle)] text-gray-900 dark:text-gray-100 text-sm"
+              className="w-16 text-center py-1 border border-gray-200 dark:border-[var(--card-border)] rounded-lg bg-white dark:bg-[var(--card)] text-gray-900 dark:text-[var(--card-foreground)] text-sm"
             />
             <button
               onClick={() => onUpdateQuantity(item.id, 1)}
@@ -615,19 +615,19 @@ function PendingItemCard({
           </div>
 
           <div className="flex items-center gap-2 flex-1 min-w-0">
-            <MapPin className="w-4 h-4 text-gray-400 shrink-0" />
+            <MapPin className="w-4 h-4 text-gray-400 dark:text-[var(--foreground-subtle)] shrink-0" />
             <input
               type="text"
               value={item.location}
               onChange={(e) => onUpdateLocation(item.id, e.target.value)}
               placeholder="输入库位"
-              className="flex-1 min-w-0 py-1 px-2 border border-gray-200 dark:border-[var(--card-border)] rounded-lg bg-white dark:bg-[var(--background-subtle)] text-gray-900 dark:text-gray-100 text-sm placeholder-gray-400"
+              className="flex-1 min-w-0 py-1 px-2 border border-gray-200 dark:border-[var(--card-border)] rounded-lg bg-white dark:bg-[var(--card)] text-gray-900 dark:text-[var(--card-foreground)] text-sm placeholder-gray-400 dark:placeholder-[var(--foreground-subtle)]"
             />
           </div>
         </div>
 
         {item.scanData.on && (
-          <p className="mt-2 text-xs text-gray-400">
+          <p className="mt-2 text-xs text-gray-400 dark:text-[var(--foreground-subtle)]">
             订单号: {item.scanData.on}
           </p>
         )}

@@ -172,7 +172,7 @@ export default function SettingsPage() {
     <div className="max-w-3xl mx-auto space-y-6">
       <div className="flex items-center gap-3 mb-6">
         <Settings className="w-7 h-7 text-indigo-500" />
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">设置</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-[var(--card-foreground)]">设置</h1>
       </div>
 
       {message && (
@@ -194,11 +194,11 @@ export default function SettingsPage() {
       <section className="bg-white dark:bg-[var(--card)] rounded-2xl border border-gray-200 dark:border-[var(--card-border)] p-6">
         <div className="flex items-center gap-2 mb-4">
           <Palette className="w-5 h-5 text-indigo-500" />
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">外观设置</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-[var(--card-foreground)]">外观设置</h2>
         </div>
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-[var(--foreground-muted)] mb-2">
               主题模式
             </label>
             <div className="grid grid-cols-3 gap-3">
@@ -217,7 +217,7 @@ export default function SettingsPage() {
                   }`}
                 >
                   <span className="text-2xl">{option.icon}</span>
-                  <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                  <span className="text-sm font-medium text-gray-900 dark:text-[var(--card-foreground)]">
                     {option.label}
                   </span>
                 </button>
@@ -231,33 +231,33 @@ export default function SettingsPage() {
       <section className="bg-white dark:bg-[var(--card)] rounded-2xl border border-gray-200 dark:border-[var(--card-border)] p-6">
         <div className="flex items-center gap-2 mb-4">
           <Package className="w-5 h-5 text-indigo-500" />
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">库存设置</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-[var(--card-foreground)]">库存设置</h2>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-[var(--foreground-muted)] mb-1">
               默认低库存预警阈值
             </label>
             <input
               type="number"
               value={settings.low_stock_threshold}
               onChange={(e) => setSettings({ ...settings, low_stock_threshold: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-[var(--card-border)] rounded-lg bg-white dark:bg-[var(--background-subtle)] text-gray-900 dark:text-gray-100"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-[var(--card-border)] rounded-lg bg-white dark:bg-[var(--background-subtle)] text-gray-900 dark:text-[var(--card-foreground)]"
               min="0"
             />
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            <p className="text-xs text-gray-500 dark:text-[var(--foreground-subtle)] mt-1">
               当器件库存低于此值时显示预警
             </p>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-[var(--foreground-muted)] mb-1">
               默认计量单位
             </label>
             <input
               type="text"
               value={settings.default_unit}
               onChange={(e) => setSettings({ ...settings, default_unit: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-[var(--card-border)] rounded-lg bg-white dark:bg-[var(--background-subtle)] text-gray-900 dark:text-gray-100"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-[var(--card-border)] rounded-lg bg-white dark:bg-[var(--background-subtle)] text-gray-900 dark:text-[var(--card-foreground)]"
               placeholder="pcs"
             />
           </div>
@@ -268,17 +268,17 @@ export default function SettingsPage() {
       <section className="bg-white dark:bg-[var(--card)] rounded-2xl border border-gray-200 dark:border-[var(--card-border)] p-6">
         <div className="flex items-center gap-2 mb-4">
           <List className="w-5 h-5 text-indigo-500" />
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">操作偏好</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-[var(--card-foreground)]">操作偏好</h2>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-[var(--foreground-muted)] mb-1">
               默认排序字段
             </label>
             <select
               value={settings.default_sort_field}
               onChange={(e) => setSettings({ ...settings, default_sort_field: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-[var(--card-border)] rounded-lg bg-white dark:bg-[var(--background-subtle)] text-gray-900 dark:text-gray-100"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-[var(--card-border)] rounded-lg bg-white dark:bg-[var(--background-subtle)] text-gray-900 dark:text-[var(--card-foreground)]"
             >
               <option value="createdAt">创建时间</option>
               <option value="updatedAt">更新时间</option>
@@ -287,26 +287,26 @@ export default function SettingsPage() {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-[var(--foreground-muted)] mb-1">
               默认排序方向
             </label>
             <select
               value={settings.default_sort_order}
               onChange={(e) => setSettings({ ...settings, default_sort_order: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-[var(--card-border)] rounded-lg bg-white dark:bg-[var(--background-subtle)] text-gray-900 dark:text-gray-100"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-[var(--card-border)] rounded-lg bg-white dark:bg-[var(--background-subtle)] text-gray-900 dark:text-[var(--card-foreground)]"
             >
               <option value="desc">降序</option>
               <option value="asc">升序</option>
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-[var(--foreground-muted)] mb-1">
               每页显示条数
             </label>
             <select
               value={settings.page_size}
               onChange={(e) => setSettings({ ...settings, page_size: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-[var(--card-border)] rounded-lg bg-white dark:bg-[var(--background-subtle)] text-gray-900 dark:text-gray-100"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-[var(--card-border)] rounded-lg bg-white dark:bg-[var(--background-subtle)] text-gray-900 dark:text-[var(--card-foreground)]"
             >
               <option value="10">10 条</option>
               <option value="20">20 条</option>
@@ -334,7 +334,7 @@ export default function SettingsPage() {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <Tags className="w-5 h-5 text-indigo-500" />
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">分类管理</h2>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-[var(--card-foreground)]">分类管理</h2>
           </div>
           <button
             onClick={() => {
@@ -351,7 +351,7 @@ export default function SettingsPage() {
         </div>
 
         {categories.length === 0 ? (
-          <p className="text-gray-500 dark:text-gray-400 text-center py-8">
+          <p className="text-gray-500 dark:text-[var(--foreground-subtle)] text-center py-8">
             暂无分类，点击上方按钮创建
           </p>
         ) : (
@@ -363,26 +363,26 @@ export default function SettingsPage() {
               >
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="font-medium text-gray-900 dark:text-gray-100">{cat.name}</span>
+                    <span className="font-medium text-gray-900 dark:text-[var(--card-foreground)]">{cat.name}</span>
                     <span className="text-xs px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400">
                       {cat.partCount} 个器件
                     </span>
                   </div>
                   {cat.description && (
-                    <p className="text-sm text-gray-500 dark:text-gray-400 truncate">{cat.description}</p>
+                    <p className="text-sm text-gray-500 dark:text-[var(--foreground-subtle)] truncate">{cat.description}</p>
                   )}
                 </div>
                 <div className="flex items-center gap-1 ml-4">
                   <button
                     onClick={() => openEditCategory(cat)}
-                    className="p-2 text-gray-400 hover:text-indigo-500 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition-colors"
+                    className="p-2 text-gray-400 dark:text-[var(--foreground-subtle)] hover:text-indigo-500 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition-colors"
                   >
                     <Pencil className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => handleDeleteCategory(cat.id)}
                     disabled={deletingId === cat.id}
-                    className="p-2 text-gray-400 hover:text-red-500 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors disabled:opacity-50"
+                    className="p-2 text-gray-400 dark:text-[var(--foreground-subtle)] hover:text-red-500 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors disabled:opacity-50"
                   >
                     {deletingId === cat.id ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
@@ -401,31 +401,31 @@ export default function SettingsPage() {
       {showCategoryModal && (
         <div className="fixed inset-0 modal-backdrop z-50 flex items-center justify-center p-4 animate-fade-in">
           <div className="bg-white dark:bg-[var(--card)] rounded-2xl p-6 w-full max-w-md shadow-xl">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-[var(--card-foreground)] mb-4">
               {editingCategory ? "编辑分类" : "新增分类"}
             </h3>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-[var(--foreground-muted)] mb-1">
                   分类名称 <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   value={categoryName}
                   onChange={(e) => setCategoryName(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-[var(--card-border)] rounded-lg bg-white dark:bg-[var(--background-subtle)] text-gray-900 dark:text-gray-100"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-[var(--card-border)] rounded-lg bg-white dark:bg-[var(--background-subtle)] text-gray-900 dark:text-[var(--card-foreground)]"
                   placeholder="请输入分类名称"
                   autoFocus
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-[var(--foreground-muted)] mb-1">
                   描述
                 </label>
                 <textarea
                   value={categoryDesc}
                   onChange={(e) => setCategoryDesc(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-[var(--card-border)] rounded-lg bg-white dark:bg-[var(--background-subtle)] text-gray-900 dark:text-gray-100 resize-none"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-[var(--card-border)] rounded-lg bg-white dark:bg-[var(--background-subtle)] text-gray-900 dark:text-[var(--card-foreground)] resize-none"
                   rows={3}
                   placeholder="可选描述"
                 />
@@ -437,7 +437,7 @@ export default function SettingsPage() {
                   setShowCategoryModal(false);
                   setEditingCategory(null);
                 }}
-                className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[var(--background-subtle)] rounded-lg transition-colors"
+                className="px-4 py-2 text-gray-700 dark:text-[var(--foreground-muted)] hover:bg-gray-100 dark:hover:bg-[var(--background-subtle)] rounded-lg transition-colors"
               >
                 取消
               </button>

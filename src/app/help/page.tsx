@@ -54,7 +54,7 @@ export default function HelpPage() {
     <div className="max-w-4xl mx-auto">
       <div className="flex items-center gap-3 mb-6">
         <HelpCircle className="w-7 h-7 text-indigo-500" />
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">帮助中心</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-[var(--card-foreground)]">帮助中心</h1>
       </div>
 
       <div className="flex flex-col md:flex-row gap-6">
@@ -68,7 +68,7 @@ export default function HelpPage() {
                 className={`flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium whitespace-nowrap transition-all ${
                   activeSection === section.id
                     ? "bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400"
-                    : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-[var(--background-subtle)]"
+                    : "text-gray-600 dark:text-[var(--foreground-muted)] hover:bg-gray-100 dark:hover:bg-[var(--background-muted)]"
                 }`}
               >
                 <section.icon className="w-4 h-4" />
@@ -93,10 +93,10 @@ function QuickStartSection() {
   return (
     <div className="space-y-6 animate-fade-in">
       <section className="bg-white dark:bg-[var(--card)] rounded-2xl border border-gray-200 dark:border-[var(--card-border)] p-6">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-[var(--card-foreground)] mb-4">
           欢迎使用元器件库存管理系统
         </h2>
-        <p className="text-gray-600 dark:text-gray-400 mb-4">
+        <p className="text-gray-600 dark:text-[var(--foreground-muted)] mb-4">
           本系统专为个人实验室和小型团队设计，帮助您高效管理电子元器件库存。
           通过直观的界面和便捷的操作，让库存管理变得简单。
         </p>
@@ -124,7 +124,7 @@ function QuickStartSection() {
       </section>
 
       <section className="bg-white dark:bg-[var(--card)] rounded-2xl border border-gray-200 dark:border-[var(--card-border)] p-6">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-[var(--card-foreground)] mb-4">
           快速开始
         </h2>
         <div className="space-y-4">
@@ -161,8 +161,8 @@ function StepCard({ number, title, description }: { number: number; title: strin
         {number}
       </div>
       <div>
-        <h3 className="font-medium text-gray-900 dark:text-gray-100">{title}</h3>
-        <p className="text-sm text-gray-600 dark:text-gray-400">{description}</p>
+        <h3 className="font-medium text-gray-900 dark:text-[var(--card-foreground)]">{title}</h3>
+        <p className="text-sm text-gray-600 dark:text-[var(--foreground-muted)]">{description}</p>
       </div>
     </div>
   );
@@ -270,21 +270,21 @@ function FeatureCard({
           <Icon className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
         </div>
         <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-gray-900 dark:text-gray-100">{title}</h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-1">{description}</p>
+          <h3 className="font-semibold text-gray-900 dark:text-[var(--card-foreground)]">{title}</h3>
+          <p className="text-sm text-gray-600 dark:text-[var(--foreground-muted)] line-clamp-1">{description}</p>
         </div>
         <ChevronRight
-          className={`w-5 h-5 text-gray-400 transition-transform ${expanded ? "rotate-90" : ""}`}
+          className={`w-5 h-5 text-gray-400 dark:text-[var(--foreground-subtle)] transition-transform ${expanded ? "rotate-90" : ""}`}
         />
       </button>
       {expanded && (
         <div className="px-5 pb-5 pt-0">
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">{description}</p>
+          <p className="text-sm text-gray-600 dark:text-[var(--foreground-muted)] mb-3">{description}</p>
           <ul className="space-y-2">
             {items.map((item, index) => (
               <li
                 key={index}
-                className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300"
+                className="flex items-center gap-2 text-sm text-gray-700 dark:text-[var(--foreground-muted)]"
               >
                 <div className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
                 {item}
@@ -301,10 +301,10 @@ function ShortcutsSection() {
   return (
     <div className="space-y-6 animate-fade-in">
       <section className="bg-white dark:bg-[var(--card)] rounded-2xl border border-gray-200 dark:border-[var(--card-border)] p-6">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-[var(--card-foreground)] mb-4">
           全局快捷键
         </h2>
-        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+        <p className="text-sm text-gray-600 dark:text-[var(--foreground-muted)] mb-4">
           以下快捷键在任何页面都可用：
         </p>
         <div className="space-y-2">
@@ -319,7 +319,7 @@ function ShortcutsSection() {
           key={page}
           className="bg-white dark:bg-[var(--card)] rounded-2xl border border-gray-200 dark:border-[var(--card-border)] p-6"
         >
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-[var(--card-foreground)] mb-4">
             {page}
           </h2>
           <div className="space-y-2">
@@ -348,14 +348,14 @@ function ShortcutRow({ shortcutKey, description }: { shortcutKey: string; descri
 
   return (
     <div className="flex items-center justify-between py-2 border-b border-gray-100 dark:border-[var(--card-border)] last:border-0">
-      <span className="text-sm text-gray-700 dark:text-gray-300">{description}</span>
+      <span className="text-sm text-gray-700 dark:text-[var(--foreground-muted)]">{description}</span>
       <div className="flex items-center gap-1">
         {keys.map((k, i) => (
           <span key={i}>
-            <kbd className="px-2 py-1 bg-gray-100 dark:bg-[var(--background-subtle)] rounded-lg text-xs font-mono text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-[var(--card-border)]">
+            <kbd className="px-2 py-1 bg-gray-100 dark:bg-[var(--background-muted)] rounded-lg text-xs font-mono text-gray-700 dark:text-[var(--foreground-muted)] border border-gray-200 dark:border-[var(--card-border)]">
               {k}
             </kbd>
-            {i < keys.length - 1 && <span className="text-gray-400 mx-0.5">+</span>}
+            {i < keys.length - 1 && <span className="text-gray-400 dark:text-[var(--foreground-subtle)] mx-0.5">+</span>}
           </span>
         ))}
       </div>

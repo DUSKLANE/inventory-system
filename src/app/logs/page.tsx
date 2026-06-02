@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Clock, Filter, ChevronLeft, ChevronRight, Package, FileText, ArrowDownToLine, ArrowUpFromLine, Trash2, Edit, Plus } from "lucide-react";
+import { Clock, Filter, ChevronLeft, ChevronRight, Trash2, Edit, Plus } from "lucide-react";
 import Breadcrumb from "@/components/Breadcrumb";
 
 interface OperationLog {
@@ -56,26 +56,26 @@ export default function LogsPage() {
   const getActionIcon = (action: string) => {
     switch (action) {
       case "CREATE":
-        return <Plus className="w-4 h-4 text-emerald-600" />;
+        return <Plus className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />;
       case "UPDATE":
-        return <Edit className="w-4 h-4 text-blue-600" />;
+        return <Edit className="w-4 h-4 text-blue-600 dark:text-blue-400" />;
       case "DELETE":
-        return <Trash2 className="w-4 h-4 text-red-600" />;
+        return <Trash2 className="w-4 h-4 text-red-600 dark:text-red-400" />;
       default:
-        return <Clock className="w-4 h-4 text-gray-600" />;
+        return <Clock className="w-4 h-4 text-gray-600 dark:text-[var(--foreground-muted)]" />;
     }
   };
 
   const getActionColor = (action: string) => {
     switch (action) {
       case "CREATE":
-        return "bg-emerald-50 text-emerald-700";
+        return "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400";
       case "UPDATE":
-        return "bg-blue-50 text-blue-700";
+        return "bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400";
       case "DELETE":
-        return "bg-red-50 text-red-700";
+        return "bg-red-50 dark:bg-red-500/10 text-red-700 dark:text-red-400";
       default:
-        return "bg-gray-50 text-gray-700";
+        return "bg-gray-50 dark:bg-[var(--background-subtle)] text-gray-700 dark:text-[var(--foreground-muted)]";
     }
   };
 
@@ -97,10 +97,10 @@ export default function LogsPage() {
       <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
         <div className="flex flex-col items-center gap-4">
           <div className="relative">
-            <div className="w-12 h-12 border-4 border-blue-200 rounded-full animate-spin" />
-            <div className="absolute top-0 left-0 w-12 h-12 border-4 border-transparent border-t-blue-600 rounded-full animate-spin" />
+            <div className="w-12 h-12 border-4 border-blue-200 dark:border-blue-800 rounded-full animate-spin" />
+            <div className="absolute top-0 left-0 w-12 h-12 border-4 border-transparent border-t-blue-600 dark:border-t-blue-400 rounded-full animate-spin" />
           </div>
-          <p className="text-gray-500 text-sm font-medium">加载中...</p>
+          <p className="text-gray-500 dark:text-[var(--foreground-subtle)] text-sm font-medium">加载中...</p>
         </div>
       </div>
     );
@@ -117,21 +117,21 @@ export default function LogsPage() {
             <Clock className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 tracking-tight">操作日志</h1>
-            <p className="text-gray-500 mt-1">系统操作记录</p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-[var(--card-foreground)] tracking-tight">操作日志</h1>
+            <p className="text-gray-500 dark:text-[var(--foreground-subtle)] mt-1">系统操作记录</p>
           </div>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-2xl border border-gray-200/80 p-6 section shadow-sm">
+      <div className="bg-white dark:bg-[var(--card)] rounded-2xl border border-gray-200/80 dark:border-[var(--card-border)] p-6 section shadow-sm">
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="relative">
-            <Filter className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+            <Filter className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-[var(--foreground-subtle)] pointer-events-none" />
             <select
               value={entityType}
               onChange={(e) => { setEntityType(e.target.value); setPage(1); }}
-              className="pl-10 pr-8 py-3 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer appearance-none"
+              className="pl-10 pr-8 py-3 border border-gray-200 dark:border-[var(--card-border)] rounded-xl text-sm bg-gray-50 dark:bg-[var(--background-subtle)] dark:text-[var(--card-foreground)] focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer appearance-none"
             >
               <option value="">全部类型</option>
               <option value="PART">器件</option>
@@ -140,11 +140,11 @@ export default function LogsPage() {
             </select>
           </div>
           <div className="relative">
-            <Filter className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+            <Filter className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-[var(--foreground-subtle)] pointer-events-none" />
             <select
               value={action}
               onChange={(e) => { setAction(e.target.value); setPage(1); }}
-              className="pl-10 pr-8 py-3 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer appearance-none"
+              className="pl-10 pr-8 py-3 border border-gray-200 dark:border-[var(--card-border)] rounded-xl text-sm bg-gray-50 dark:bg-[var(--background-subtle)] dark:text-[var(--card-foreground)] focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer appearance-none"
             >
               <option value="">全部操作</option>
               <option value="CREATE">创建</option>
@@ -156,14 +156,14 @@ export default function LogsPage() {
       </div>
 
       {/* Logs List */}
-      <div className="bg-white rounded-2xl border border-gray-200/80 overflow-hidden section shadow-sm">
+      <div className="bg-white dark:bg-[var(--card)] rounded-2xl border border-gray-200/80 dark:border-[var(--card-border)] overflow-hidden section shadow-sm">
         {!data || data.logs.length === 0 ? (
           <div className="p-16 text-center">
-            <Clock className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-500 font-medium">暂无操作日志</p>
+            <Clock className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+            <p className="text-gray-500 dark:text-[var(--foreground-subtle)] font-medium">暂无操作日志</p>
           </div>
         ) : (
-          <div className="divide-y divide-gray-100">
+          <div className="divide-y divide-gray-100 dark:divide-[var(--card-border)]">
             {data.logs.map((log) => (
               <div key={log.id} className="px-8 py-5 flex items-start gap-4">
                 <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${getActionColor(log.action)}`}>
@@ -174,17 +174,17 @@ export default function LogsPage() {
                     <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${getActionColor(log.action)}`}>
                       {log.action === "CREATE" ? "创建" : log.action === "UPDATE" ? "更新" : "删除"}
                     </span>
-                    <span className="text-xs text-gray-500">
+                    <span className="text-xs text-gray-500 dark:text-[var(--foreground-subtle)]">
                       {getEntityTypeLabel(log.entityType)}
                     </span>
                   </div>
-                  <p className="text-sm text-gray-900">{log.details}</p>
+                  <p className="text-sm text-gray-900 dark:text-[var(--card-foreground)]">{log.details}</p>
                   {log.entityName && (
-                    <p className="text-xs text-gray-500 mt-1">关联: {log.entityName}</p>
+                    <p className="text-xs text-gray-500 dark:text-[var(--foreground-subtle)] mt-1">关联: {log.entityName}</p>
                   )}
                 </div>
                 <div className="text-right">
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-gray-500 dark:text-[var(--foreground-subtle)]">
                     {new Date(log.createdAt).toLocaleString("zh-CN", {
                       month: "numeric",
                       day: "numeric",
@@ -192,7 +192,7 @@ export default function LogsPage() {
                       minute: "numeric",
                     })}
                   </p>
-                  <p className="text-xs text-gray-400 mt-1">{log.operator}</p>
+                  <p className="text-xs text-gray-400 dark:text-[var(--foreground-subtle)] mt-1">{log.operator}</p>
                 </div>
               </div>
             ))}
@@ -201,21 +201,21 @@ export default function LogsPage() {
 
         {/* Pagination */}
         {data && data.totalPages > 1 && (
-          <div className="px-8 py-5 border-t border-gray-100 flex items-center justify-between bg-gray-50/50">
+          <div className="px-8 py-5 border-t border-gray-100 dark:border-[var(--card-border)] flex items-center justify-between bg-gray-50/50 dark:bg-[var(--background-subtle)]">
             <button
               onClick={() => setPage(Math.max(1, page - 1))}
               disabled={page === 1}
-              className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-gray-600 bg-white border border-gray-200 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-all"
+              className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-gray-600 dark:text-[var(--foreground-muted)] bg-white dark:bg-[var(--card)] border border-gray-200 dark:border-[var(--card-border)] rounded-xl disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-[var(--background-subtle)] transition-all"
             >
               <ChevronLeft className="w-4 h-4" /> 上一页
             </button>
-            <span className="text-sm text-gray-500 font-medium">
+            <span className="text-sm text-gray-500 dark:text-[var(--foreground-subtle)] font-medium">
               第 {page} / {data.totalPages} 页
             </span>
             <button
               onClick={() => setPage(Math.min(data.totalPages, page + 1))}
               disabled={page === data.totalPages}
-              className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-gray-600 bg-white border border-gray-200 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-all"
+              className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-gray-600 dark:text-[var(--foreground-muted)] bg-white dark:bg-[var(--card)] border border-gray-200 dark:border-[var(--card-border)] rounded-xl disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-[var(--background-subtle)] transition-all"
             >
               下一页 <ChevronRight className="w-4 h-4" />
             </button>
