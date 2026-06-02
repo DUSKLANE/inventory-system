@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowDownToLine, ArrowUpFromLine, Tag, Package, MapPin, Building2, FileText, Ruler, Hash, AlertTriangle, Clock, TrendingDown, TrendingUp, Settings, Edit, Boxes, Activity, X, Loader2, Star } from "lucide-react";
+import { ArrowDownToLine, ArrowUpFromLine, Tag, Package, MapPin, Building2, FileText, Ruler, Hash, AlertTriangle, Clock, TrendingDown, TrendingUp, Settings, Edit, Boxes, Activity, X, Loader2, Star, ZoomIn } from "lucide-react";
 import Breadcrumb from "@/components/Breadcrumb";
 
 interface PartDetail {
@@ -18,6 +18,7 @@ interface PartDetail {
   minStock: number;
   location: string;
   note: string;
+  image: string;
   stock?: { quantity: number };
   movements: Array<{
     id: string;
@@ -37,6 +38,7 @@ export default function PartDetailPage() {
   const [loading, setLoading] = useState(true);
   const [showEdit, setShowEdit] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [showImageModal, setShowImageModal] = useState(false);
 
   const fetchPart = async () => {
     if (!params.id) return;
@@ -123,8 +125,23 @@ export default function PartDetailPage() {
       <div className="bg-white dark:bg-[var(--card)] rounded-2xl border border-gray-200/80 dark:border-[var(--card-border)] p-5 sm:p-10 section shadow-sm dark:shadow-black/20">
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 sm:gap-10">
           <div className="flex items-start gap-6">
-            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/25 dark:shadow-blue-500/10">
-              <Boxes className="w-10 h-10 text-white" />
+            <div
+              className={`w-20 h-20 rounded-2xl shrink-0 overflow-hidden ${
+                part.image
+                  ? "bg-white dark:bg-[var(--background-subtle)] border border-gray-200 dark:border-[var(--card-border)] cursor-pointer hover:shadow-lg transition-shadow"
+                  : "bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/25 dark:shadow-blue-500/10"
+              }`}
+              onClick={() => part.image && setShowImageModal(true)}
+            >
+              {part.image ? (
+                <img
+                  src={`/api/images/${part.id}`}
+                  alt={part.name}
+                  className="w-full h-full object-contain"
+                />
+              ) : (
+                <Boxes className="w-10 h-10 text-white" />
+              )}
             </div>
             <div>
               <h1 className="text-2xl font-bold text-gray-900 dark:text-[var(--card-foreground)] tracking-tight">{part.name}</h1>
@@ -304,6 +321,26 @@ export default function PartDetailPage() {
           </div>
         )}
       </div>
+
+      {/* Image zoom modal */}
+      {showImageModal && part.image && (
+        <div
+          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 animate-fade-in cursor-zoom-out"
+          onClick={() => setShowImageModal(false)}
+        >
+          <img
+            src={`/api/images/${part.id}`}
+            alt={part.name}
+            className="max-w-[90vw] max-h-[90vh] object-contain rounded-lg"
+          />
+          <button
+            onClick={() => setShowImageModal(false)}
+            className="absolute top-4 right-4 p-2 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors"
+          >
+            <X className="w-6 h-6" />
+          </button>
+        </div>
+      )}
 
       {/* Edit Modal */}
       {showEdit && part && (

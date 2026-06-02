@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import db from "@/lib/db";
 import { z } from "zod";
 import { randomUUID } from "crypto";
+import { downloadImage, fetchProductImage, getImageFilename } from "@/lib/image-store";
 
 const batchDeleteSchema = z.object({
   ids: z.array(z.string()).min(1, "至少选择一个器件"),
@@ -147,6 +148,57 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         success: true,
         message: `批量${type === "IN" ? "入库" : "出库"}完成：成功 ${successCount}，失败 ${failCount}`,
+        results,
+        successCount,
+        failCount,
+      });
+    }
+
+    if (action === "backfillImages") {
+      const { ids } = batchDeleteSchema.parse(body);
+      const results: Array<{ partId: string; success: boolean; message?: string }> = [];
+
+      for (const id of ids) {
+        const part = db.prepare("SELECT id, code, image FROM parts WHERE id = ?").get(id) as { id: string; code: string; image: string } | undefined;
+
+        if (!part) {
+          results.push({ partId: id, success: false, message: "器件不存在" });
+          continue;
+        }
+
+        if (part.image) {
+          results.push({ partId: id, success: true, message: "已有图片" });
+          continue;
+        }
+
+        try {
+          const imageUrl = await fetchProductImage(part.code);
+          if (!imageUrl) {
+            results.push({ partId: id, success: false, message: "未找到产品图片" });
+            continue;
+          }
+
+          const filename = await downloadImage(id, imageUrl);
+          if (filename) {
+            db.prepare("UPDATE parts SET image = ?, updatedAt = ? WHERE id = ?").run(filename, new Date().toISOString(), id);
+            results.push({ partId: id, success: true });
+          } else {
+            results.push({ partId: id, success: false, message: "图片下载失败" });
+          }
+        } catch {
+          results.push({ partId: id, success: false, message: "处理失败" });
+        }
+
+        // Small delay between requests to avoid rate limiting
+        await new Promise((r) => setTimeout(r, 200));
+      }
+
+      const successCount = results.filter((r) => r.success).length;
+      const failCount = results.filter((r) => !r.success).length;
+
+      return NextResponse.json({
+        success: true,
+        message: `补全图片完成：成功 ${successCount}，失败 ${failCount}`,
         results,
         successCount,
         failCount,

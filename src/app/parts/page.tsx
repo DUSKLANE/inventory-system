@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Plus, Search, Edit, Trash2, MapPin, X, Loader2, Package, ChevronLeft, ChevronRight, ChevronDown, Eye, Tag, Boxes, Filter, CheckSquare, Square, ArrowDownToLine, ArrowUpFromLine } from "lucide-react";
+import { Plus, Search, Edit, Trash2, MapPin, X, Loader2, Package, ChevronLeft, ChevronRight, ChevronDown, Eye, Tag, Boxes, Filter, CheckSquare, Square, ArrowDownToLine, ArrowUpFromLine, ImageIcon } from "lucide-react";
 
 interface Part {
   id: string;
@@ -389,6 +389,37 @@ function PartsPageContent() {
     }
   };
 
+  // Batch backfill images
+  const handleBackfillImages = async () => {
+    if (selectedIds.size === 0) return;
+    if (!confirm(`将为选中的 ${selectedIds.size} 个器件从 LCSC 补全产品图片，是否继续？`)) return;
+
+    setBatchProcessing(true);
+    try {
+      const res = await fetch("/api/parts/batch", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "backfillImages",
+          ids: Array.from(selectedIds),
+        }),
+      });
+      const result = await res.json();
+      if (res.ok) {
+        alert(result.message);
+        clearSelection();
+        fetchParts();
+      } else {
+        alert(result.error || "补全图片失败");
+      }
+    } catch (e) {
+      console.error(e);
+      alert("补全图片失败");
+    } finally {
+      setBatchProcessing(false);
+    }
+  };
+
   return (
     <div className="page-container">
       {/* Header */}
@@ -707,6 +738,14 @@ function PartsPageContent() {
             >
               {batchProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
               批量删除
+            </button>
+            <button
+              onClick={handleBackfillImages}
+              disabled={batchProcessing}
+              className="inline-flex items-center gap-2 px-4 py-2.5 bg-violet-600 text-white rounded-xl text-sm font-medium hover:bg-violet-700 transition-all duration-200 shadow-sm disabled:opacity-50"
+            >
+              {batchProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : <ImageIcon className="w-4 h-4" />}
+              补全图片
             </button>
             <button
               onClick={clearSelection}

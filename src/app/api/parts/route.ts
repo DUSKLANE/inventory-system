@@ -3,6 +3,7 @@ import db from "@/lib/db";
 import { partSchema, searchSchema } from "@/lib/validations";
 import { randomUUID } from "crypto";
 import { logOperation } from "@/lib/logger";
+import { downloadImage } from "@/lib/image-store";
 
 // GET /api/parts - list/search parts
 export async function GET(request: NextRequest) {
@@ -109,11 +110,20 @@ export async function POST(request: NextRequest) {
     const now = new Date().toISOString();
 
     db.prepare(`
-      INSERT INTO parts (id, code, name, category, package, brand, model, unit, minStock, location, note, createdAt, updatedAt)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(id, data.code, data.name, data.category, data.package, data.brand, data.model, data.unit, data.minStock, data.location, data.note, now, now);
+      INSERT INTO parts (id, code, name, category, package, brand, model, unit, minStock, location, note, image, createdAt, updatedAt)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(id, data.code, data.name, data.category, data.package, data.brand, data.model, data.unit, data.minStock, data.location, data.note, "", now, now);
 
     db.prepare("INSERT INTO stock (id, partId, quantity) VALUES (?, ?, 0)").run(randomUUID(), id);
+
+    // Download image if URL provided (fire-and-forget)
+    if (data.image) {
+      downloadImage(id, data.image).then((filename) => {
+        if (filename) {
+          db.prepare("UPDATE parts SET image = ? WHERE id = ?").run(filename, id);
+        }
+      }).catch(() => {});
+    }
 
     const part = db.prepare(`
       SELECT p.*, s.quantity as stockQuantity

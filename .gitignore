@@ -50,5 +50,8 @@ data/*.db-wal
 *.jpg
 *.jpeg
 
+# part images (stored locally)
+data/images/
+
 # temp files
 snapshot.txt

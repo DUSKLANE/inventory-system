@@ -11,6 +11,7 @@ export const partSchema = z.object({
   minStock: z.coerce.number().int().min(0).default(0),
   location: z.string().default(""),
   note: z.string().default(""),
+  image: z.string().default(""),
 });
 
 export const movementSchema = z.object({

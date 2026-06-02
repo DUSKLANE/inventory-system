@@ -139,4 +139,10 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_categories_sortOrder ON categories(sortOrder);
 `);
 
+// Auto-migrate: add image column to parts if missing
+const columns = db.prepare("PRAGMA table_info(parts)").all() as { name: string }[];
+if (!columns.some(c => c.name === "image")) {
+  db.exec("ALTER TABLE parts ADD COLUMN image TEXT DEFAULT ''");
+}
+
 export default db;

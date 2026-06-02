@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import db from "@/lib/db";
 import { partSchema } from "@/lib/validations";
 import { logOperation } from "@/lib/logger";
+import { deleteImage } from "@/lib/image-store";
 
 // GET /api/parts/:id
 export async function GET(
@@ -57,7 +58,7 @@ export async function PUT(
       }
     }
 
-    const fields = ["code", "name", "category", "package", "brand", "model", "unit", "minStock", "location", "note"];
+    const fields = ["code", "name", "category", "package", "brand", "model", "unit", "minStock", "location", "note", "image"];
     const updates: string[] = [];
     const values: unknown[] = [];
 
@@ -109,6 +110,9 @@ export async function DELETE(
     const part = db.prepare("SELECT * FROM parts WHERE id = ?").get(id) as Record<string, unknown> | undefined;
     
     db.prepare("DELETE FROM parts WHERE id = ?").run(id);
+    
+    // Delete associated image file
+    deleteImage(id);
     
     // Log operation
     logOperation({

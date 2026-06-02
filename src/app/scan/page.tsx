@@ -269,6 +269,7 @@ export default function ScanPage() {
                 package: item.productInfo?.package || "",
                 category: item.productInfo?.category || "",
                 location: item.location,
+                image: item.productInfo?.image || "",
               }),
             });
 
