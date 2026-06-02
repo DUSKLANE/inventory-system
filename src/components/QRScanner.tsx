@@ -195,6 +195,18 @@ export default function QRScanner({ onScan, onClose, continuous = false, embedde
 
   const scannerContent = (
     <>
+      {/* 视频始终渲染 */}
+      {!error && (
+        <div className="absolute inset-0">
+          <video
+            ref={videoRef}
+            className="w-full h-full object-cover"
+            playsInline
+            muted
+          />
+        </div>
+      )}
+
       {showSuccess && (
         <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 animate-fade-in">
           <div className="flex items-center gap-2 px-4 py-2 bg-emerald-500 text-white rounded-full shadow-lg">
@@ -205,7 +217,7 @@ export default function QRScanner({ onScan, onClose, continuous = false, embedde
       )}
 
       {showManualInput ? (
-        <div className="flex-1 flex items-center justify-center p-6">
+        <div className="absolute inset-0 z-30 flex items-center justify-center p-6 bg-black/80">
           <div className="w-full max-w-sm">
             <div className="w-16 h-16 rounded-full bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center mx-auto mb-4">
               <Keyboard className="w-8 h-8 text-indigo-500" />
@@ -232,7 +244,7 @@ export default function QRScanner({ onScan, onClose, continuous = false, embedde
                 {!embedded && (
                   <button
                     onClick={closeManualInput}
-                    className="flex-1 px-4 py-2 border border-white/30 text-white hover:bg-white/10 rounded-xl transition-colors"
+                    className="flex-1 px-4 py-2.5 bg-white/10 text-white rounded-xl font-medium transition-colors hover:bg-white/20"
                   >
                     取消
                   </button>
@@ -240,7 +252,7 @@ export default function QRScanner({ onScan, onClose, continuous = false, embedde
                 <button
                   onClick={handleManualSubmit}
                   disabled={!manualCode.trim()}
-                  className="flex-1 px-4 py-2 bg-indigo-400 text-white rounded-xl font-medium hover:bg-indigo-500 transition-colors disabled:opacity-50"
+                  className="flex-1 px-4 py-2.5 bg-indigo-500 text-white rounded-xl font-medium transition-colors hover:bg-indigo-600 disabled:opacity-50"
                 >
                   确认
                 </button>
@@ -249,17 +261,17 @@ export default function QRScanner({ onScan, onClose, continuous = false, embedde
           </div>
         </div>
       ) : error ? (
-        <div className="flex-1 flex items-center justify-center p-6">
+        <div className="absolute inset-0 z-20 flex items-center justify-center p-6 bg-black/90">
           <div className="text-center max-w-sm">
             <div className="w-16 h-16 rounded-full bg-red-100 dark:bg-red-500/20 flex items-center justify-center mx-auto mb-4">
               <AlertTriangle className="w-8 h-8 text-red-500" />
             </div>
-            <p className="text-gray-900 dark:text-gray-100 font-medium mb-2">摄像头访问失败</p>
-            <p className="text-gray-500 dark:text-gray-400 text-sm mb-4">{error}</p>
+            <p className="text-white font-medium mb-2">摄像头访问失败</p>
+            <p className="text-white/70 text-sm mb-4">{error}</p>
             <div className="flex gap-3">
               <button
                 onClick={handleClose}
-                className="flex-1 px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[var(--background-subtle)] rounded-xl transition-colors"
+                className="flex-1 px-4 py-2 bg-white/10 text-white rounded-xl font-medium hover:bg-white/20 transition-colors"
               >
                 关闭
               </button>
@@ -273,20 +285,12 @@ export default function QRScanner({ onScan, onClose, continuous = false, embedde
           </div>
         </div>
       ) : (
-        <div className="flex-1 relative flex items-center justify-center overflow-hidden">
-          <video
-            ref={videoRef}
-            className="absolute inset-0 w-full h-full object-cover"
-            playsInline
-            muted
-          />
+        <>
+          {/* 扫描框覆盖层 */}
+          <div className="absolute inset-0 z-10">
+            <div className="absolute inset-0 bg-black/30" />
 
-          <div className="relative z-10">
-            <div className="absolute -inset-[50vh] bg-black/30" />
-
-            <div className="relative w-72 h-72">
-              <div className="absolute inset-0 bg-transparent" />
-
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72">
               <div className="absolute top-0 left-0 w-12 h-12 border-t-[3px] border-l-[3px] border-white rounded-tl-2xl" />
               <div className="absolute top-0 right-0 w-12 h-12 border-t-[3px] border-r-[3px] border-white rounded-tr-2xl" />
               <div className="absolute bottom-0 left-0 w-12 h-12 border-b-[3px] border-l-[3px] border-white rounded-bl-2xl" />
@@ -353,7 +357,7 @@ export default function QRScanner({ onScan, onClose, continuous = false, embedde
               >
                 手动输入
               </button>
-              {continuous && (
+               {continuous && (
                 <button
                   onClick={handleClose}
                   className="px-5 py-1.5 bg-indigo-500 text-white text-sm rounded-full font-medium hover:bg-indigo-600 transition-colors"
@@ -363,7 +367,7 @@ export default function QRScanner({ onScan, onClose, continuous = false, embedde
               )}
             </div>
           </div>
-        </div>
+        </>
       )}
     </>
   );
