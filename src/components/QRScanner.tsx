@@ -171,6 +171,13 @@ export default function QRScanner({ onScan, onClose, continuous = false, embedde
     setScanning(false);
   }
 
+  function closeManualInput() {
+    setShowManualInput(false);
+    if (videoRef.current && streamRef.current) {
+      videoRef.current.play().catch(() => {});
+    }
+  }
+
   function handleManualSubmit() {
     if (manualCode.trim()) {
       handleScanResult(manualCode.trim(), Date.now());
@@ -224,7 +231,7 @@ export default function QRScanner({ onScan, onClose, continuous = false, embedde
               <div className="flex gap-3">
                 {!embedded && (
                   <button
-                    onClick={() => setShowManualInput(false)}
+                    onClick={closeManualInput}
                     className="flex-1 px-4 py-2 border border-white/30 text-white hover:bg-white/10 rounded-xl transition-colors"
                   >
                     取消
