@@ -225,7 +225,7 @@ export default function QRScanner({ onScan, onClose, continuous = false, embedde
                 {!embedded && (
                   <button
                     onClick={() => setShowManualInput(false)}
-                    className="flex-1 px-4 py-2 text-white hover:bg-white/10 rounded-xl transition-colors"
+                    className="flex-1 px-4 py-2 border border-white/30 text-white hover:bg-white/10 rounded-xl transition-colors"
                   >
                     取消
                   </button>
@@ -233,7 +233,7 @@ export default function QRScanner({ onScan, onClose, continuous = false, embedde
                 <button
                   onClick={handleManualSubmit}
                   disabled={!manualCode.trim()}
-                  className="flex-1 px-4 py-2 bg-indigo-500 text-white rounded-xl font-medium hover:bg-indigo-600 transition-colors disabled:opacity-50"
+                  className="flex-1 px-4 py-2 bg-indigo-400 text-white rounded-xl font-medium hover:bg-indigo-500 transition-colors disabled:opacity-50"
                 >
                   确认
                 </button>
