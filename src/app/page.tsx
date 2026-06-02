@@ -247,24 +247,24 @@ export default function Home() {
       </div>
 
       {/* Stats cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 section">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 section">
         {stats.map((s) => {
           const Icon = s.icon;
           return (
             <div 
               key={s.label} 
-              className="relative overflow-hidden bg-white dark:bg-[var(--card)] rounded-2xl border border-gray-200/80 dark:border-[var(--card-border)] p-7 hover:shadow-xl hover:shadow-gray-200/50 dark:hover:shadow-black/20 transition-all duration-300 group"
+              className="relative overflow-hidden bg-white dark:bg-[var(--card)] rounded-xl sm:rounded-2xl border border-gray-200/80 dark:border-[var(--card-border)] p-4 sm:p-7 hover:shadow-xl hover:shadow-gray-200/50 dark:hover:shadow-black/20 transition-all duration-300 group"
             >
               <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br opacity-5 group-hover:opacity-10 transition-opacity duration-300 rounded-bl-[100%]" 
                    style={{background: `linear-gradient(135deg, var(--tw-gradient-stops))`}} />
               <div className="relative">
-                <div className="flex items-center justify-between mb-6">
-                  <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${s.gradient} flex items-center justify-center shadow-lg ${s.shadowColor} dark:shadow-none group-hover:scale-110 transition-transform duration-300`}>
-                    <Icon className="w-7 h-7 text-white" />
+                <div className="flex items-center justify-between mb-3 sm:mb-6">
+                  <div className={`w-10 h-10 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-gradient-to-br ${s.gradient} flex items-center justify-center shadow-lg ${s.shadowColor} dark:shadow-none group-hover:scale-110 transition-transform duration-300`}>
+                    <Icon className="w-5 h-5 sm:w-7 sm:h-7 text-white" />
                   </div>
                 </div>
-                <p className="text-sm text-gray-500 dark:text-[var(--foreground-subtle)] mb-2 font-medium">{s.label}</p>
-                <p className={`text-4xl font-bold ${s.textColor} tracking-tight`}>
+                <p className="text-xs sm:text-sm text-gray-500 dark:text-[var(--foreground-subtle)] mb-1 sm:mb-2 font-medium">{s.label}</p>
+                <p className={`text-2xl sm:text-4xl font-bold ${s.textColor} tracking-tight`}>
                   {s.value}
                 </p>
               </div>
@@ -518,55 +518,55 @@ export default function Home() {
 
       {/* Recent movements */}
       <div className="bg-white dark:bg-[var(--card)] rounded-2xl border border-gray-200/80 dark:border-[var(--card-border)] overflow-hidden shadow-sm dark:shadow-none">
-        <div className="px-10 py-8 border-b border-gray-100 dark:border-[var(--card-border)] flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="w-11 h-11 rounded-xl bg-gray-100 dark:bg-[var(--background-muted)] flex items-center justify-center">
-              <Clock className="w-5 h-5 text-gray-500 dark:text-[var(--foreground-subtle)]" />
+        <div className="px-4 sm:px-10 py-4 sm:py-8 border-b border-gray-100 dark:border-[var(--card-border)] flex items-center justify-between">
+          <div className="flex items-center gap-2 sm:gap-4">
+            <div className="w-8 h-8 sm:w-11 sm:h-11 rounded-lg sm:rounded-xl bg-gray-100 dark:bg-[var(--background-muted)] flex items-center justify-center">
+              <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500 dark:text-[var(--foreground-subtle)]" />
             </div>
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-[var(--card-foreground)]">最近操作记录</h2>
+            <h2 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-[var(--card-foreground)]">最近操作记录</h2>
           </div>
-          <Link href="/parts" className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium flex items-center gap-2 group">
+          <Link href="/parts" className="text-xs sm:text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium flex items-center gap-1 sm:gap-2 group">
             查看全部 
-            <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-200" />
+            <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 group-hover:translate-x-0.5 transition-transform duration-200" />
           </Link>
         </div>
         <div className="divide-y divide-gray-100 dark:divide-[var(--card-border)]">
           {data.recentMovements.length === 0 ? (
-            <div className="p-20 text-center">
-              <div className="w-20 h-20 mx-auto mb-5 rounded-2xl bg-gray-100 dark:bg-[var(--background-muted)] flex items-center justify-center">
-                <Clock className="w-10 h-10 text-gray-400 dark:text-[var(--foreground-subtle)]" />
+            <div className="p-10 sm:p-20 text-center">
+              <div className="w-14 h-14 sm:w-20 sm:h-20 mx-auto mb-3 sm:mb-5 rounded-xl sm:rounded-2xl bg-gray-100 dark:bg-[var(--background-muted)] flex items-center justify-center">
+                <Clock className="w-7 h-7 sm:w-10 sm:h-10 text-gray-400 dark:text-[var(--foreground-subtle)]" />
               </div>
-              <p className="text-gray-500 dark:text-[var(--foreground-subtle)] font-medium text-lg">暂无操作记录</p>
-              <p className="text-gray-400 dark:text-[var(--foreground-subtle)] mt-2">开始入库或出库操作后，记录将显示在这里</p>
+              <p className="text-gray-500 dark:text-[var(--foreground-subtle)] font-medium text-base sm:text-lg">暂无操作记录</p>
+              <p className="text-gray-400 dark:text-[var(--foreground-subtle)] text-sm mt-1 sm:mt-2">开始入库或出库操作后，记录将显示在这里</p>
             </div>
           ) : (
             data.recentMovements.map((m, index) => (
               <Link 
                 key={m.id} 
                 href={`/parts/${m.part.id}`}
-                className="px-10 py-6 flex items-center justify-between hover:bg-gray-50/80 dark:hover:bg-[var(--background-subtle)] transition-colors duration-150"
+                className="px-4 sm:px-10 py-3 sm:py-6 flex items-center justify-between hover:bg-gray-50/80 dark:hover:bg-[var(--background-subtle)] transition-colors duration-150"
                 style={{ animationDelay: `${index * 50}ms` }}
               >
-                <div className="flex items-center gap-6">
+                <div className="flex items-center gap-3 sm:gap-6">
                   <div
-                    className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                    className={`w-9 h-9 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl flex items-center justify-center ${
                       m.type === "IN" 
                         ? "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" 
                         : "bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400"
                     }`}
                   >
-                    {m.type === "IN" ? <TrendingDown className="w-5 h-5" /> : <TrendingUp className="w-5 h-5" />}
+                    {m.type === "IN" ? <TrendingDown className="w-4 h-4 sm:w-5 sm:h-5" /> : <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5" />}
                   </div>
                   <div>
-                    <p className="text-base font-semibold text-gray-900 dark:text-[var(--card-foreground)]">{m.part.name}</p>
-                    <p className="text-sm text-gray-500 dark:text-[var(--foreground-subtle)] font-mono mt-1">{m.part.code}</p>
+                    <p className="text-sm sm:text-base font-semibold text-gray-900 dark:text-[var(--card-foreground)]">{m.part.name}</p>
+                    <p className="text-xs sm:text-sm text-gray-500 dark:text-[var(--foreground-subtle)] font-mono mt-0.5 sm:mt-1">{m.part.code}</p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className={`text-lg font-bold ${m.type === "IN" ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"}`}>
-                    {m.type === "IN" ? "+" : "-"}{m.quantity} <span className="text-sm font-normal text-gray-500 dark:text-[var(--foreground-subtle)]">{m.part.unit}</span>
+                  <p className={`text-base sm:text-lg font-bold ${m.type === "IN" ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"}`}>
+                    {m.type === "IN" ? "+" : "-"}{m.quantity} <span className="text-xs sm:text-sm font-normal text-gray-500 dark:text-[var(--foreground-subtle)]">{m.part.unit}</span>
                   </p>
-                  <p className="text-sm text-gray-400 dark:text-[var(--foreground-subtle)] mt-1">
+                  <p className="text-xs sm:text-sm text-gray-400 dark:text-[var(--foreground-subtle)] mt-0.5 sm:mt-1">
                     {new Date(m.createdAt).toLocaleString("zh-CN", { 
                       month: "numeric", 
                       day: "numeric",
