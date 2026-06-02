@@ -203,8 +203,8 @@ export default function QRScanner({ onScan, onClose, continuous = false, embedde
             <div className="w-16 h-16 rounded-full bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center mx-auto mb-4">
               <Keyboard className="w-8 h-8 text-indigo-500" />
             </div>
-            <p className="text-gray-900 dark:text-gray-100 text-center font-medium mb-2">手动输入</p>
-            <p className="text-gray-500 dark:text-gray-400 text-sm text-center mb-4">
+            <p className="text-white text-center font-medium mb-2">手动输入</p>
+            <p className="text-white/70 text-sm text-center mb-4">
               {error || "输入立创编号（如 C2907002）或完整二维码内容"}
             </p>
             <div className="space-y-3">
@@ -224,8 +224,8 @@ export default function QRScanner({ onScan, onClose, continuous = false, embedde
               <div className="flex gap-3">
                 {!embedded && (
                   <button
-                    onClick={handleClose}
-                    className="flex-1 px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[var(--background-subtle)] rounded-xl transition-colors"
+                    onClick={() => setShowManualInput(false)}
+                    className="flex-1 px-4 py-2 text-white hover:bg-white/10 rounded-xl transition-colors"
                   >
                     取消
                   </button>
