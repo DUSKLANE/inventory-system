@@ -111,6 +111,20 @@ db.exec(`
     UNIQUE(partId, warehouseId)
   );
 
+  CREATE TABLE IF NOT EXISTS settings (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL,
+    updatedAt TEXT DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS categories (
+    id TEXT PRIMARY KEY,
+    name TEXT UNIQUE NOT NULL,
+    description TEXT DEFAULT '',
+    sortOrder INTEGER DEFAULT 0,
+    createdAt TEXT DEFAULT (datetime('now'))
+  );
+
   CREATE INDEX IF NOT EXISTS idx_parts_code ON parts(code);
   CREATE INDEX IF NOT EXISTS idx_parts_category ON parts(category);
   CREATE INDEX IF NOT EXISTS idx_stock_movements_partId ON stock_movements(partId);
@@ -122,6 +136,7 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_operation_logs_entityType ON operation_logs(entityType);
   CREATE INDEX IF NOT EXISTS idx_stock_warehouse_partId ON stock_warehouse(partId);
   CREATE INDEX IF NOT EXISTS idx_stock_warehouse_warehouseId ON stock_warehouse(warehouseId);
+  CREATE INDEX IF NOT EXISTS idx_categories_sortOrder ON categories(sortOrder);
 `);
 
 export default db;

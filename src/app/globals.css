@@ -682,6 +682,16 @@ a, button, input, select, textarea {
   color: var(--foreground);
 }
 
+/* Scan line animation */
+@keyframes scan-line {
+  0%, 100% {
+    top: 0;
+  }
+  50% {
+    top: calc(100% - 2px);
+  }
+}
+
 /* Mark/Highlight */
 mark {
   background: var(--warning-subtle);

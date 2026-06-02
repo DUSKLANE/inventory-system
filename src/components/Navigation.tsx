@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Package, ArrowDownToLine, ArrowUpFromLine, Cpu, Settings, HelpCircle, BarChart3, FileText, Sun, Moon, Clock, Warehouse, MoreHorizontal } from "lucide-react";
+import { LayoutDashboard, Package, ArrowDownToLine, ArrowUpFromLine, Cpu, Settings, HelpCircle, BarChart3, FileText, Sun, Moon, Clock, Warehouse, MoreHorizontal, ScanBarcode } from "lucide-react";
 import { useTheme } from "./ThemeProvider";
 import { useState } from "react";
 
@@ -11,6 +11,7 @@ const mainLinks = [
   { href: "/parts", label: "器件列表", icon: Package },
   { href: "/stock-in", label: "入库", icon: ArrowDownToLine },
   { href: "/stock-out", label: "出库", icon: ArrowUpFromLine },
+  { href: "/scan", label: "扫描识别", icon: ScanBarcode },
   { href: "/analytics", label: "数据分析", icon: BarChart3 },
   { href: "/boms", label: "BOM清单", icon: FileText },
   { href: "/warehouses", label: "仓库管理", icon: Warehouse },
@@ -27,13 +28,13 @@ const mobileLinks = [
 ];
 
 const bottomLinks = [
-  { href: "#", label: "设置", icon: Settings },
-  { href: "#", label: "帮助", icon: HelpCircle },
+  { href: "/settings", label: "设置", icon: Settings },
+  { href: "/help", label: "帮助", icon: HelpCircle },
 ];
 
 export default function Navigation() {
   const pathname = usePathname();
-  const { theme, toggleTheme } = useTheme();
+  const { theme, resolvedTheme, toggleTheme } = useTheme();
   const [showMoreMenu, setShowMoreMenu] = useState(false);
 
   return (
@@ -95,13 +96,13 @@ export default function Navigation() {
             className="w-full group flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50/80 hover:text-gray-900 transition-all duration-200"
           >
             <div className="p-1.5 rounded-lg group-hover:bg-gray-100/80 transition-colors duration-200">
-              {theme === "light" ? (
+              {resolvedTheme === "light" ? (
                 <Moon className="w-[18px] h-[18px] flex-shrink-0 text-gray-400 group-hover:text-gray-500 transition-colors duration-200" />
               ) : (
                 <Sun className="w-[18px] h-[18px] flex-shrink-0 text-gray-400 group-hover:text-gray-500 transition-colors duration-200" />
               )}
             </div>
-            <span>{theme === "light" ? "深色模式" : "浅色模式"}</span>
+            <span>{theme === "system" ? "跟随系统" : resolvedTheme === "light" ? "深色模式" : "浅色模式"}</span>
           </button>
           
           {bottomLinks.map((link) => {
@@ -193,12 +194,29 @@ export default function Navigation() {
                   </Link>
                 );
               })}
+              {bottomLinks.map((link) => {
+                const Icon = link.icon;
+                const active = pathname.startsWith(link.href);
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    onClick={() => setShowMoreMenu(false)}
+                    className={`flex flex-col items-center gap-1 p-3 rounded-xl ${
+                      active ? "bg-blue-50 text-blue-600" : "text-gray-600 hover:bg-gray-50"
+                    }`}
+                  >
+                    <Icon className="w-5 h-5" />
+                    <span className="text-[10px] font-medium">{link.label}</span>
+                  </Link>
+                );
+              })}
               <button
                 onClick={() => { toggleTheme(); setShowMoreMenu(false); }}
                 className="flex flex-col items-center gap-1 p-3 rounded-xl text-gray-600 hover:bg-gray-50"
               >
-                {theme === "light" ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
-                <span className="text-[10px] font-medium">{theme === "light" ? "深色" : "浅色"}</span>
+                {resolvedTheme === "light" ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+                <span className="text-[10px] font-medium">{theme === "system" ? "系统" : resolvedTheme === "light" ? "深色" : "浅色"}</span>
               </button>
             </div>
           </div>
