@@ -36,6 +36,7 @@ interface PendingItem {
   id: string;
   scanData: ScanResult;
   productInfo: LcedaProduct | null;
+  existingPartId?: string;
   status: "loading" | "ready" | "error";
   quantity: number;
   location: string;
@@ -100,20 +101,57 @@ export default function ScanPage() {
     setPendingItems((prev) => [newItem, ...prev]);
 
     try {
-      const productInfo = await fetchProductInfo(scanData.pc);
+      // 先查找库存中是否已有该元器件
+      const lookupRes = await fetch(`/api/parts/lookup?code=${scanData.pc}`);
+      const lookupData = await lookupRes.json();
 
-      setPendingItems((prev) =>
-        prev.map((item) =>
-          item.id === itemId
-            ? {
-                ...item,
-                productInfo: productInfo || buildProductFromScanData(scanData),
-                status: productInfo ? "ready" : "error",
-                errorMessage: productInfo ? undefined : "未找到产品信息，已使用扫描数据",
-              }
-            : item
-        )
-      );
+      if (lookupData.found) {
+        // 库存中已有，直接使用库存信息
+        const part = lookupData.part;
+        setPendingItems((prev) =>
+          prev.map((item) =>
+            item.id === itemId
+              ? {
+                  ...item,
+                  productInfo: {
+                    lcscCode: part.code || scanData.pc,
+                    name: part.name || "",
+                    brand: part.brand || "",
+                    model: part.model || "",
+                    package: part.package || "",
+                    category: part.category || "",
+                    subCategory: "",
+                    parameters: {},
+                    image: "",
+                    datasheet: "",
+                    description: "",
+                    price: "",
+                    stock: 0,
+                  },
+                  existingPartId: part.id,
+                  location: part.location || "",
+                  status: "ready",
+                }
+              : item
+          )
+        );
+      } else {
+        // 库存中没有，调用 LCEDA API 获取信息
+        const productInfo = await fetchProductInfo(scanData.pc);
+
+        setPendingItems((prev) =>
+          prev.map((item) =>
+            item.id === itemId
+              ? {
+                  ...item,
+                  productInfo: productInfo || buildProductFromScanData(scanData),
+                  status: productInfo ? "ready" : "error",
+                  errorMessage: productInfo ? undefined : "未找到产品信息，已使用扫描数据",
+                }
+              : item
+          )
+        );
+      }
     } catch {
       setPendingItems((prev) =>
         prev.map((item) =>
@@ -122,7 +160,7 @@ export default function ScanPage() {
                 ...item,
                 productInfo: buildProductFromScanData(scanData),
                 status: "error",
-                errorMessage: "获取产品信息失败",
+                errorMessage: "查找失败",
               }
             : item
         )
@@ -207,35 +245,41 @@ export default function ScanPage() {
 
     for (const item of readyItems) {
       try {
-        const lookupRes = await fetch(`/api/parts/lookup?code=${item.scanData.pc}`);
-        const lookupData = await lookupRes.json();
-
         let partId: string;
 
-        if (lookupData.found) {
-          partId = lookupData.part.id;
+        if (item.existingPartId) {
+          // 已有零件，直接使用
+          partId = item.existingPartId;
         } else {
-          const createRes = await fetch("/api/parts", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              code: item.scanData.pc,
-              name: item.customName || item.productInfo?.name || item.scanData.pm || "",
-              model: item.productInfo?.model || item.scanData.pm || "",
-              brand: item.productInfo?.brand || "",
-              package: item.productInfo?.package || "",
-              category: item.productInfo?.category || "",
-              location: item.location,
-            }),
-          });
+          // 查找或创建零件
+          const lookupRes = await fetch(`/api/parts/lookup?code=${item.scanData.pc}`);
+          const lookupData = await lookupRes.json();
 
-          if (!createRes.ok) {
-            failed++;
-            continue;
+          if (lookupData.found) {
+            partId = lookupData.part.id;
+          } else {
+            const createRes = await fetch("/api/parts", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                code: item.scanData.pc,
+                name: item.customName || item.productInfo?.name || item.scanData.pm || "",
+                model: item.productInfo?.model || item.scanData.pm || "",
+                brand: item.productInfo?.brand || "",
+                package: item.productInfo?.package || "",
+                category: item.productInfo?.category || "",
+                location: item.location,
+              }),
+            });
+
+            if (!createRes.ok) {
+              failed++;
+              continue;
+            }
+
+            const createdPart = await createRes.json();
+            partId = createdPart.id;
           }
-
-          const createdPart = await createRes.json();
-          partId = createdPart.id;
         }
 
         const stockRes = await fetch("/api/movements", {
@@ -480,6 +524,11 @@ function PendingItemCard({
               <span className="text-xs font-mono px-2 py-0.5 bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 rounded">
                 {item.scanData.pc}
               </span>
+              {item.existingPartId && (
+                <span className="text-xs px-2 py-0.5 bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 rounded">
+                  已有库存
+                </span>
+              )}
               {item.status === "loading" && (
                 <Loader2 className="w-4 h-4 text-gray-400 animate-spin" />
               )}
