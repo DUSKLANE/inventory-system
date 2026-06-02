@@ -58,8 +58,21 @@ function StockInContent() {
 
   const handleScan = (scannedCode: string) => {
     setShowScanner(false);
-    setCode(scannedCode);
-    lookupPart(scannedCode);
+    // 解析嘉立创二维码，提取 pc 字段
+    let codeToLookup = scannedCode.trim();
+    if (codeToLookup.startsWith("{") && codeToLookup.endsWith("}")) {
+      const inner = codeToLookup.slice(1, -1);
+      const pairs = inner.split(",");
+      for (const pair of pairs) {
+        const [key, ...valueParts] = pair.split(":");
+        if (key?.trim() === "pc" && valueParts.length > 0) {
+          codeToLookup = valueParts.join(":").trim();
+          break;
+        }
+      }
+    }
+    setCode(codeToLookup);
+    lookupPart(codeToLookup);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
