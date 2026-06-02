@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
-import { Camera, X, Loader2, AlertTriangle, Keyboard, Check } from "lucide-react";
+import { Camera, X, Loader2, AlertTriangle, Keyboard, Check, Flashlight, FlashlightOff } from "lucide-react";
 
 interface QRScannerProps {
   onScan: (code: string) => void;
@@ -18,7 +18,10 @@ export default function QRScanner({ onScan, onClose, continuous = false, embedde
   const [manualCode, setManualCode] = useState("");
   const [scanCount, setScanCount] = useState(0);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [torchEnabled, setTorchEnabled] = useState(false);
+  const [torchSupported, setTorchSupported] = useState(false);
   const streamRef = useRef<MediaStream | null>(null);
+  const trackRef = useRef<MediaStreamTrack | null>(null);
   const animRef = useRef<number>(0);
   const lastScanTimeRef = useRef<number>(0);
   const lastCodeRef = useRef<string>("");
@@ -52,6 +55,20 @@ export default function QRScanner({ onScan, onClose, continuous = false, embedde
     }
   }, [continuous, onScan]);
 
+  const toggleTorch = useCallback(async () => {
+    if (!trackRef.current) return;
+
+    try {
+      const newTorchState = !torchEnabled;
+      await trackRef.current.applyConstraints({
+        advanced: [{ torch: newTorchState } as MediaTrackConstraints]
+      });
+      setTorchEnabled(newTorchState);
+    } catch (e) {
+      console.error("Failed to toggle torch:", e);
+    }
+  }, [torchEnabled]);
+
   useEffect(() => {
     if (!isCameraAvailable) {
       setShowManualInput(true);
@@ -74,6 +91,14 @@ export default function QRScanner({ onScan, onClose, continuous = false, embedde
         }
 
         streamRef.current = stream;
+        const videoTrack = stream.getVideoTracks()[0];
+        trackRef.current = videoTrack;
+
+        const capabilities = videoTrack.getCapabilities();
+        if (capabilities && 'torch' in capabilities) {
+          setTorchSupported(capabilities.torch as boolean);
+        }
+
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
           await videoRef.current.play();
@@ -293,6 +318,28 @@ export default function QRScanner({ onScan, onClose, continuous = false, embedde
             </div>
 
             <div className="flex gap-3">
+              {torchSupported && (
+                <button
+                  onClick={toggleTorch}
+                  className={`px-4 py-1.5 backdrop-blur-sm text-white text-sm rounded-full transition-colors ${
+                    torchEnabled 
+                      ? "bg-amber-500/80 hover:bg-amber-500" 
+                      : "bg-white/20 hover:bg-white/30"
+                  }`}
+                >
+                  {torchEnabled ? (
+                    <span className="flex items-center gap-1.5">
+                      <FlashlightOff className="w-4 h-4" />
+                      关灯
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-1.5">
+                      <Flashlight className="w-4 h-4" />
+                      手电筒
+                    </span>
+                  )}
+                </button>
+              )}
               <button
                 onClick={() => setShowManualInput(true)}
                 className="px-4 py-1.5 bg-white/20 backdrop-blur-sm text-white text-sm rounded-full hover:bg-white/30 transition-colors"
