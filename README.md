@@ -260,6 +260,63 @@ inventory-system/
   2. 添加 HTTP 地址（如 `http://192.168.1.100:3000`）
   3. 重启 Chrome
 
+## 部署
+
+### 方式一：Docker 部署（推荐）
+
+#### 首次部署
+
+1. 登录 GitHub Container Registry
+   ```bash
+   docker login ghcr.io -u YOUR_USERNAME -p YOUR_TOKEN
+   ```
+
+2. 拉取镜像并启动
+   ```bash
+   docker pull ghcr.io/dusklane/inventory-system:latest
+   docker-compose -f docker-compose.prod.yml up -d
+   ```
+
+#### 更新部署
+
+```bash
+docker-compose -f docker-compose.prod.yml pull
+docker-compose -f docker-compose.prod.yml up -d
+```
+
+#### 使用指定版本
+
+```bash
+# 修改 docker-compose.prod.yml 中的镜像标签
+# 从 latest 改为指定版本，如 v1.0.0
+image: ghcr.io/dusklane/inventory-system:v1.0.0
+
+# 然后拉取并重启
+docker-compose -f docker-compose.prod.yml pull
+docker-compose -f docker-compose.prod.yml up -d
+```
+
+### 方式二：本地构建
+
+```bash
+docker-compose up -d --build
+```
+
+### 访问地址
+
+- 本机：http://localhost:3000
+- 局域网：http://你的IP:3000
+
+### GitHub Actions 自动构建
+
+推送到 main 分支的代码会自动构建并推送到 ghcr.io。
+
+手动触发可指定版本号：
+1. 进入 Actions 页面
+2. 选择 "Docker Build and Push"
+3. 点击 "Run workflow"
+4. 输入版本号（如 v1.0.0）
+
 ## 许可证
 
 MIT

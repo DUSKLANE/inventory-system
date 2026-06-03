@@ -1,0 +1,8 @@
+services:
+  inventory:
+    image: ghcr.io/dusklane/inventory-system:latest
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped
