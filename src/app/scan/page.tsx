@@ -70,18 +70,11 @@ function parseScanData(raw: string): ScanResult | null {
 }
 
 export default function ScanPage() {
+  const [mounted, setMounted] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
   const [showManualInput, setShowManualInput] = useState(false);
   const [manualCode, setManualCode] = useState("");
-  const [pendingItems, setPendingItems] = useState<PendingItem[]>(() => {
-    if (typeof window === "undefined") return [];
-    try {
-      const saved = localStorage.getItem("scan_pending_items");
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
-  });
+  const [pendingItems, setPendingItems] = useState<PendingItem[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitResult, setSubmitResult] = useState<{
     success: number;
@@ -91,11 +84,22 @@ export default function ScanPage() {
 
   useEffect(() => {
     try {
+      const saved = localStorage.getItem("scan_pending_items");
+      if (saved) setPendingItems(JSON.parse(saved));
+    } catch {
+      // ignore
+    }
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
+    try {
       localStorage.setItem("scan_pending_items", JSON.stringify(pendingItems));
     } catch {
       // ignore
     }
-  }, [pendingItems]);
+  }, [pendingItems, mounted]);
 
   const processScanData = useCallback(async (raw: string) => {
     const scanData = parseScanData(raw);
@@ -359,12 +363,12 @@ export default function ScanPage() {
     <div className="page-container max-w-3xl">
       <Breadcrumb items={[{ label: "扫码入库" }]} />
 
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div className="flex items-center gap-3">
           <ScanBarcode className="w-7 h-7 text-indigo-500" />
           <h1 className="text-2xl font-bold text-gray-900 dark:text-[var(--card-foreground)]">扫码入库</h1>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           {pendingItems.length > 0 && (
             <button
               onClick={clearAll}
