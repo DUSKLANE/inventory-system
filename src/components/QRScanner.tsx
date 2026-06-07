@@ -10,9 +10,6 @@ interface QRScannerProps {
   embedded?: boolean;
 }
 
-const ABSENT_THRESHOLD = 15;
-const COOLDOWN_MS = 3000;
-
 export default function QRScanner({ onScan, onClose, continuous = false, embedded = false }: QRScannerProps) {
   const [error, setError] = useState("");
   const [scanning, setScanning] = useState(false);
@@ -25,10 +22,7 @@ export default function QRScanner({ onScan, onClose, continuous = false, embedde
 
   const scannerRef = useRef<unknown>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const lastDetectedCodeRef = useRef<string>("");
-  const codePresentRef = useRef<boolean>(false);
-  const consecutiveMissesRef = useRef<number>(0);
-  const lastScanTimeRef = useRef<number>(0);
+  const scannedCodesRef = useRef<Set<string>>(new Set());
   const trackRef = useRef<MediaStreamTrack | null>(null);
 
   const isCameraAvailable = typeof navigator !== "undefined" &&
@@ -36,7 +30,6 @@ export default function QRScanner({ onScan, onClose, continuous = false, embedde
     typeof navigator.mediaDevices.getUserMedia === "function";
 
   const handleScanResult = useCallback((code: string) => {
-    lastScanTimeRef.current = Date.now();
     onScan(code);
     setScanCount((prev) => prev + 1);
     setShowSuccess(true);
@@ -105,41 +98,15 @@ export default function QRScanner({ onScan, onClose, continuous = false, embedde
           { facingMode: "environment" },
           {
             fps: 10,
-            qrbox: { width: Math.min(250, Math.floor(window.innerWidth * 0.7)), height: Math.min(250, Math.floor(window.innerWidth * 0.7)) },
             disableFlip: false,
           },
           (decodedText: string) => {
             if (cancelled) return;
-
-            const now = Date.now();
-            const isSameCode = decodedText === lastDetectedCodeRef.current;
-
-            if (isSameCode && codePresentRef.current) {
-              return;
-            }
-
-            if (isSameCode && !codePresentRef.current) {
-              if (now - lastScanTimeRef.current < COOLDOWN_MS) {
-                return;
-              }
-              codePresentRef.current = true;
-              consecutiveMissesRef.current = 0;
-              handleScanResult(decodedText);
-              return;
-            }
-
-            lastDetectedCodeRef.current = decodedText;
-            codePresentRef.current = true;
-            consecutiveMissesRef.current = 0;
+            if (scannedCodesRef.current.has(decodedText)) return;
+            scannedCodesRef.current.add(decodedText);
             handleScanResult(decodedText);
           },
-          () => {
-            if (cancelled) return;
-            consecutiveMissesRef.current++;
-            if (consecutiveMissesRef.current >= ABSENT_THRESHOLD) {
-              codePresentRef.current = false;
-            }
-          }
+          () => {}
         );
 
         if (!cancelled) {
@@ -191,6 +158,7 @@ export default function QRScanner({ onScan, onClose, continuous = false, embedde
   }
 
   function handleClose() {
+    scannedCodesRef.current.clear();
     stopScanner();
     onClose();
   }
@@ -277,88 +245,68 @@ export default function QRScanner({ onScan, onClose, continuous = false, embedde
           </div>
         </div>
       ) : (
-        <>
-          <div className="absolute inset-0 z-10">
-            <div className="absolute inset-0 bg-black/30" />
-
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72">
-              <div className="absolute top-0 left-0 w-12 h-12 border-t-[3px] border-l-[3px] border-white rounded-tl-2xl" />
-              <div className="absolute top-0 right-0 w-12 h-12 border-t-[3px] border-r-[3px] border-white rounded-tr-2xl" />
-              <div className="absolute bottom-0 left-0 w-12 h-12 border-b-[3px] border-l-[3px] border-white rounded-bl-2xl" />
-              <div className="absolute bottom-0 right-0 w-12 h-12 border-b-[3px] border-r-[3px] border-white rounded-br-2xl" />
-
-              {scanning && (
-                <div
-                  className="absolute left-2 right-2 h-0.5 bg-gradient-to-r from-transparent via-indigo-500 to-transparent"
-                  style={{ animation: "scan-line 1.5s ease-in-out infinite" }}
-                />
-              )}
+        <div className="absolute bottom-6 left-0 right-0 z-10 flex flex-col items-center gap-3">
+          {continuous && scanCount > 0 && (
+            <div className="px-4 py-1.5 bg-black/60 backdrop-blur-sm rounded-full">
+              <p className="text-white/90 text-sm">
+                已扫描 <span className="font-bold text-emerald-400">{scanCount}</span> 个
+              </p>
             </div>
-          </div>
+          )}
 
-          <div className="absolute bottom-6 left-0 right-0 z-10 flex flex-col items-center gap-3">
-            {continuous && scanCount > 0 && (
-              <div className="px-4 py-1.5 bg-black/60 backdrop-blur-sm rounded-full">
-                <p className="text-white/90 text-sm">
-                  已扫描 <span className="font-bold text-emerald-400">{scanCount}</span> 个
-                </p>
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-black/50 backdrop-blur-sm rounded-full">
+            {scanning ? (
+              <>
+                <div className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse" />
+                <p className="text-white/90 text-sm">正在扫描...</p>
+              </>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Loader2 className="w-4 h-4 text-white/60 animate-spin" />
+                <p className="text-white/60 text-sm">正在启动摄像头...</p>
               </div>
             )}
-
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-black/50 backdrop-blur-sm rounded-full">
-              {scanning ? (
-                <>
-                  <div className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse" />
-                  <p className="text-white/90 text-sm">正在扫描...</p>
-                </>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <Loader2 className="w-4 h-4 text-white/60 animate-spin" />
-                  <p className="text-white/60 text-sm">正在启动摄像头...</p>
-                </div>
-              )}
-            </div>
-
-            <div className="flex gap-3">
-              {torchSupported && (
-                <button
-                  onClick={toggleTorch}
-                  className={`px-4 py-1.5 backdrop-blur-sm text-white text-sm rounded-full transition-colors ${
-                    torchEnabled
-                      ? "bg-amber-500/80 hover:bg-amber-500"
-                      : "bg-white/20 hover:bg-white/30"
-                  }`}
-                >
-                  {torchEnabled ? (
-                    <span className="flex items-center gap-1.5">
-                      <FlashlightOff className="w-4 h-4" />
-                      关灯
-                    </span>
-                  ) : (
-                    <span className="flex items-center gap-1.5">
-                      <Flashlight className="w-4 h-4" />
-                      手电筒
-                    </span>
-                  )}
-                </button>
-              )}
-              <button
-                onClick={() => setShowManualInput(true)}
-                className="px-4 py-1.5 bg-white/20 backdrop-blur-sm text-white text-sm rounded-full hover:bg-white/30 transition-colors"
-              >
-                手动输入
-              </button>
-               {continuous && (
-                <button
-                  onClick={handleClose}
-                  className="px-5 py-1.5 bg-indigo-500 text-white text-sm rounded-full font-medium hover:bg-indigo-600 transition-colors"
-                >
-                  完成扫描
-                </button>
-              )}
-            </div>
           </div>
-        </>
+
+          <div className="flex gap-3">
+            {torchSupported && (
+              <button
+                onClick={toggleTorch}
+                className={`px-4 py-1.5 backdrop-blur-sm text-white text-sm rounded-full transition-colors ${
+                  torchEnabled
+                    ? "bg-amber-500/80 hover:bg-amber-500"
+                    : "bg-white/20 hover:bg-white/30"
+                }`}
+              >
+                {torchEnabled ? (
+                  <span className="flex items-center gap-1.5">
+                    <FlashlightOff className="w-4 h-4" />
+                    关灯
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-1.5">
+                    <Flashlight className="w-4 h-4" />
+                    手电筒
+                  </span>
+                )}
+              </button>
+            )}
+            <button
+              onClick={() => setShowManualInput(true)}
+              className="px-4 py-1.5 bg-white/20 backdrop-blur-sm text-white text-sm rounded-full hover:bg-white/30 transition-colors"
+            >
+              手动输入
+            </button>
+             {continuous && (
+              <button
+                onClick={handleClose}
+                className="px-5 py-1.5 bg-indigo-500 text-white text-sm rounded-full font-medium hover:bg-indigo-600 transition-colors"
+              >
+                完成扫描
+              </button>
+            )}
+          </div>
+        </div>
       )}
     </>
   );
@@ -372,7 +320,7 @@ export default function QRScanner({ onScan, onClose, continuous = false, embedde
   }
 
   return (
-    <div className="fixed inset-0 bg-black/95 backdrop-blur-sm z-50 flex flex-col animate-fade-in">
+    <div className="fixed inset-0 bg-black z-50 flex flex-col animate-fade-in">
       <div className="relative z-20 flex items-center justify-between p-4">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
