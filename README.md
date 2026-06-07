@@ -1,8 +1,13 @@
 # 元器件库存管理系统
 
-电子元器件入库出库管理系统，基于 Next.js + Tailwind CSS + SQLite 构建。
+电子元器件入库出库管理系统，基于 Next.js + Tailwind CSS 构建，支持 SQLite 本地存储和 Upstash Redis 云端存储。
 
 ## 功能特性
+
+### 登录认证
+- 用户名密码登录，凭据通过环境变量配置
+- Cookie 会话保持，登录状态持久化
+- 未登录自动跳转登录页
 
 ### 仪表盘
 - 统计概览：器件总数、低库存预警、今日入库/出库
@@ -71,20 +76,19 @@
 - 功能说明文档
 - 快捷键参考
 
-### UI/UX 优化
+### UI/UX
 - 自定义字体：Sora (标题) + DM Sans (正文)
 - CSS 变量主题：统一色彩系统，亮色/暗色模式切换
 - 动画效果：页面过渡、卡片悬停、按钮交互
 - 响应式设计：桌面侧边栏 + 移动端底部导航 + 更多菜单
 - 快捷键支持：`/` 搜索、`?` 帮助、`g+p/i/o/a/b/w/l` 页面导航
-- 移动端底部导航栏：首页、器件、入库、出库、更多（弹出菜单）
 - 暗色模式：支持亮色/暗色/跟随系统三种模式，所有页面完整支持
 
 ## 技术栈
 
 - **前端**: Next.js 16, React 19, TypeScript
 - **样式**: Tailwind CSS 4, CSS Variables, 响应式设计
-- **数据库**: SQLite (better-sqlite3)
+- **存储**: SQLite (better-sqlite3) / Upstash Redis (可切换)
 - **图表**: Chart.js + react-chartjs-2
 - **图标**: Lucide React
 - **外部 API**: LCEDA API (元器件数据查询)
@@ -95,6 +99,23 @@
 
 ```bash
 npm install
+```
+
+### 环境变量
+
+复制 `.env.example` 为 `.env`，根据需要修改：
+
+```bash
+# 存储模式: local=SQLite本地 | cloud=Upstash Redis
+STORAGE_MODE=local
+
+# Upstash Redis (cloud 模式必填)
+UPSTASH_REDIS_REST_URL=
+UPSTASH_REDIS_REST_TOKEN=
+
+# 登录凭据
+AUTH_USERNAME=admin
+AUTH_PASSWORD=admin123
 ```
 
 ### 启动开发服务器
@@ -118,58 +139,74 @@ npm start
 inventory-system/
 ├── src/
 │   ├── app/
-│   │   ├── api/              # API 路由
-│   │   │   ├── alerts/       # 库存预警 API
-│   │   │   ├── analytics/    # 数据分析 API
-│   │   │   ├── boms/         # BOM 清单 API
-│   │   │   ├── categories/   # 分类管理 API
-│   │   │   ├── dashboard/    # 仪表盘数据
-│   │   │   ├── export/       # 数据导入导出 API
-│   │   │   ├── favorites/    # 收藏 API
-│   │   │   ├── images/       # 图片读取 API
-│   │   │   │   └── [partId]/ # 器件图片 API
-│   │   │   ├── lceda/        # LCEDA API 代理
-│   │   │   ├── logs/         # 操作日志 API
-│   │   │   ├── movements/    # 出入库记录
-│   │   │   ├── parts/        # 器件管理
-│   │   │   │   ├── batch/    # 批量操作 API
-│   │   │   │   └── lookup/   # 器件查询 API
-│   │   │   ├── settings/     # 设置 API
-│   │   │   └── warehouses/   # 仓库管理 API
-│   │   ├── analytics/        # 数据分析页面
-│   │   ├── boms/             # BOM 清单页面
-│   │   ├── help/             # 帮助页面
-│   │   ├── logs/             # 操作日志页面
-│   │   ├── parts/            # 器件页面
-│   │   ├── scan/             # 扫码入库工作台
-│   │   ├── settings/         # 设置页面
-│   │   ├── stock-in/         # 入库页面
-│   │   ├── stock-out/        # 出库页面
-│   │   ├── warehouses/       # 仓库管理页面
-│   │   ├── globals.css       # 全局样式（含暗黑模式配置）
-│   │   ├── layout.tsx        # 根布局
-│   │   └── page.tsx          # 仪表盘
+│   │   ├── api/
+│   │   │   ├── auth/           # 认证 API
+│   │   │   │   ├── login/      # 登录
+│   │   │   │   ├── logout/     # 登出
+│   │   │   │   └── me/         # 当前用户
+│   │   │   ├── alerts/         # 库存预警 API
+│   │   │   ├── analytics/      # 数据分析 API
+│   │   │   ├── boms/           # BOM 清单 API
+│   │   │   ├── categories/     # 分类管理 API
+│   │   │   ├── dashboard/      # 仪表盘数据
+│   │   │   ├── export/         # 数据导入导出 API
+│   │   │   ├── favorites/      # 收藏 API
+│   │   │   ├── images/         # 图片读取 API
+│   │   │   │   └── [partId]/   # 器件图片 API
+│   │   │   ├── lceda/          # LCEDA API 代理
+│   │   │   ├── logs/           # 操作日志 API
+│   │   │   ├── movements/      # 出入库记录
+│   │   │   ├── parts/          # 器件管理
+│   │   │   │   ├── batch/      # 批量操作 API
+│   │   │   │   └── lookup/     # 器件查询 API
+│   │   │   ├── settings/       # 设置 API
+│   │   │   └── warehouses/     # 仓库管理 API
+│   │   ├── analytics/          # 数据分析页面
+│   │   ├── boms/               # BOM 清单页面
+│   │   ├── help/               # 帮助页面
+│   │   ├── login/              # 登录页面
+│   │   ├── logs/               # 操作日志页面
+│   │   ├── parts/              # 器件页面
+│   │   ├── scan/               # 扫码入库工作台
+│   │   ├── settings/           # 设置页面
+│   │   ├── stock-in/           # 入库页面
+│   │   ├── stock-out/          # 出库页面
+│   │   ├── warehouses/         # 仓库管理页面
+│   │   ├── globals.css         # 全局样式
+│   │   ├── layout.tsx          # 根布局
+│   │   └── page.tsx            # 仪表盘
 │   ├── components/
-│   │   ├── Breadcrumb.tsx    # 面包屑导航
+│   │   ├── AppShell.tsx        # 条件布局（登录页隐藏侧边栏）
+│   │   ├── Breadcrumb.tsx      # 面包屑导航
 │   │   ├── KeyboardShortcuts.tsx  # 快捷键
-│   │   ├── Navigation.tsx    # 侧边栏导航
-│   │   ├── QRScanner.tsx     # 二维码扫描
-│   │   └── ThemeProvider.tsx # 主题管理
-│   └── lib/
-│       ├── api/
-│       │   └── lceda.ts      # LCEDA API 客户端
-│       ├── db.ts             # 数据库连接
-│       ├── image-store.ts    # 图片下载/存储工具
-│       ├── logger.ts         # 操作日志记录
-│       └── validations.ts    # 数据验证
+│   │   ├── Navigation.tsx      # 侧边栏导航
+│   │   ├── QRScanner.tsx       # 二维码扫描
+│   │   └── ThemeProvider.tsx   # 主题管理
+│   ├── lib/
+│   │   ├── api/
+│   │   │   └── lceda.ts        # LCEDA API 客户端
+│   │   ├── db.ts               # 数据库适配器接口
+│   │   ├── db-sqlite.ts        # SQLite 适配器
+│   │   ├── db-redis.ts         # Redis 适配器
+│   │   ├── image-store.ts      # 图片下载/存储工具
+│   │   ├── logger.ts           # 操作日志记录
+│   │   └── validations.ts      # 数据验证
+│   └── middleware.ts           # 认证中间件
 ├── data/
-│   └── inventory.db          # SQLite 数据库
-└── public/                   # 静态资源
+│   ├── inventory.db            # SQLite 数据库
+│   └── images/parts/           # 产品图片存储
+├── edgeone.json                # EdgeOne Pages 配置
+└── public/                     # 静态资源
 ```
 
 ## 数据库
 
-使用 SQLite 存储数据，数据库文件位于 `data/inventory.db`。
+支持两种存储模式，通过 `STORAGE_MODE` 环境变量切换：
+
+| 模式 | 存储 | 适用场景 |
+|------|------|----------|
+| `local` | SQLite (better-sqlite3) | 本地部署、Docker |
+| `cloud` | Upstash Redis | EdgeOne Pages、Vercel 等 Serverless 平台 |
 
 ### 表结构
 
@@ -240,15 +277,9 @@ inventory-system/
 - **手动获取**：通过 LCEDA API 查询并下载
 
 ### 存储说明
-- 图片存储位置：`data/images/parts/`
-- 文件命名：`{partId}.{ext}`（保留原始格式 jpg/png）
-- 图片 API：`GET /api/images/{partId}`
+- **本地模式**：图片存储在 `data/images/parts/`，文件命名 `{partId}.{ext}`
+- **云端模式**：图片 URL 存储在 Redis，通过 `/api/images/{partId}` 代理访问
 - 删除器件时自动清理关联图片
-
-### 图片查看
-- 器件详情页显示产品缩略图
-- 点击图片可全屏放大查看
-- 点击任意位置或按 Esc 关闭
 
 ## 移动端使用说明
 
@@ -262,60 +293,7 @@ inventory-system/
 
 ## 部署
 
-### 方式一：Docker 部署（推荐）
-
-#### 首次部署
-
-1. 登录 GitHub Container Registry
-   ```bash
-   docker login ghcr.io -u YOUR_USERNAME -p YOUR_TOKEN
-   ```
-
-2. 拉取镜像并启动
-   ```bash
-   docker pull ghcr.io/dusklane/inventory-system:latest
-   docker-compose -f docker-compose.prod.yml up -d
-   ```
-
-#### 更新部署
-
-```bash
-docker-compose -f docker-compose.prod.yml pull
-docker-compose -f docker-compose.prod.yml up -d
-```
-
-#### 使用指定版本
-
-```bash
-# 修改 docker-compose.prod.yml 中的镜像标签
-# 从 latest 改为指定版本，如 v1.0.0
-image: ghcr.io/dusklane/inventory-system:v1.0.0
-
-# 然后拉取并重启
-docker-compose -f docker-compose.prod.yml pull
-docker-compose -f docker-compose.prod.yml up -d
-```
-
-### 方式二：本地构建
-
-```bash
-docker-compose up -d --build
-```
-
-### 访问地址
-
-- 本机：http://localhost:3000
-- 局域网：http://你的IP:3000
-
-### GitHub Actions 自动构建
-
-推送到 main 分支的代码会自动构建并推送到 ghcr.io。
-
-手动触发可指定版本号：
-1. 进入 Actions 页面
-2. 选择 "Docker Build and Push"
-3. 点击 "Run workflow"
-4. 输入版本号（如 v1.0.0）
+详见 [部署指南](./docs/deployment.md)。
 
 ## 许可证
 
