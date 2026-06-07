@@ -10,7 +10,8 @@ interface QRScannerProps {
   embedded?: boolean;
 }
 
-const ABSENT_THRESHOLD = 5;
+const ABSENT_THRESHOLD = 15;
+const COOLDOWN_MS = 3000;
 
 export default function QRScanner({ onScan, onClose, continuous = false, embedded = false }: QRScannerProps) {
   const [error, setError] = useState("");
@@ -27,6 +28,7 @@ export default function QRScanner({ onScan, onClose, continuous = false, embedde
   const lastDetectedCodeRef = useRef<string>("");
   const codePresentRef = useRef<boolean>(false);
   const consecutiveMissesRef = useRef<number>(0);
+  const lastScanTimeRef = useRef<number>(0);
   const trackRef = useRef<MediaStreamTrack | null>(null);
 
   const isCameraAvailable = typeof navigator !== "undefined" &&
@@ -34,6 +36,7 @@ export default function QRScanner({ onScan, onClose, continuous = false, embedde
     typeof navigator.mediaDevices.getUserMedia === "function";
 
   const handleScanResult = useCallback((code: string) => {
+    lastScanTimeRef.current = Date.now();
     onScan(code);
     setScanCount((prev) => prev + 1);
     setShowSuccess(true);
@@ -102,8 +105,7 @@ export default function QRScanner({ onScan, onClose, continuous = false, embedde
           { facingMode: "environment" },
           {
             fps: 10,
-            qrbox: { width: 250, height: 250 },
-            aspectRatio: 1.0,
+            qrbox: { width: Math.min(250, Math.floor(window.innerWidth * 0.7)), height: Math.min(250, Math.floor(window.innerWidth * 0.7)) },
             disableFlip: false,
           },
           (decodedText: string) => {
@@ -117,6 +119,9 @@ export default function QRScanner({ onScan, onClose, continuous = false, embedde
             }
 
             if (isSameCode && !codePresentRef.current) {
+              if (now - lastScanTimeRef.current < COOLDOWN_MS) {
+                return;
+              }
               codePresentRef.current = true;
               consecutiveMissesRef.current = 0;
               handleScanResult(decodedText);

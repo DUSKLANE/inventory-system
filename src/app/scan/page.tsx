@@ -88,13 +88,29 @@ export default function ScanPage() {
       return;
     }
 
+    const scanQty = parseInt(scanData.qty || "1", 10) || 1;
+
+    const existingItem = pendingItems.find(
+      (item) => item.scanData.pc === scanData.pc
+    );
+    if (existingItem) {
+      setPendingItems((prev) =>
+        prev.map((item) =>
+          item.scanData.pc === scanData.pc
+            ? { ...item, quantity: item.quantity + scanQty }
+            : item
+        )
+      );
+      return;
+    }
+
     const itemId = Date.now().toString() + Math.random().toString(36).slice(2);
     const newItem: PendingItem = {
       id: itemId,
       scanData,
       productInfo: null,
       status: "loading",
-      quantity: parseInt(scanData.qty || "1", 10) || 1,
+      quantity: scanQty,
       location: "",
     };
 
@@ -166,7 +182,7 @@ export default function ScanPage() {
         )
       );
     }
-  }, []);
+  }, [pendingItems]);
 
   const handleScan = useCallback(
     (code: string) => {

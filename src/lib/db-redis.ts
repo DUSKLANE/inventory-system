@@ -99,20 +99,20 @@ export class RedisAdapter implements DatabaseAdapter {
   private _cacheTime = 0;
 
   private getAllPartsSync(): Part[] {
-    if (this._cache.parts && Date.now() - this._cacheTime < 5000) return this._cache.parts;
+    if (this._cache.parts && Date.now() - this._cacheTime < 60000) return this._cache.parts;
     return [];
   }
   private getAllStockSync(): Map<string, { quantity: number }> {
-    if (this._cache.stock && Date.now() - this._cacheTime < 5000) return this._cache.stock;
+    if (this._cache.stock && Date.now() - this._cacheTime < 60000) return this._cache.stock;
     return new Map();
   }
   private getAllMovementsSync(): Movement[] {
-    if (this._cache.movements && Date.now() - this._cacheTime < 5000) return this._cache.movements;
+    if (this._cache.movements && Date.now() - this._cacheTime < 60000) return this._cache.movements;
     return [];
   }
 
   private async loadCache(): Promise<{ parts: Part[]; stock: Map<string, { quantity: number }>; movements: Movement[] }> {
-    if (this._cache.parts && Date.now() - this._cacheTime < 5000) return this._cache as { parts: Part[]; stock: Map<string, { quantity: number }>; movements: Movement[] };
+    if (this._cache.parts && Date.now() - this._cacheTime < 60000) return this._cache as { parts: Part[]; stock: Map<string, { quantity: number }>; movements: Movement[] };
     const [partIds, movementIds] = await Promise.all([this.redis.zrange("parts_index", 0, -1, { rev: true }) as Promise<string[]>, this.redis.zrange("movements_index", 0, -1, { rev: true }) as Promise<string[]>]);
     const parts: Part[] = [];
     const stock = new Map<string, { quantity: number }>();
