@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import {
   ScanBarcode,
   Camera,
@@ -73,13 +73,29 @@ export default function ScanPage() {
   const [showScanner, setShowScanner] = useState(false);
   const [showManualInput, setShowManualInput] = useState(false);
   const [manualCode, setManualCode] = useState("");
-  const [pendingItems, setPendingItems] = useState<PendingItem[]>([]);
+  const [pendingItems, setPendingItems] = useState<PendingItem[]>(() => {
+    if (typeof window === "undefined") return [];
+    try {
+      const saved = localStorage.getItem("scan_pending_items");
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitResult, setSubmitResult] = useState<{
     success: number;
     failed: number;
     message: string;
   } | null>(null);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("scan_pending_items", JSON.stringify(pendingItems));
+    } catch {
+      // ignore
+    }
+  }, [pendingItems]);
 
   const processScanData = useCallback(async (raw: string) => {
     const scanData = parseScanData(raw);
@@ -201,7 +217,7 @@ export default function ScanPage() {
   const setQuantityDirectly = (id: string, quantity: number) => {
     setPendingItems((prev) =>
       prev.map((item) =>
-        item.id === id ? { ...item, quantity: Math.max(1, quantity) } : item
+        item.id === id ? { ...item, quantity: Math.max(0, quantity) } : item
       )
     );
   };
@@ -220,6 +236,12 @@ export default function ScanPage() {
 
   const removeItem = (id: string) => {
     setPendingItems((prev) => prev.filter((item) => item.id !== id));
+  };
+
+  const clearAll = () => {
+    if (confirm("确定清除所有待入库数据？")) {
+      setPendingItems([]);
+    }
   };
 
   const retryFetch = async (id: string) => {
@@ -343,6 +365,15 @@ export default function ScanPage() {
           <h1 className="text-2xl font-bold text-gray-900 dark:text-[var(--card-foreground)]">扫码入库</h1>
         </div>
         <div className="flex items-center gap-2">
+          {pendingItems.length > 0 && (
+            <button
+              onClick={clearAll}
+              className="flex items-center gap-1 px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors"
+            >
+              <Trash2 className="w-4 h-4" />
+              清除全部
+            </button>
+          )}
           <button
             onClick={() => setShowManualInput(true)}
             className="flex items-center gap-1 px-3 py-2 text-sm text-gray-600 dark:text-[var(--foreground-muted)] hover:bg-gray-100 dark:hover:bg-[var(--background-subtle)] rounded-lg transition-colors"
