@@ -321,7 +321,7 @@ export default function ScanPage() {
   const totalQuantity = pendingItems.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <div className="page-container max-w-3xl">
       <Breadcrumb items={[{ label: "扫码入库" }]} />
 
       <div className="flex items-center justify-between">

@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
-import Navigation from "@/components/Navigation";
-import KeyboardShortcuts from "@/components/KeyboardShortcuts";
+import AppShell from "@/components/AppShell";
 import { ThemeProvider } from "@/components/ThemeProvider";
 
 export const metadata: Metadata = {
@@ -24,11 +23,7 @@ export default function RootLayout({
     <html lang="zh-CN" suppressHydrationWarning>
       <body className="bg-[var(--background)] antialiased noise-texture">
         <ThemeProvider>
-          <Navigation />
-          <main className="main-content pb-20 md:pb-6 min-h-screen">
-            {children}
-          </main>
-          <KeyboardShortcuts />
+          <AppShell>{children}</AppShell>
         </ThemeProvider>
       </body>
     </html>
