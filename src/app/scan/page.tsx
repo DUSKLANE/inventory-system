@@ -641,7 +641,7 @@ function PendingItemCard({
             value={String(item.quantity)}
             onChange={(val) => onSetQuantity(item.id, parseInt(val) || 1)}
             min={1}
-            className="w-40"
+            className="w-full sm:w-40"
           />
 
           <div className="flex items-center gap-2 flex-1 min-w-0">

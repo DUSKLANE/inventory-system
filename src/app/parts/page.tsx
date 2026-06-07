@@ -1295,7 +1295,7 @@ function BatchMovementModal({
                       value={String(quantities[part.id] || 0)}
                       onChange={(val) => updateQuantity(part.id, val)}
                       min={0}
-                      className="w-40"
+                      className="w-full sm:w-40"
                     />
                     <span className="text-sm text-gray-500 dark:text-[var(--foreground-subtle)] w-10">{part.unit}</span>
                   </div>

@@ -290,7 +290,7 @@ export default function BomDetailPage() {
                         value={String(item.quantity)}
                         onChange={(val) => updateItemQuantity(item.partId, val)}
                         min={1}
-                        className="w-40"
+                        className="w-full sm:w-40"
                       />
                     ) : (
                       <div className="text-right">
