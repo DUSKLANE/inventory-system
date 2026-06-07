@@ -1,148 +1,255 @@
-import Database from "better-sqlite3";
-import path from "path";
+import type Database from "better-sqlite3";
 
-const dbPath = path.join(process.cwd(), "data", "inventory.db");
+// ── Shared Types ──
 
-// Ensure data directory exists
-import fs from "fs";
-const dataDir = path.dirname(dbPath);
-if (!fs.existsSync(dataDir)) {
-  fs.mkdirSync(dataDir, { recursive: true });
+export interface Part {
+  id: string;
+  code: string;
+  name: string;
+  category: string;
+  package: string;
+  brand: string;
+  model: string;
+  unit: string;
+  minStock: number;
+  location: string;
+  note: string;
+  image: string;
+  createdAt: string;
+  updatedAt: string;
+  stock?: { quantity: number };
 }
 
-const db = new Database(dbPath);
-
-// Enable WAL mode for better performance
-db.pragma("journal_mode = WAL");
-db.pragma("foreign_keys = ON");
-
-// Initialize tables
-db.exec(`
-  CREATE TABLE IF NOT EXISTS parts (
-    id TEXT PRIMARY KEY,
-    code TEXT UNIQUE NOT NULL,
-    name TEXT NOT NULL,
-    category TEXT DEFAULT '',
-    package TEXT DEFAULT '',
-    brand TEXT DEFAULT '',
-    model TEXT DEFAULT '',
-    unit TEXT DEFAULT 'pcs',
-    minStock INTEGER DEFAULT 0,
-    location TEXT DEFAULT '',
-    note TEXT DEFAULT '',
-    createdAt TEXT DEFAULT (datetime('now')),
-    updatedAt TEXT DEFAULT (datetime('now'))
-  );
-
-  CREATE TABLE IF NOT EXISTS stock (
-    id TEXT PRIMARY KEY,
-    partId TEXT UNIQUE NOT NULL,
-    quantity INTEGER DEFAULT 0,
-    updatedAt TEXT DEFAULT (datetime('now')),
-    FOREIGN KEY (partId) REFERENCES parts(id) ON DELETE CASCADE
-  );
-
-  CREATE TABLE IF NOT EXISTS stock_movements (
-    id TEXT PRIMARY KEY,
-    partId TEXT NOT NULL,
-    type TEXT NOT NULL,
-    quantity INTEGER NOT NULL,
-    operator TEXT DEFAULT '',
-    reason TEXT DEFAULT '',
-    code TEXT DEFAULT '',
-    createdAt TEXT DEFAULT (datetime('now')),
-    FOREIGN KEY (partId) REFERENCES parts(id) ON DELETE CASCADE
-  );
-
-  CREATE TABLE IF NOT EXISTS favorites (
-    id TEXT PRIMARY KEY,
-    partId TEXT UNIQUE NOT NULL,
-    createdAt TEXT DEFAULT (datetime('now')),
-    FOREIGN KEY (partId) REFERENCES parts(id) ON DELETE CASCADE
-  );
-
-  CREATE TABLE IF NOT EXISTS boms (
-    id TEXT PRIMARY KEY,
-    name TEXT NOT NULL,
-    description TEXT DEFAULT '',
-    createdAt TEXT DEFAULT (datetime('now')),
-    updatedAt TEXT DEFAULT (datetime('now'))
-  );
-
-  CREATE TABLE IF NOT EXISTS bom_items (
-    id TEXT PRIMARY KEY,
-    bomId TEXT NOT NULL,
-    partId TEXT NOT NULL,
-    quantity INTEGER DEFAULT 1,
-    note TEXT DEFAULT '',
-    FOREIGN KEY (bomId) REFERENCES boms(id) ON DELETE CASCADE,
-    FOREIGN KEY (partId) REFERENCES parts(id) ON DELETE CASCADE
-  );
-
-  CREATE TABLE IF NOT EXISTS operation_logs (
-    id TEXT PRIMARY KEY,
-    action TEXT NOT NULL,
-    entityType TEXT NOT NULL,
-    entityId TEXT,
-    entityName TEXT,
-    details TEXT DEFAULT '',
-    operator TEXT DEFAULT 'system',
-    createdAt TEXT DEFAULT (datetime('now'))
-  );
-
-  CREATE TABLE IF NOT EXISTS warehouses (
-    id TEXT PRIMARY KEY,
-    name TEXT NOT NULL,
-    location TEXT DEFAULT '',
-    description TEXT DEFAULT '',
-    isDefault INTEGER DEFAULT 0,
-    createdAt TEXT DEFAULT (datetime('now')),
-    updatedAt TEXT DEFAULT (datetime('now'))
-  );
-
-  CREATE TABLE IF NOT EXISTS stock_warehouse (
-    id TEXT PRIMARY KEY,
-    partId TEXT NOT NULL,
-    warehouseId TEXT NOT NULL,
-    quantity INTEGER DEFAULT 0,
-    updatedAt TEXT DEFAULT (datetime('now')),
-    FOREIGN KEY (partId) REFERENCES parts(id) ON DELETE CASCADE,
-    FOREIGN KEY (warehouseId) REFERENCES warehouses(id) ON DELETE CASCADE,
-    UNIQUE(partId, warehouseId)
-  );
-
-  CREATE TABLE IF NOT EXISTS settings (
-    key TEXT PRIMARY KEY,
-    value TEXT NOT NULL,
-    updatedAt TEXT DEFAULT (datetime('now'))
-  );
-
-  CREATE TABLE IF NOT EXISTS categories (
-    id TEXT PRIMARY KEY,
-    name TEXT UNIQUE NOT NULL,
-    description TEXT DEFAULT '',
-    sortOrder INTEGER DEFAULT 0,
-    createdAt TEXT DEFAULT (datetime('now'))
-  );
-
-  CREATE INDEX IF NOT EXISTS idx_parts_code ON parts(code);
-  CREATE INDEX IF NOT EXISTS idx_parts_category ON parts(category);
-  CREATE INDEX IF NOT EXISTS idx_stock_movements_partId ON stock_movements(partId);
-  CREATE INDEX IF NOT EXISTS idx_stock_movements_createdAt ON stock_movements(createdAt);
-  CREATE INDEX IF NOT EXISTS idx_favorites_partId ON favorites(partId);
-  CREATE INDEX IF NOT EXISTS idx_bom_items_bomId ON bom_items(bomId);
-  CREATE INDEX IF NOT EXISTS idx_bom_items_partId ON bom_items(partId);
-  CREATE INDEX IF NOT EXISTS idx_operation_logs_createdAt ON operation_logs(createdAt);
-  CREATE INDEX IF NOT EXISTS idx_operation_logs_entityType ON operation_logs(entityType);
-  CREATE INDEX IF NOT EXISTS idx_stock_warehouse_partId ON stock_warehouse(partId);
-  CREATE INDEX IF NOT EXISTS idx_stock_warehouse_warehouseId ON stock_warehouse(warehouseId);
-  CREATE INDEX IF NOT EXISTS idx_categories_sortOrder ON categories(sortOrder);
-`);
-
-// Auto-migrate: add image column to parts if missing
-const columns = db.prepare("PRAGMA table_info(parts)").all() as { name: string }[];
-if (!columns.some(c => c.name === "image")) {
-  db.exec("ALTER TABLE parts ADD COLUMN image TEXT DEFAULT ''");
+export interface PartDetail extends Part {
+  movements: Movement[];
 }
+
+export interface Movement {
+  id: string;
+  partId: string;
+  type: string;
+  quantity: number;
+  operator: string;
+  reason: string;
+  code: string;
+  createdAt: string;
+  part?: { id?: string; code: string; name: string; unit: string };
+}
+
+export interface Bom {
+  id: string;
+  name: string;
+  description: string;
+  createdAt: string;
+  updatedAt: string;
+  itemCount?: number;
+}
+
+export interface BomItem {
+  id: string;
+  bomId: string;
+  partId: string;
+  quantity: number;
+  note: string;
+  code?: string;
+  name?: string;
+  category?: string;
+  unit?: string;
+  currentStock?: number;
+}
+
+export interface Warehouse {
+  id: string;
+  name: string;
+  location: string;
+  description: string;
+  isDefault: number;
+  createdAt: string;
+  updatedAt: string;
+  partCount?: number;
+  totalStock?: number;
+}
+
+export interface Category {
+  id: string;
+  name: string;
+  description: string;
+  sortOrder: number;
+  createdAt: string;
+  partCount?: number;
+}
+
+export interface Log {
+  id: string;
+  action: string;
+  entityType: string;
+  entityId: string;
+  entityName: string;
+  details: string;
+  operator: string;
+  createdAt: string;
+}
+
+export interface DashboardData {
+  totalParts: number;
+  lowStockCount: number;
+  todayInCount: number;
+  todayOutCount: number;
+  recentMovements: Record<string, unknown>[];
+  recentParts: Record<string, unknown>[];
+}
+
+export interface AlertsData {
+  lowStockParts: Record<string, unknown>[];
+  outOfStockParts: Record<string, unknown>[];
+  recentMovements: Record<string, unknown>[];
+  activeParts: Record<string, unknown>[];
+  stats: { totalParts: number; outOfStockCount: number; lowStockCount: number; criticalCount: number };
+}
+
+export interface AnalyticsData {
+  categoryStats: Record<string, unknown>[];
+  movementTrends: Record<string, unknown>[];
+  topMovedParts: Record<string, unknown>[];
+  stockValueByCategory: Record<string, unknown>[];
+  movementTypeDistribution: Record<string, unknown>[];
+  dailyAverages: { avgIn: number; avgOut: number; avgCount: number };
+  stockDistribution: Record<string, unknown>[];
+  period: number;
+}
+
+export interface PartFilters {
+  q?: string;
+  category?: string;
+  package?: string;
+  location?: string;
+  brand?: string;
+  stockMin?: number;
+  stockMax?: number;
+  hasStock?: boolean;
+  lowStock?: boolean;
+  page?: number;
+  pageSize?: number;
+}
+
+export interface MovementFilters {
+  partId?: string;
+  type?: string;
+  page?: number;
+  pageSize?: number;
+}
+
+export interface LogFilters {
+  entityType?: string;
+  action?: string;
+  page?: number;
+  pageSize?: number;
+}
+
+export interface BatchResult {
+  results: Array<{ partId: string; success: boolean; message?: string; newQuantity?: number }>;
+  successCount: number;
+  failCount: number;
+}
+
+// ── Database Adapter Interface ──
+
+export interface DatabaseAdapter {
+  // Dashboard & Analytics
+  getDashboard(): Promise<DashboardData>;
+  getAlerts(): Promise<AlertsData>;
+  getAnalytics(period: number): Promise<AnalyticsData>;
+
+  // Parts CRUD
+  listParts(filters: PartFilters): Promise<{ parts: Part[]; total: number }>;
+  getPart(id: string): Promise<PartDetail | null>;
+  getPartByCode(code: string): Promise<Part | null>;
+  createPart(data: Record<string, unknown>): Promise<Part>;
+  updatePart(id: string, data: Record<string, unknown>): Promise<Part>;
+  deletePart(id: string): Promise<void>;
+
+  // Movements
+  listMovements(filters: MovementFilters): Promise<{ movements: Movement[]; total: number }>;
+  createMovement(data: Record<string, unknown>): Promise<{ id: string; newQuantity: number }>;
+  batchDelete(ids: string[]): Promise<void>;
+  batchUpdate(ids: string[], updates: Record<string, unknown>): Promise<void>;
+  batchMovement(items: Array<{ partId: string; quantity: number }>, type: "IN" | "OUT", operator?: string, reason?: string): Promise<BatchResult>;
+  backfillImages(ids: string[]): Promise<BatchResult>;
+
+  // Favorites
+  listFavorites(): Promise<Part[]>;
+  toggleFavorite(partId: string): Promise<{ favorited: boolean }>;
+
+  // BOMs
+  listBoms(): Promise<Bom[]>;
+  getBom(id: string): Promise<(Bom & { items: BomItem[] }) | null>;
+  createBom(data: { name: string; description?: string; items?: Array<{ partId: string; quantity: number; note?: string }> }): Promise<Bom>;
+  updateBom(id: string, data: { name?: string; description?: string; items?: Array<{ partId: string; quantity: number; note?: string }> }): Promise<Bom & { items: BomItem[] }>;
+  deleteBom(id: string): Promise<void>;
+
+  // Warehouses
+  listWarehouses(): Promise<Warehouse[]>;
+  getWarehouse(id: string): Promise<(Warehouse & { items: Record<string, unknown>[] }) | null>;
+  createWarehouse(data: Record<string, unknown>): Promise<Warehouse>;
+  updateWarehouse(id: string, data: Record<string, unknown>): Promise<Warehouse>;
+  deleteWarehouse(id: string): Promise<void>;
+
+  // Settings
+  getSetting(key: string): Promise<string | null>;
+  setSetting(key: string, value: string): Promise<void>;
+  listSettings(): Promise<Record<string, string>>;
+
+  // Categories
+  listCategories(): Promise<Category[]>;
+  getCategory(id: string): Promise<Category | null>;
+  createCategory(data: { name: string; description?: string }): Promise<Category>;
+  updateCategory(id: string, data: { name: string; description?: string; sortOrder?: number }): Promise<void>;
+  deleteCategory(id: string): Promise<void>;
+
+  // Logs
+  listLogs(filters: LogFilters): Promise<{ logs: Log[]; total: number }>;
+  logOperation(data: { action: string; entityType: string; entityId?: string; entityName?: string; details?: string; operator?: string }): Promise<void>;
+
+  // Export
+  exportParts(): Promise<Record<string, unknown>[]>;
+  exportMovements(): Promise<Record<string, unknown>[]>;
+  importParts(rows: string[][], headers: string[]): Promise<{ imported: number; skipped: number; errors: string[] }>;
+}
+
+// ── Storage mode & singleton ──
+
+export type StorageMode = "local" | "cloud";
+
+export function getStorageMode(): StorageMode {
+  return (process.env.STORAGE_MODE as StorageMode) || "local";
+}
+
+let _db: DatabaseAdapter | null = null;
+
+export function getDb(): DatabaseAdapter {
+  if (!_db) {
+    const mode = getStorageMode();
+    if (mode === "cloud") {
+      const { RedisAdapter } = require("./db-redis") as typeof import("./db-redis");
+      _db = new RedisAdapter();
+    } else {
+      const { SqliteAdapter } = require("./db-sqlite") as typeof import("./db-sqlite");
+      _db = new SqliteAdapter();
+    }
+  }
+  return _db;
+}
+
+// Convenience: default export is the adapter instance (lazy)
+const db: DatabaseAdapter = new Proxy({} as DatabaseAdapter, {
+  get(_target, prop) {
+    const adapter = getDb();
+    const value = (adapter as unknown as Record<string, unknown>)[prop as string];
+    if (typeof value === "function") {
+      return value.bind(adapter);
+    }
+    return value;
+  },
+});
 
 export default db;
