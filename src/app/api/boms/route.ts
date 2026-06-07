@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import db from "@/lib/db";
+import { getDb } from "@/lib/db";
 import { randomUUID } from "crypto";
+
+export const dynamic = 'force-dynamic';
 
 // GET /api/boms - list BOMs
 export async function GET() {
+  const db = getDb();
   try {
     const boms = db.prepare(`
       SELECT b.*, 
@@ -16,11 +19,14 @@ export async function GET() {
   } catch (error) {
     console.error("GET /api/boms error:", error);
     return NextResponse.json({ error: "获取BOM列表失败" }, { status: 500 });
+  } finally {
+    db.close();
   }
 }
 
 // POST /api/boms - create BOM
 export async function POST(request: NextRequest) {
+  const db = getDb();
   try {
     const body = await request.json();
     const { name, description, items } = body;
@@ -55,5 +61,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("POST /api/boms error:", error);
     return NextResponse.json({ error: "创建BOM失败" }, { status: 500 });
+  } finally {
+    db.close();
   }
 }

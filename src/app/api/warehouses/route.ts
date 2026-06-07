@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import db from "@/lib/db";
+import { getDb } from "@/lib/db";
 import { randomUUID } from "crypto";
 import { logOperation } from "@/lib/logger";
 
+export const dynamic = 'force-dynamic';
+
 // GET /api/warehouses - list warehouses
 export async function GET() {
+  const db = getDb();
   try {
     const warehouses = db.prepare(`
       SELECT w.*, 
@@ -18,11 +21,14 @@ export async function GET() {
   } catch (error) {
     console.error("GET /api/warehouses error:", error);
     return NextResponse.json({ error: "获取仓库列表失败" }, { status: 500 });
+  } finally {
+    db.close();
   }
 }
 
 // POST /api/warehouses - create warehouse
 export async function POST(request: NextRequest) {
+  const db = getDb();
   try {
     const body = await request.json();
     const { name, location, description, isDefault } = body;
@@ -57,5 +63,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("POST /api/warehouses error:", error);
     return NextResponse.json({ error: "创建仓库失败" }, { status: 500 });
+  } finally {
+    db.close();
   }
 }

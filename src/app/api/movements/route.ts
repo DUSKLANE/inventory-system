@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import db from "@/lib/db";
+import { getDb } from "@/lib/db";
 import { movementSchema } from "@/lib/validations";
 import { randomUUID } from "crypto";
 
+export const dynamic = 'force-dynamic';
+
 // GET /api/movements
 export async function GET(request: NextRequest) {
+  const db = getDb();
   try {
     const { searchParams } = new URL(request.url);
     const partId = searchParams.get("partId") || undefined;
@@ -46,11 +49,14 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error("GET /api/movements error:", error);
     return NextResponse.json({ error: "获取流水记录失败" }, { status: 500 });
+  } finally {
+    db.close();
   }
 }
 
 // POST /api/movements - create stock movement
 export async function POST(request: NextRequest) {
+  const db = getDb();
   try {
     const body = await request.json();
     const data = movementSchema.parse(body);
@@ -109,5 +115,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "参数校验失败", details: error.message }, { status: 400 });
     }
     return NextResponse.json({ error: "创建流水失败" }, { status: 500 });
+  } finally {
+    db.close();
   }
 }

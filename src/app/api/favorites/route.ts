@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import db from "@/lib/db";
+import { getDb } from "@/lib/db";
+
+export const dynamic = 'force-dynamic';
 
 // GET /api/favorites - get favorite parts
 export async function GET() {
+  const db = getDb();
   try {
     const favorites = db.prepare(`
       SELECT p.id, p.code, p.name, p.category, p.unit, p.location,
@@ -18,11 +21,14 @@ export async function GET() {
   } catch (error) {
     console.error("GET /api/favorites error:", error);
     return NextResponse.json({ error: "获取收藏列表失败" }, { status: 500 });
+  } finally {
+    db.close();
   }
 }
 
 // POST /api/favorites - toggle favorite
 export async function POST(request: NextRequest) {
+  const db = getDb();
   try {
     const body = await request.json();
     const { partId } = body;
@@ -56,5 +62,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("POST /api/favorites error:", error);
     return NextResponse.json({ error: "操作失败" }, { status: 500 });
+  } finally {
+    db.close();
   }
 }

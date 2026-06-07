@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
-import db from "@/lib/db";
+import { getDb } from "@/lib/db";
+
+export const dynamic = 'force-dynamic';
 
 export async function GET() {
+  const db = getDb();
   try {
     const today = new Date().toISOString().split("T")[0];
 
@@ -60,5 +63,7 @@ export async function GET() {
   } catch (error) {
     console.error("GET /api/dashboard error:", error);
     return NextResponse.json({ error: "获取仪表盘数据失败" }, { status: 500 });
+  } finally {
+    db.close();
   }
 }

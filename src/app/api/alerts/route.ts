@@ -1,8 +1,11 @@
 import { NextResponse } from "next/server";
-import db from "@/lib/db";
+import { getDb } from "@/lib/db";
+
+export const dynamic = 'force-dynamic';
 
 // GET /api/alerts - get inventory alerts
 export async function GET() {
+  const db = getDb();
   try {
     // Low stock parts
     const lowStockParts = db.prepare(`
@@ -78,5 +81,7 @@ export async function GET() {
   } catch (error) {
     console.error("GET /api/alerts error:", error);
     return NextResponse.json({ error: "获取预警信息失败" }, { status: 500 });
+  } finally {
+    db.close();
   }
 }

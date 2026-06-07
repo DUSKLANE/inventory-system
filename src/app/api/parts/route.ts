@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import db from "@/lib/db";
+import { getDb } from "@/lib/db";
 import { partSchema, searchSchema } from "@/lib/validations";
 import { randomUUID } from "crypto";
 import { logOperation } from "@/lib/logger";
 import { downloadImage } from "@/lib/image-store";
 
+export const dynamic = 'force-dynamic';
+
 // GET /api/parts - list/search parts
 export async function GET(request: NextRequest) {
+  const db = getDb();
   try {
     const { searchParams } = new URL(request.url);
     const params = searchSchema.parse({
@@ -92,11 +95,14 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error("GET /api/parts error:", error);
     return NextResponse.json({ error: "获取器件列表失败" }, { status: 500 });
+  } finally {
+    db.close();
   }
 }
 
 // POST /api/parts - create part
 export async function POST(request: NextRequest) {
+  const db = getDb();
   try {
     const body = await request.json();
     const data = partSchema.parse(body);
@@ -120,7 +126,12 @@ export async function POST(request: NextRequest) {
     if (data.image) {
       downloadImage(id, data.image).then((filename) => {
         if (filename) {
-          db.prepare("UPDATE parts SET image = ? WHERE id = ?").run(filename, id);
+          const updateDb = getDb();
+          try {
+            updateDb.prepare("UPDATE parts SET image = ? WHERE id = ?").run(filename, id);
+          } finally {
+            updateDb.close();
+          }
         }
       }).catch(() => {});
     }
@@ -147,5 +158,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "参数校验失败", details: error.message }, { status: 400 });
     }
     return NextResponse.json({ error: "创建器件失败" }, { status: 500 });
+  } finally {
+    db.close();
   }
 }

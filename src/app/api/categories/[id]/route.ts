@@ -1,11 +1,14 @@
 import { NextResponse } from "next/server";
-import db from "@/lib/db";
+import { getDb } from "@/lib/db";
+
+export const dynamic = 'force-dynamic';
 
 // GET /api/categories/[id] - 获取单个分类
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const db = getDb();
   try {
     const { id } = await params;
     const category = db.prepare(`
@@ -24,6 +27,8 @@ export async function GET(
   } catch (error) {
     console.error("Failed to fetch category:", error);
     return NextResponse.json({ error: "获取分类失败" }, { status: 500 });
+  } finally {
+    db.close();
   }
 }
 
@@ -32,6 +37,7 @@ export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const db = getDb();
   try {
     const { id } = await params;
     const { name, description, sortOrder } = await request.json();
@@ -66,6 +72,8 @@ export async function PUT(
   } catch (error) {
     console.error("Failed to update category:", error);
     return NextResponse.json({ error: "更新分类失败" }, { status: 500 });
+  } finally {
+    db.close();
   }
 }
 
@@ -74,6 +82,7 @@ export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const db = getDb();
   try {
     const { id } = await params;
     const category = db.prepare("SELECT name FROM categories WHERE id = ?").get(id) as { name: string } | undefined;
@@ -89,5 +98,7 @@ export async function DELETE(
   } catch (error) {
     console.error("Failed to delete category:", error);
     return NextResponse.json({ error: "删除分类失败" }, { status: 500 });
+  } finally {
+    db.close();
   }
 }

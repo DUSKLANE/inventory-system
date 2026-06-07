@@ -1,11 +1,14 @@
 import { NextResponse } from "next/server";
-import db from "@/lib/db";
+import { getDb } from "@/lib/db";
+
+export const dynamic = 'force-dynamic';
 
 // GET /api/settings/[key] - 获取单个设置
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ key: string }> }
 ) {
+  const db = getDb();
   try {
     const { key } = await params;
     const setting = db.prepare("SELECT * FROM settings WHERE key = ?").get(key) as { key: string; value: string } | undefined;
@@ -18,6 +21,8 @@ export async function GET(
   } catch (error) {
     console.error("Failed to fetch setting:", error);
     return NextResponse.json({ error: "获取设置失败" }, { status: 500 });
+  } finally {
+    db.close();
   }
 }
 
@@ -26,6 +31,7 @@ export async function PUT(
   request: Request,
   { params }: { params: Promise<{ key: string }> }
 ) {
+  const db = getDb();
   try {
     const { key } = await params;
     const { value } = await request.json();
@@ -38,6 +44,8 @@ export async function PUT(
   } catch (error) {
     console.error("Failed to update setting:", error);
     return NextResponse.json({ error: "更新设置失败" }, { status: 500 });
+  } finally {
+    db.close();
   }
 }
 
@@ -46,6 +54,7 @@ export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ key: string }> }
 ) {
+  const db = getDb();
   try {
     const { key } = await params;
     db.prepare("DELETE FROM settings WHERE key = ?").run(key);
@@ -54,5 +63,7 @@ export async function DELETE(
   } catch (error) {
     console.error("Failed to delete setting:", error);
     return NextResponse.json({ error: "删除设置失败" }, { status: 500 });
+  } finally {
+    db.close();
   }
 }

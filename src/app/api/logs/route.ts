@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import db from "@/lib/db";
+import { getDb } from "@/lib/db";
+
+export const dynamic = 'force-dynamic';
 
 // GET /api/logs - get operation logs
 export async function GET(request: NextRequest) {
+  const db = getDb();
   try {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get("page") || "1");
@@ -43,11 +46,14 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error("GET /api/logs error:", error);
     return NextResponse.json({ error: "获取操作日志失败" }, { status: 500 });
+  } finally {
+    db.close();
   }
 }
 
 // POST /api/logs - create operation log
 export async function POST(request: NextRequest) {
+  const db = getDb();
   try {
     const body = await request.json();
     const { action, entityType, entityId, entityName, details, operator } = body;
@@ -68,5 +74,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("POST /api/logs error:", error);
     return NextResponse.json({ error: "创建操作日志失败" }, { status: 500 });
+  } finally {
+    db.close();
   }
 }

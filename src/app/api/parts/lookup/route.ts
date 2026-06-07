@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import db from "@/lib/db";
+import { getDb } from "@/lib/db";
+
+export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
+  const db = getDb();
   try {
     const { searchParams } = new URL(request.url);
     const code = searchParams.get("code");
@@ -27,5 +30,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error("GET /api/parts/lookup error:", error);
     return NextResponse.json({ error: "查询失败" }, { status: 500 });
+  } finally {
+    db.close();
   }
 }

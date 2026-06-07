@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import db from "@/lib/db";
+import { getDb } from "@/lib/db";
+
+export const dynamic = 'force-dynamic';
 
 // GET /api/export - export data
 export async function GET(request: NextRequest) {
+  const db = getDb();
   try {
     const { searchParams } = new URL(request.url);
     const format = searchParams.get("format") || "csv";
@@ -88,11 +91,14 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error("GET /api/export error:", error);
     return NextResponse.json({ error: "导出失败" }, { status: 500 });
+  } finally {
+    db.close();
   }
 }
 
 // POST /api/export - import data
 export async function POST(request: NextRequest) {
+  const db = getDb();
   try {
     const formData = await request.formData();
     const file = formData.get("file") as File;
@@ -191,5 +197,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("POST /api/export error:", error);
     return NextResponse.json({ error: "导入失败" }, { status: 500 });
+  } finally {
+    db.close();
   }
 }

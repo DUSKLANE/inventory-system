@@ -1,23 +1,23 @@
 import Database from "better-sqlite3";
 import path from "path";
+import fs from "fs";
 
 const dbPath = path.join(process.cwd(), "data", "inventory.db");
 
-// Ensure data directory exists
-import fs from "fs";
-const dataDir = path.dirname(dbPath);
-if (!fs.existsSync(dataDir)) {
-  fs.mkdirSync(dataDir, { recursive: true });
-}
+function getDb() {
+  const dataDir = path.dirname(dbPath);
+  if (!fs.existsSync(dataDir)) {
+    fs.mkdirSync(dataDir, { recursive: true });
+  }
 
-const db = new Database(dbPath);
+  const db = new Database(dbPath);
 
-// Enable WAL mode for better performance
-db.pragma("journal_mode = WAL");
-db.pragma("foreign_keys = ON");
+  // Enable WAL mode for better performance
+  db.pragma("journal_mode = WAL");
+  db.pragma("foreign_keys = ON");
 
-// Initialize tables
-db.exec(`
+  // Initialize tables
+  db.exec(`
   CREATE TABLE IF NOT EXISTS parts (
     id TEXT PRIMARY KEY,
     code TEXT UNIQUE NOT NULL,
@@ -139,10 +139,13 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_categories_sortOrder ON categories(sortOrder);
 `);
 
-// Auto-migrate: add image column to parts if missing
-const columns = db.prepare("PRAGMA table_info(parts)").all() as { name: string }[];
-if (!columns.some(c => c.name === "image")) {
-  db.exec("ALTER TABLE parts ADD COLUMN image TEXT DEFAULT ''");
+  // Auto-migrate: add image column to parts if missing
+  const columns = db.prepare("PRAGMA table_info(parts)").all() as { name: string }[];
+  if (!columns.some(c => c.name === "image")) {
+    db.exec("ALTER TABLE parts ADD COLUMN image TEXT DEFAULT ''");
+  }
+
+  return db;
 }
 
-export default db;
+export { getDb };

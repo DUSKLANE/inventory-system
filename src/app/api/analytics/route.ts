@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import db from "@/lib/db";
+import { getDb } from "@/lib/db";
+
+export const dynamic = 'force-dynamic';
 
 // GET /api/analytics - get analytics data
 export async function GET(request: NextRequest) {
+  const db = getDb();
   try {
     const { searchParams } = new URL(request.url);
     const period = searchParams.get("period") || "30"; // days
@@ -132,5 +135,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error("GET /api/analytics error:", error);
     return NextResponse.json({ error: "获取分析数据失败" }, { status: 500 });
+  } finally {
+    db.close();
   }
 }

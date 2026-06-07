@@ -1,14 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
-import db from "@/lib/db";
+import { getDb } from "@/lib/db";
 import { partSchema } from "@/lib/validations";
 import { logOperation } from "@/lib/logger";
 import { deleteImage } from "@/lib/image-store";
+
+export const dynamic = 'force-dynamic';
 
 // GET /api/parts/:id
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const db = getDb();
   try {
     const { id } = await params;
     const part = db.prepare(`
@@ -33,6 +36,8 @@ export async function GET(
   } catch (error) {
     console.error("GET /api/parts/[id] error:", error);
     return NextResponse.json({ error: "获取器件详情失败" }, { status: 500 });
+  } finally {
+    db.close();
   }
 }
 
@@ -41,6 +46,7 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const db = getDb();
   try {
     const { id } = await params;
     const body = await request.json();
@@ -95,6 +101,8 @@ export async function PUT(
   } catch (error) {
     console.error("PUT /api/parts/[id] error:", error);
     return NextResponse.json({ error: "更新器件失败" }, { status: 500 });
+  } finally {
+    db.close();
   }
 }
 
@@ -103,6 +111,7 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const db = getDb();
   try {
     const { id } = await params;
     
@@ -127,5 +136,7 @@ export async function DELETE(
   } catch (error) {
     console.error("DELETE /api/parts/[id] error:", error);
     return NextResponse.json({ error: "删除器件失败" }, { status: 500 });
+  } finally {
+    db.close();
   }
 }

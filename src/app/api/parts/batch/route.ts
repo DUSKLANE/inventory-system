@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import db from "@/lib/db";
+import { getDb } from "@/lib/db";
 import { z } from "zod";
 import { randomUUID } from "crypto";
 import { downloadImage, fetchProductImage, getImageFilename } from "@/lib/image-store";
+
+export const dynamic = 'force-dynamic';
 
 const batchDeleteSchema = z.object({
   ids: z.array(z.string()).min(1, "至少选择一个器件"),
@@ -29,6 +31,7 @@ const batchMovementSchema = z.object({
 
 // POST /api/parts/batch - batch operations
 export async function POST(request: NextRequest) {
+  const db = getDb();
   try {
     const body = await request.json();
     const action = body.action;
@@ -212,5 +215,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "参数校验失败", details: error.message }, { status: 400 });
     }
     return NextResponse.json({ error: "批量操作失败" }, { status: 500 });
+  } finally {
+    db.close();
   }
 }

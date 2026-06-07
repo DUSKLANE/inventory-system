@@ -1,4 +1,4 @@
-import db from "@/lib/db";
+import { getDb } from "@/lib/db";
 
 export function logOperation({
   action,
@@ -16,15 +16,20 @@ export function logOperation({
   operator?: string;
 }) {
   try {
-    const id = crypto.randomUUID();
-    const now = new Date().toISOString();
+    const db = getDb();
+    try {
+      const id = crypto.randomUUID();
+      const now = new Date().toISOString();
 
-    db.prepare(`
-      INSERT INTO operation_logs (id, action, entityType, entityId, entityName, details, operator, createdAt)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(id, action, entityType, entityId || "", entityName || "", details || "", operator, now);
+      db.prepare(`
+        INSERT INTO operation_logs (id, action, entityType, entityId, entityName, details, operator, createdAt)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      `).run(id, action, entityType, entityId || "", entityName || "", details || "", operator, now);
 
-    return id;
+      return id;
+    } finally {
+      db.close();
+    }
   } catch (error) {
     console.error("Failed to log operation:", error);
     return null;
