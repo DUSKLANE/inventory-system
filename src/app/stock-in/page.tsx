@@ -4,8 +4,9 @@ import { useEffect, useState, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import QRScanner from "@/components/QRScanner";
-import { Search, ArrowDownToLine, Plus, Minus, Check, AlertTriangle, Loader2, Package, User, FileText, CheckCircle2, XCircle, ScanBarcode } from "lucide-react";
+import { Search, ArrowDownToLine, Check, AlertTriangle, Loader2, Package, User, FileText, CheckCircle2, XCircle, ScanBarcode } from "lucide-react";
 import Breadcrumb from "@/components/Breadcrumb";
+import NumberInput from "@/components/NumberInput";
 
 interface Part {
   id: string;
@@ -250,31 +251,11 @@ function StockInContent() {
           <div className="flex flex-col gap-5 sm:gap-8">
             <div>
               <label className="block text-xs sm:text-sm font-semibold text-gray-700 dark:text-[var(--foreground-muted)] mb-2 sm:mb-4">入库数量 *</label>
-              <div className="flex items-center gap-2 sm:gap-4">
-                <button
-                  type="button"
-                  onClick={() => setQuantity(String(Math.max(1, (parseInt(quantity) || 1) - 1)))}
-                  className="w-9 h-9 sm:w-14 sm:h-14 flex items-center justify-center bg-gray-50 dark:bg-[var(--background-subtle)] border border-gray-200 dark:border-[var(--card-border)] rounded-lg sm:rounded-xl text-gray-600 dark:text-[var(--foreground-muted)] hover:bg-gray-100 dark:hover:bg-[var(--background-muted)] hover:border-gray-300 dark:hover:border-[var(--card-border)] transition-all duration-200"
-                >
-                  <Minus className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
-                </button>
-                <input
-                  type="number"
-                  min="1"
-                  required
-                  value={quantity}
-                  onChange={(e) => setQuantity(e.target.value)}
-                  onBlur={() => { if (!quantity || parseInt(quantity) < 1) setQuantity("1"); }}
-                  className="flex-1 px-2 py-1.5 sm:px-5 sm:py-4 bg-gray-50 dark:bg-[var(--background-subtle)] border border-gray-200 dark:border-[var(--card-border)] rounded-lg sm:rounded-xl text-base sm:text-2xl font-bold text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white dark:focus:bg-[var(--card)] transition-all duration-200"
-                />
-                <button
-                  type="button"
-                  onClick={() => setQuantity(String((parseInt(quantity) || 1) + 1))}
-                  className="w-9 h-9 sm:w-14 sm:h-14 flex items-center justify-center bg-gray-50 dark:bg-[var(--background-subtle)] border border-gray-200 dark:border-[var(--card-border)] rounded-lg sm:rounded-xl text-gray-600 dark:text-[var(--foreground-muted)] hover:bg-gray-100 dark:hover:bg-[var(--background-muted)] hover:border-gray-300 dark:hover:border-[var(--card-border)] transition-all duration-200"
-                >
-                  <Plus className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
-                </button>
-              </div>
+              <NumberInput
+                value={quantity}
+                onChange={setQuantity}
+                min={1}
+              />
               <div className="flex gap-1.5 sm:gap-3 mt-2 sm:mt-4">
                 {[10, 50, 100, 500].map((n) => (
                   <button

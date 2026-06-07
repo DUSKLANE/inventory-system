@@ -131,7 +131,7 @@ export default function LogsPage() {
             <select
               value={entityType}
               onChange={(e) => { setEntityType(e.target.value); setPage(1); }}
-              className="pl-10 pr-8 py-3 border border-gray-200 dark:border-[var(--card-border)] rounded-xl text-sm bg-gray-50 dark:bg-[var(--background-subtle)] dark:text-[var(--card-foreground)] focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer appearance-none"
+              className="pl-10 pr-8 py-3 border border-gray-200 dark:border-[var(--card-border)] rounded-xl text-sm bg-gray-50 dark:bg-[var(--background-subtle)] dark:text-[var(--card-foreground)] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-[var(--card)] cursor-pointer appearance-none transition-all duration-200"
             >
               <option value="">全部类型</option>
               <option value="PART">器件</option>
@@ -144,7 +144,7 @@ export default function LogsPage() {
             <select
               value={action}
               onChange={(e) => { setAction(e.target.value); setPage(1); }}
-              className="pl-10 pr-8 py-3 border border-gray-200 dark:border-[var(--card-border)] rounded-xl text-sm bg-gray-50 dark:bg-[var(--background-subtle)] dark:text-[var(--card-foreground)] focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer appearance-none"
+              className="pl-10 pr-8 py-3 border border-gray-200 dark:border-[var(--card-border)] rounded-xl text-sm bg-gray-50 dark:bg-[var(--background-subtle)] dark:text-[var(--card-foreground)] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-[var(--card)] cursor-pointer appearance-none transition-all duration-200"
             >
               <option value="">全部操作</option>
               <option value="CREATE">创建</option>

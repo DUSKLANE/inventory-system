@@ -6,8 +6,6 @@ import {
   Camera,
   Keyboard,
   Trash2,
-  Plus,
-  Minus,
   Check,
   Loader2,
   AlertTriangle,
@@ -18,6 +16,7 @@ import {
 } from "lucide-react";
 import QRScanner from "@/components/QRScanner";
 import Breadcrumb from "@/components/Breadcrumb";
+import NumberInput from "@/components/NumberInput";
 import { fetchProductInfo, buildProductFromScanData, type LcedaProduct } from "@/lib/api/lceda";
 
 interface ScanResult {
@@ -197,16 +196,6 @@ export default function ScanPage() {
       setManualCode("");
       setShowManualInput(false);
     }
-  };
-
-  const updateQuantity = (id: string, delta: number) => {
-    setPendingItems((prev) =>
-      prev.map((item) =>
-        item.id === id
-          ? { ...item, quantity: Math.max(1, item.quantity + delta) }
-          : item
-      )
-    );
   };
 
   const setQuantityDirectly = (id: string, quantity: number) => {
@@ -426,7 +415,6 @@ export default function ScanPage() {
               <PendingItemCard
                 key={item.id}
                 item={item}
-                onUpdateQuantity={updateQuantity}
                 onSetQuantity={setQuantityDirectly}
                 onUpdateLocation={updateLocation}
                 onUpdateName={updateName}
@@ -524,7 +512,6 @@ export default function ScanPage() {
 
 function PendingItemCard({
   item,
-  onUpdateQuantity,
   onSetQuantity,
   onUpdateLocation,
   onUpdateName,
@@ -532,7 +519,6 @@ function PendingItemCard({
   onRetry,
 }: {
   item: PendingItem;
-  onUpdateQuantity: (id: string, delta: number) => void;
   onSetQuantity: (id: string, quantity: number) => void;
   onUpdateLocation: (id: string, location: string) => void;
   onUpdateName: (id: string, name: string) => void;
@@ -616,32 +602,12 @@ function PendingItemCard({
         )}
 
         <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => onUpdateQuantity(item.id, -1)}
-              className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 dark:border-[var(--card-border)] hover:bg-gray-100 dark:hover:bg-[var(--background-subtle)] transition-colors"
-            >
-              <Minus className="w-4 h-4" />
-            </button>
-            <input
-              type="number"
-              value={item.quantity}
-              onChange={(e) => {
-                const val = parseInt(e.target.value, 10);
-                if (!isNaN(val)) {
-                  onSetQuantity(item.id, val);
-                }
-              }}
-              onBlur={() => { if (item.quantity < 1) onSetQuantity(item.id, 1); }}
-              className="w-16 text-center py-1 border border-gray-200 dark:border-[var(--card-border)] rounded-lg bg-white dark:bg-[var(--card)] text-gray-900 dark:text-[var(--card-foreground)] text-sm"
-            />
-            <button
-              onClick={() => onUpdateQuantity(item.id, 1)}
-              className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 dark:border-[var(--card-border)] hover:bg-gray-100 dark:hover:bg-[var(--background-subtle)] transition-colors"
-            >
-              <Plus className="w-4 h-4" />
-            </button>
-          </div>
+          <NumberInput
+            value={String(item.quantity)}
+            onChange={(val) => onSetQuantity(item.id, parseInt(val) || 1)}
+            min={1}
+            className="w-40"
+          />
 
           <div className="flex items-center gap-2 flex-1 min-w-0">
             <MapPin className="w-4 h-4 text-gray-400 dark:text-[var(--foreground-subtle)] shrink-0" />

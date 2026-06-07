@@ -278,7 +278,7 @@ export default function SettingsPage() {
             <select
               value={settings.default_sort_field}
               onChange={(e) => setSettings({ ...settings, default_sort_field: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-[var(--card-border)] rounded-lg bg-white dark:bg-[var(--background-subtle)] text-gray-900 dark:text-[var(--card-foreground)]"
+              className="w-full px-4 py-3 border border-gray-200 dark:border-[var(--card-border)] rounded-xl text-sm bg-gray-50 dark:bg-[var(--background-subtle)] text-gray-900 dark:text-[var(--card-foreground)] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-[var(--card)] transition-all duration-200 cursor-pointer appearance-none"
             >
               <option value="createdAt">创建时间</option>
               <option value="updatedAt">更新时间</option>
@@ -293,7 +293,7 @@ export default function SettingsPage() {
             <select
               value={settings.default_sort_order}
               onChange={(e) => setSettings({ ...settings, default_sort_order: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-[var(--card-border)] rounded-lg bg-white dark:bg-[var(--background-subtle)] text-gray-900 dark:text-[var(--card-foreground)]"
+              className="w-full px-4 py-3 border border-gray-200 dark:border-[var(--card-border)] rounded-xl text-sm bg-gray-50 dark:bg-[var(--background-subtle)] text-gray-900 dark:text-[var(--card-foreground)] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-[var(--card)] transition-all duration-200 cursor-pointer appearance-none"
             >
               <option value="desc">降序</option>
               <option value="asc">升序</option>
@@ -306,7 +306,7 @@ export default function SettingsPage() {
             <select
               value={settings.page_size}
               onChange={(e) => setSettings({ ...settings, page_size: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-[var(--card-border)] rounded-lg bg-white dark:bg-[var(--background-subtle)] text-gray-900 dark:text-[var(--card-foreground)]"
+              className="w-full px-4 py-3 border border-gray-200 dark:border-[var(--card-border)] rounded-xl text-sm bg-gray-50 dark:bg-[var(--background-subtle)] text-gray-900 dark:text-[var(--card-foreground)] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-[var(--card)] transition-all duration-200 cursor-pointer appearance-none"
             >
               <option value="10">10 条</option>
               <option value="20">20 条</option>

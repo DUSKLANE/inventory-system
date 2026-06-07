@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Plus, Search, Edit, Trash2, MapPin, X, Loader2, Package, ChevronLeft, ChevronRight, ChevronDown, Eye, Tag, Boxes, Filter, CheckSquare, Square, ArrowDownToLine, ArrowUpFromLine } from "lucide-react";
 import PackageInput from "@/components/PackageInput";
 import CategoryInput from "@/components/CategoryInput";
+import NumberInput from "@/components/NumberInput";
 
 interface Part {
   id: string;
@@ -480,26 +481,13 @@ function PartsPageContent() {
           </div>
           
           <div className="flex items-center gap-3">
-            <div className="relative">
-              <Filter className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-[var(--foreground-subtle)] pointer-events-none" />
-              <select
+            <div className="relative min-w-[180px]">
+              <Filter className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-[var(--foreground-subtle)] pointer-events-none z-10" />
+              <CategoryInput
                 value={category}
-                onChange={(e) => { setCategory(e.target.value); setPage(1); }}
-                className="pl-14 pr-14 py-4 border border-gray-200 dark:border-[var(--card-border)] rounded-xl text-sm bg-gray-50 dark:bg-[var(--background-subtle)] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-[var(--card)] transition-all duration-200 cursor-pointer appearance-none min-w-[180px]"
-              >
-                <option value="">全部分类</option>
-                <option value="电阻">电阻</option>
-                <option value="电容">电容</option>
-                <option value="电感">电感</option>
-                <option value="二极管">二极管</option>
-                <option value="三极管">三极管</option>
-                <option value="IC">IC</option>
-                <option value="连接器">连接器</option>
-                <option value="晶振">晶振</option>
-                <option value="LED">LED</option>
-                <option value="其他">其他</option>
-              </select>
-              <ChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-[var(--foreground-subtle)] pointer-events-none" />
+                onChange={(val) => { setCategory(val); setPage(1); }}
+                placeholder="全部分类"
+              />
             </div>
             
             <button
@@ -1303,27 +1291,12 @@ function BatchMovementModal({
                     <p className="text-xs text-gray-500 dark:text-[var(--foreground-subtle)] mt-1">当前库存: {qty} {part.unit}</p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => updateQuantity(part.id, String(Math.max(0, (quantities[part.id] || 0) - 1)))}
-                      className="w-8 h-8 flex items-center justify-center bg-white dark:bg-[var(--card)] border border-gray-200 dark:border-[var(--card-border)] rounded-lg text-gray-600 dark:text-[var(--foreground-muted)] hover:bg-gray-50 dark:hover:bg-[var(--background-subtle)]"
-                    >
-                      -
-                    </button>
-                    <input
-                      type="number"
-                      min="0"
-                      value={quantities[part.id] || 0}
-                      onChange={(e) => updateQuantity(part.id, e.target.value)}
-                      className="w-20 px-3 py-2 bg-white dark:bg-[var(--card)] border border-gray-200 dark:border-[var(--card-border)] rounded-lg text-sm text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    <NumberInput
+                      value={String(quantities[part.id] || 0)}
+                      onChange={(val) => updateQuantity(part.id, val)}
+                      min={0}
+                      className="w-40"
                     />
-                    <button
-                      type="button"
-                      onClick={() => updateQuantity(part.id, String((quantities[part.id] || 0) + 1))}
-                      className="w-8 h-8 flex items-center justify-center bg-white dark:bg-[var(--card)] border border-gray-200 dark:border-[var(--card-border)] rounded-lg text-gray-600 dark:text-[var(--foreground-muted)] hover:bg-gray-50 dark:hover:bg-[var(--background-subtle)]"
-                    >
-                      +
-                    </button>
                     <span className="text-sm text-gray-500 dark:text-[var(--foreground-subtle)] w-10">{part.unit}</span>
                   </div>
                 </div>

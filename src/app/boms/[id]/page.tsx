@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowDownToLine, ArrowUpFromLine, Package, Plus, Trash2, Edit, Save, X, Search, Loader2, FileText, AlertTriangle } from "lucide-react";
 import Breadcrumb from "@/components/Breadcrumb";
+import NumberInput from "@/components/NumberInput";
 
 interface BomItem {
   id: string;
@@ -285,37 +286,12 @@ export default function BomDetailPage() {
 
                   <div className="flex items-center gap-4">
                     {editing ? (
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => updateItemQuantity(item.partId, item.quantity - 1)}
-                          className="w-8 h-8 flex items-center justify-center bg-gray-100 dark:bg-[var(--background-muted)] rounded-lg hover:bg-gray-200 dark:hover:bg-[var(--background-subtle)]"
-                        >
-                          -
-                        </button>
-                        <input
-                          type="number"
-                          min="1"
-                          value={item.quantity}
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            if (val === "") {
-                              setEditItems(prev => prev.map(i =>
-                                i.partId === item.partId ? { ...i, quantity: 0 } : i
-                              ));
-                            } else {
-                              updateItemQuantity(item.partId, val);
-                            }
-                          }}
-                          onBlur={() => { if (item.quantity < 1) updateItemQuantity(item.partId, 1); }}
-                          className="w-16 px-2 py-2 text-center border border-gray-200 dark:border-[var(--card-border)] rounded-lg text-gray-900 dark:text-[var(--card-foreground)] bg-white dark:bg-[var(--card)] focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                        <button
-                          onClick={() => updateItemQuantity(item.partId, item.quantity + 1)}
-                          className="w-8 h-8 flex items-center justify-center bg-gray-100 dark:bg-[var(--background-muted)] rounded-lg hover:bg-gray-200 dark:hover:bg-[var(--background-subtle)]"
-                        >
-                          +
-                        </button>
-                      </div>
+                      <NumberInput
+                        value={String(item.quantity)}
+                        onChange={(val) => updateItemQuantity(item.partId, val)}
+                        min={1}
+                        className="w-40"
+                      />
                     ) : (
                       <div className="text-right">
                         <p className="text-sm font-bold text-gray-900 dark:text-[var(--card-foreground)]">需要: {item.quantity} {item.unit}</p>
