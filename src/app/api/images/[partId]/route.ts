@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getImagePath } from "@/lib/image-store";
 import { getDb, getStorageMode } from "@/lib/db";
-import fs from "fs";
-import path from "path";
 
 export const dynamic = "force-dynamic";
 
@@ -13,7 +11,10 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     if (mode === "local") {
       const filePath = getImagePath(partId);
-      if (!filePath || !fs.existsSync(filePath)) return new NextResponse(null, { status: 404 });
+      if (!filePath) return new NextResponse(null, { status: 404 });
+      const fs = require("fs") as typeof import("fs");
+      const path = require("path") as typeof import("path");
+      if (!fs.existsSync(filePath)) return new NextResponse(null, { status: 404 });
       const ext = path.extname(filePath).toLowerCase();
       const mimeMap: Record<string, string> = { ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png", ".webp": "image/webp", ".gif": "image/gif" };
       const contentType = mimeMap[ext] || "application/octet-stream";

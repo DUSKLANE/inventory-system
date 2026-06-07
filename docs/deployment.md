@@ -41,6 +41,10 @@ UPSTASH_REDIS_REST_TOKEN=xxxxx
 
 适用于个人电脑、内网服务器。
 
+### 环境要求
+
+- Node.js >= 22（需要 `node:sqlite` 内置模块）
+
 ### 1. 安装依赖
 
 ```bash
@@ -75,6 +79,11 @@ npm start
 ## 方式二：Docker 部署
 
 适用于服务器部署，推荐使用。
+
+### 环境要求
+
+- Docker
+- Docker Compose
 
 ### 首次部署
 
@@ -140,6 +149,7 @@ docker-compose up -d --build
 ### 前置条件
 
 - EdgeOne Pages 账号
+- Node.js 22+ 运行时
 - Upstash Redis 数据库（免费即可）
 
 ### 配置步骤
@@ -163,8 +173,8 @@ AUTH_PASSWORD=你的密码
 ```json
 {
   "buildCommand": "npm run build",
-  "outputDirectory": ".next",
-  "nodeVersion": "18"
+  "outputDirectory": "",
+  "nodeVersion": "22"
 }
 ```
 
@@ -174,8 +184,8 @@ AUTH_PASSWORD=你的密码
 
 ### 注意事项
 
-- EdgeOne Pages 不支持 `better-sqlite3` 原生模块，必须使用 `STORAGE_MODE=cloud`
-- `serverExternalPackages` 配置已添加，确保 `better-sqlite3` 不会被打包
+- 使用 `node:sqlite` 内置模块，无需原生编译
+- `STORAGE_MODE=cloud` 时使用 Upstash Redis，不依赖本地文件系统
 - 首次部署后，数据存储在 Upstash Redis 中，无需额外配置
 
 ---
@@ -209,7 +219,7 @@ Vercel 会自动构建并部署。
 
 ### 注意事项
 
-- Vercel Serverless Functions 不支持原生模块，必须使用 `STORAGE_MODE=cloud`
+- Vercel Serverless Functions 不支持本地文件系统，必须使用 `STORAGE_MODE=cloud`
 - 可在 Vercel 控制台绑定自定义域名
 
 ---
@@ -249,4 +259,9 @@ Vercel 会自动构建并部署。
 检查：
 1. 环境变量 `STORAGE_MODE` 是否设置为 `cloud`
 2. Upstash Redis 凭据是否正确
-3. 构建日志是否有错误
+3. Node.js 版本是否为 22+
+4. 构建日志是否有错误
+
+### Q: 本地运行报错 "Cannot find module 'node:sqlite'"？
+
+Node.js 版本过低，需要升级到 Node.js 22+。运行 `node --version` 检查版本。

@@ -88,7 +88,7 @@
 
 - **前端**: Next.js 16, React 19, TypeScript
 - **样式**: Tailwind CSS 4, CSS Variables, 响应式设计
-- **存储**: SQLite (better-sqlite3) / Upstash Redis (可切换)
+- **存储**: SQLite (node:sqlite 内置模块) / Upstash Redis (可切换)
 - **图表**: Chart.js + react-chartjs-2
 - **图标**: Lucide React
 - **外部 API**: LCEDA API (元器件数据查询)

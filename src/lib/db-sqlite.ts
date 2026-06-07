@@ -1,4 +1,4 @@
-import Database from "better-sqlite3";
+import { DatabaseSync } from "node:sqlite";
 import path from "path";
 import fs from "fs";
 import { randomUUID } from "crypto";
@@ -8,18 +8,29 @@ import type {
 } from "./db";
 
 export class SqliteAdapter implements DatabaseAdapter {
-  private db: Database.Database;
+  private db: DatabaseSync;
 
   constructor() {
     const dbPath = process.env.SQLITE_DB_PATH || path.join(process.cwd(), "data", "inventory.db");
     const dataDir = path.dirname(dbPath);
     if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
 
-    this.db = new Database(dbPath);
-    this.db.pragma("journal_mode = WAL");
-    this.db.pragma("foreign_keys = ON");
+    this.db = new DatabaseSync(dbPath);
+    this.db.exec("PRAGMA journal_mode = WAL");
+    this.db.exec("PRAGMA foreign_keys = ON");
     this.initTables();
     this.migrate();
+  }
+
+  private runInTransaction(fn: () => void): void {
+    this.db.exec("BEGIN");
+    try {
+      fn();
+      this.db.exec("COMMIT");
+    } catch (e) {
+      this.db.exec("ROLLBACK");
+      throw e;
+    }
   }
 
   private initTables() {
@@ -95,7 +106,7 @@ export class SqliteAdapter implements DatabaseAdapter {
 
   async listParts(filters: PartFilters): Promise<{ parts: Part[]; total: number }> {
     let where = "WHERE 1=1";
-    const params: unknown[] = [];
+    const params: (string | number)[] = [];
     if (filters.q) { where += " AND (p.name LIKE ? OR p.code LIKE ? OR p.brand LIKE ? OR p.model LIKE ? OR p.location LIKE ?)"; const q = `%${filters.q}%`; params.push(q, q, q, q, q); }
     if (filters.category) { where += " AND p.category = ?"; params.push(filters.category); }
     if (filters.package) { where += " AND p.package = ?"; params.push(filters.package); }
@@ -117,7 +128,7 @@ export class SqliteAdapter implements DatabaseAdapter {
   async getPart(id: string): Promise<PartDetail | null> {
     const part = this.db.prepare("SELECT p.*, s.quantity as stockQuantity FROM parts p LEFT JOIN stock s ON s.partId = p.id WHERE p.id = ?").get(id) as Record<string, unknown> | undefined;
     if (!part) return null;
-    const movements = this.db.prepare("SELECT * FROM stock_movements WHERE partId = ? ORDER BY createdAt DESC LIMIT 50").all(id) as Movement[];
+    const movements = this.db.prepare("SELECT * FROM stock_movements WHERE partId = ? ORDER BY createdAt DESC LIMIT 50").all(id) as unknown as Movement[];
     return { ...part, stock: { quantity: part.stockQuantity ?? 0 }, movements } as unknown as PartDetail;
   }
 
@@ -132,7 +143,22 @@ export class SqliteAdapter implements DatabaseAdapter {
     if (existing) throw new Error("编码已存在");
     const id = randomUUID();
     const now = new Date().toISOString();
-    this.db.prepare("INSERT INTO parts (id, code, name, category, package, brand, model, unit, minStock, location, note, image, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)").run(id, data.code, data.name, data.category || "", data.package || "", data.brand || "", data.model || "", data.unit || "pcs", data.minStock || 0, data.location || "", data.note || "", "", now, now);
+    this.db.prepare("INSERT INTO parts (id, code, name, category, package, brand, model, unit, minStock, location, note, image, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)").run(
+      id,
+      data.code as string,
+      data.name as string,
+      (data.category as string) || "",
+      (data.package as string) || "",
+      (data.brand as string) || "",
+      (data.model as string) || "",
+      (data.unit as string) || "pcs",
+      (data.minStock as number) || 0,
+      (data.location as string) || "",
+      (data.note as string) || "",
+      "",
+      now,
+      now
+    );
     this.db.prepare("INSERT INTO stock (id, partId, quantity) VALUES (?, ?, 0)").run(randomUUID(), id);
     if (data.image) {
       const { downloadImage } = require("./image-store");
@@ -152,9 +178,9 @@ export class SqliteAdapter implements DatabaseAdapter {
     }
     const fields = ["code", "name", "category", "package", "brand", "model", "unit", "minStock", "location", "note", "image"];
     const updates: string[] = [];
-    const values: unknown[] = [];
+    const values: (string | number)[] = [];
     for (const field of fields) {
-      if (data[field] !== undefined) { updates.push(`${field} = ?`); values.push(data[field]); }
+      if (data[field] !== undefined) { updates.push(`${field} = ?`); values.push(data[field] as string | number); }
     }
     if (updates.length > 0) {
       updates.push("updatedAt = ?");
@@ -174,7 +200,7 @@ export class SqliteAdapter implements DatabaseAdapter {
 
   async listMovements(filters: MovementFilters): Promise<{ movements: Movement[]; total: number }> {
     let where = "WHERE 1=1";
-    const params: unknown[] = [];
+    const params: (string | number)[] = [];
     if (filters.partId) { where += " AND m.partId = ?"; params.push(filters.partId); }
     if (filters.type) { where += " AND m.type = ?"; params.push(filters.type); }
     const total = (this.db.prepare(`SELECT COUNT(*) as total FROM stock_movements m ${where}`).get(...params) as { total: number }).total;
@@ -198,42 +224,48 @@ export class SqliteAdapter implements DatabaseAdapter {
     } else { newQty = data.quantity as number; }
     const movementId = randomUUID();
     const now = new Date().toISOString();
-    const transaction = this.db.transaction(() => {
-      this.db.prepare("INSERT INTO stock_movements (id, partId, type, quantity, operator, reason, code, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?)").run(movementId, data.partId, data.type, data.quantity, data.operator || "", data.reason || "", data.code || "", now);
-      this.db.prepare("UPDATE stock SET quantity = ?, updatedAt = ? WHERE partId = ?").run(newQty, now, data.partId);
-      this.db.prepare("UPDATE parts SET updatedAt = ? WHERE id = ?").run(now, data.partId);
+    this.runInTransaction(() => {
+      this.db.prepare("INSERT INTO stock_movements (id, partId, type, quantity, operator, reason, code, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?)").run(
+        movementId,
+        data.partId as string,
+        data.type as string,
+        data.quantity as number,
+        (data.operator as string) || "",
+        (data.reason as string) || "",
+        (data.code as string) || "",
+        now
+      );
+      this.db.prepare("UPDATE stock SET quantity = ?, updatedAt = ? WHERE partId = ?").run(newQty, now, data.partId as string);
+      this.db.prepare("UPDATE parts SET updatedAt = ? WHERE id = ?").run(now, data.partId as string);
     });
-    transaction();
     return { id: movementId, newQuantity: newQty };
   }
 
   async batchDelete(ids: string[]): Promise<void> {
-    const transaction = this.db.transaction(() => {
+    this.runInTransaction(() => {
       for (const id of ids) {
         this.db.prepare("DELETE FROM stock_movements WHERE partId = ?").run(id);
         this.db.prepare("DELETE FROM stock WHERE partId = ?").run(id);
         this.db.prepare("DELETE FROM parts WHERE id = ?").run(id);
       }
     });
-    transaction();
   }
 
   async batchUpdate(ids: string[], updates: Record<string, unknown>): Promise<void> {
     const now = new Date().toISOString();
     const setClauses: string[] = ["updatedAt = ?"];
-    const params: unknown[] = [now];
-    if (updates.category !== undefined) { setClauses.push("category = ?"); params.push(updates.category); }
-    if (updates.location !== undefined) { setClauses.push("location = ?"); params.push(updates.location); }
-    if (updates.minStock !== undefined) { setClauses.push("minStock = ?"); params.push(updates.minStock); }
+    const params: (string | number)[] = [now];
+    if (updates.category !== undefined) { setClauses.push("category = ?"); params.push(updates.category as string); }
+    if (updates.location !== undefined) { setClauses.push("location = ?"); params.push(updates.location as string); }
+    if (updates.minStock !== undefined) { setClauses.push("minStock = ?"); params.push(updates.minStock as number); }
     const sql = `UPDATE parts SET ${setClauses.join(", ")} WHERE id = ?`;
-    const transaction = this.db.transaction(() => { for (const id of ids) { this.db.prepare(sql).run(...params, id); } });
-    transaction();
+    this.runInTransaction(() => { for (const id of ids) { this.db.prepare(sql).run(...params, id); } });
   }
 
   async batchMovement(items: Array<{ partId: string; quantity: number }>, type: "IN" | "OUT", operator?: string, reason?: string): Promise<BatchResult> {
     const now = new Date().toISOString();
     const results: BatchResult["results"] = [];
-    const transaction = this.db.transaction(() => {
+    this.runInTransaction(() => {
       for (const item of items) {
         const part = this.db.prepare("SELECT p.*, s.quantity as stockQuantity FROM parts p LEFT JOIN stock s ON s.partId = p.id WHERE p.id = ?").get(item.partId) as Record<string, unknown> | undefined;
         if (!part) { results.push({ partId: item.partId, success: false, message: "器件不存在" }); continue; }
@@ -247,7 +279,6 @@ export class SqliteAdapter implements DatabaseAdapter {
         results.push({ partId: item.partId, success: true, newQuantity: newQty });
       }
     });
-    transaction();
     return { results, successCount: results.filter(r => r.success).length, failCount: results.filter(r => !r.success).length };
   }
 
@@ -272,7 +303,7 @@ export class SqliteAdapter implements DatabaseAdapter {
   // ── Favorites ──
 
   async listFavorites(): Promise<Part[]> {
-    return this.db.prepare("SELECT p.id, p.code, p.name, p.category, p.unit, p.location, COALESCE(s.quantity, 0) as stock, f.createdAt as favoritedAt FROM favorites f JOIN parts p ON p.id = f.partId LEFT JOIN stock s ON s.partId = p.id ORDER BY f.createdAt DESC").all() as Part[];
+    return this.db.prepare("SELECT p.id, p.code, p.name, p.category, p.unit, p.location, COALESCE(s.quantity, 0) as stock, f.createdAt as favoritedAt FROM favorites f JOIN parts p ON p.id = f.partId LEFT JOIN stock s ON s.partId = p.id ORDER BY f.createdAt DESC").all() as unknown as Part[];
   }
 
   async toggleFavorite(partId: string): Promise<{ favorited: boolean }> {
@@ -286,35 +317,34 @@ export class SqliteAdapter implements DatabaseAdapter {
   // ── BOMs ──
 
   async listBoms(): Promise<Bom[]> {
-    return this.db.prepare("SELECT b.*, (SELECT COUNT(*) FROM bom_items bi WHERE bi.bomId = b.id) as itemCount FROM boms b ORDER BY b.updatedAt DESC").all() as Bom[];
+    return this.db.prepare("SELECT b.*, (SELECT COUNT(*) FROM bom_items bi WHERE bi.bomId = b.id) as itemCount FROM boms b ORDER BY b.updatedAt DESC").all() as unknown as Bom[];
   }
 
   async getBom(id: string): Promise<(Bom & { items: BomItem[] }) | null> {
     const bom = this.db.prepare("SELECT * FROM boms WHERE id = ?").get(id) as Bom | undefined;
     if (!bom) return null;
-    const items = this.db.prepare("SELECT bi.*, p.code, p.name, p.category, p.unit, COALESCE(s.quantity, 0) as currentStock FROM bom_items bi JOIN parts p ON p.id = bi.partId LEFT JOIN stock s ON s.partId = p.id WHERE bi.bomId = ? ORDER BY p.code").all(id) as BomItem[];
+    const items = this.db.prepare("SELECT bi.*, p.code, p.name, p.category, p.unit, COALESCE(s.quantity, 0) as currentStock FROM bom_items bi JOIN parts p ON p.id = bi.partId LEFT JOIN stock s ON s.partId = p.id WHERE bi.bomId = ? ORDER BY p.code").all(id) as unknown as BomItem[];
     return { ...bom, items };
   }
 
   async createBom(data: { name: string; description?: string; items?: Array<{ partId: string; quantity: number; note?: string }> }): Promise<Bom> {
     const id = randomUUID();
     const now = new Date().toISOString();
-    const transaction = this.db.transaction(() => {
+    this.runInTransaction(() => {
       this.db.prepare("INSERT INTO boms (id, name, description, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?)").run(id, data.name, data.description || "", now, now);
       if (data.items) { for (const item of data.items) { this.db.prepare("INSERT INTO bom_items (id, bomId, partId, quantity, note) VALUES (?, ?, ?, ?, ?)").run(randomUUID(), id, item.partId, item.quantity || 1, item.note || ""); } }
     });
-    transaction();
-    return this.db.prepare("SELECT * FROM boms WHERE id = ?").get(id) as Bom;
+    return this.db.prepare("SELECT * FROM boms WHERE id = ?").get(id) as unknown as Bom;
   }
 
   async updateBom(id: string, data: { name?: string; description?: string; items?: Array<{ partId: string; quantity: number; note?: string }> }): Promise<Bom & { items: BomItem[] }> {
     const bom = this.db.prepare("SELECT * FROM boms WHERE id = ?").get(id);
     if (!bom) throw new Error("BOM不存在");
     const now = new Date().toISOString();
-    const transaction = this.db.transaction(() => {
+    this.runInTransaction(() => {
       if (data.name !== undefined || data.description !== undefined) {
         const updates: string[] = ["updatedAt = ?"];
-        const values: unknown[] = [now];
+        const values: (string | number)[] = [now];
         if (data.name !== undefined) { updates.push("name = ?"); values.push(data.name); }
         if (data.description !== undefined) { updates.push("description = ?"); values.push(data.description); }
         values.push(id);
@@ -325,21 +355,19 @@ export class SqliteAdapter implements DatabaseAdapter {
         for (const item of data.items) { this.db.prepare("INSERT INTO bom_items (id, bomId, partId, quantity, note) VALUES (?, ?, ?, ?, ?)").run(randomUUID(), id, item.partId, item.quantity || 1, item.note || ""); }
       }
     });
-    transaction();
     return (await this.getBom(id))!;
   }
 
   async deleteBom(id: string): Promise<void> {
     const bom = this.db.prepare("SELECT * FROM boms WHERE id = ?").get(id);
     if (!bom) throw new Error("BOM不存在");
-    const transaction = this.db.transaction(() => { this.db.prepare("DELETE FROM bom_items WHERE bomId = ?").run(id); this.db.prepare("DELETE FROM boms WHERE id = ?").run(id); });
-    transaction();
+    this.runInTransaction(() => { this.db.prepare("DELETE FROM bom_items WHERE bomId = ?").run(id); this.db.prepare("DELETE FROM boms WHERE id = ?").run(id); });
   }
 
   // ── Warehouses ──
 
   async listWarehouses(): Promise<Warehouse[]> {
-    return this.db.prepare("SELECT w.*, (SELECT COUNT(*) FROM stock_warehouse sw WHERE sw.warehouseId = w.id) as partCount, (SELECT SUM(sw.quantity) FROM stock_warehouse sw WHERE sw.warehouseId = w.id) as totalStock FROM warehouses w ORDER BY w.isDefault DESC, w.name").all() as Warehouse[];
+    return this.db.prepare("SELECT w.*, (SELECT COUNT(*) FROM stock_warehouse sw WHERE sw.warehouseId = w.id) as partCount, (SELECT SUM(sw.quantity) FROM stock_warehouse sw WHERE sw.warehouseId = w.id) as totalStock FROM warehouses w ORDER BY w.isDefault DESC, w.name").all() as unknown as Warehouse[];
   }
 
   async getWarehouse(id: string): Promise<(Warehouse & { items: Record<string, unknown>[] }) | null> {
@@ -353,8 +381,16 @@ export class SqliteAdapter implements DatabaseAdapter {
     const id = randomUUID();
     const now = new Date().toISOString();
     if (data.isDefault) this.db.prepare("UPDATE warehouses SET isDefault = 0").run();
-    this.db.prepare("INSERT INTO warehouses (id, name, location, description, isDefault, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?)").run(id, data.name, data.location || "", data.description || "", data.isDefault ? 1 : 0, now, now);
-    return this.db.prepare("SELECT * FROM warehouses WHERE id = ?").get(id) as Warehouse;
+    this.db.prepare("INSERT INTO warehouses (id, name, location, description, isDefault, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?)").run(
+      id,
+      data.name as string,
+      (data.location as string) || "",
+      (data.description as string) || "",
+      data.isDefault ? 1 : 0,
+      now,
+      now
+    );
+    return this.db.prepare("SELECT * FROM warehouses WHERE id = ?").get(id) as unknown as Warehouse;
   }
 
   async updateWarehouse(id: string, data: Record<string, unknown>): Promise<Warehouse> {
@@ -362,14 +398,14 @@ export class SqliteAdapter implements DatabaseAdapter {
     if (!warehouse) throw new Error("仓库不存在");
     const now = new Date().toISOString();
     const updates: string[] = ["updatedAt = ?"];
-    const values: unknown[] = [now];
-    if (data.name !== undefined) { updates.push("name = ?"); values.push(data.name); }
-    if (data.location !== undefined) { updates.push("location = ?"); values.push(data.location); }
-    if (data.description !== undefined) { updates.push("description = ?"); values.push(data.description); }
+    const values: (string | number)[] = [now];
+    if (data.name !== undefined) { updates.push("name = ?"); values.push(data.name as string); }
+    if (data.location !== undefined) { updates.push("location = ?"); values.push(data.location as string); }
+    if (data.description !== undefined) { updates.push("description = ?"); values.push(data.description as string); }
     if (data.isDefault !== undefined) { if (data.isDefault) this.db.prepare("UPDATE warehouses SET isDefault = 0").run(); updates.push("isDefault = ?"); values.push(data.isDefault ? 1 : 0); }
     values.push(id);
     this.db.prepare(`UPDATE warehouses SET ${updates.join(", ")} WHERE id = ?`).run(...values);
-    return this.db.prepare("SELECT * FROM warehouses WHERE id = ?").get(id) as Warehouse;
+    return this.db.prepare("SELECT * FROM warehouses WHERE id = ?").get(id) as unknown as Warehouse;
   }
 
   async deleteWarehouse(id: string): Promise<void> {
@@ -399,11 +435,11 @@ export class SqliteAdapter implements DatabaseAdapter {
   // ── Categories ──
 
   async listCategories(): Promise<Category[]> {
-    return this.db.prepare("SELECT c.*, COUNT(p.id) as partCount FROM categories c LEFT JOIN parts p ON p.category = c.name GROUP BY c.id ORDER BY c.sortOrder, c.name").all() as Category[];
+    return this.db.prepare("SELECT c.*, COUNT(p.id) as partCount FROM categories c LEFT JOIN parts p ON p.category = c.name GROUP BY c.id ORDER BY c.sortOrder, c.name").all() as unknown as Category[];
   }
 
   async getCategory(id: string): Promise<Category | null> {
-    return (this.db.prepare("SELECT c.*, COUNT(p.id) as partCount FROM categories c LEFT JOIN parts p ON p.category = c.name WHERE c.id = ? GROUP BY c.id").get(id) as Category) || null;
+    return (this.db.prepare("SELECT c.*, COUNT(p.id) as partCount FROM categories c LEFT JOIN parts p ON p.category = c.name WHERE c.id = ? GROUP BY c.id").get(id) as unknown as Category) || null;
   }
 
   async createCategory(data: { name: string; description?: string }): Promise<Category> {
@@ -421,11 +457,10 @@ export class SqliteAdapter implements DatabaseAdapter {
     if (existing) throw new Error("分类名称已存在");
     const oldCategory = this.db.prepare("SELECT name FROM categories WHERE id = ?").get(id) as { name: string } | undefined;
     if (!oldCategory) throw new Error("分类不存在");
-    const transaction = this.db.transaction(() => {
+    this.runInTransaction(() => {
       this.db.prepare("UPDATE categories SET name = ?, description = ?, sortOrder = ? WHERE id = ?").run(data.name.trim(), data.description || "", data.sortOrder ?? 0, id);
       if (oldCategory.name !== data.name.trim()) { this.db.prepare("UPDATE parts SET category = ? WHERE category = ?").run(data.name.trim(), oldCategory.name); }
     });
-    transaction();
   }
 
   async deleteCategory(id: string): Promise<void> {
@@ -439,14 +474,14 @@ export class SqliteAdapter implements DatabaseAdapter {
 
   async listLogs(filters: LogFilters): Promise<{ logs: Log[]; total: number }> {
     let where = "WHERE 1=1";
-    const params: unknown[] = [];
+    const params: (string | number)[] = [];
     if (filters.entityType) { where += " AND entityType = ?"; params.push(filters.entityType); }
     if (filters.action) { where += " AND action = ?"; params.push(filters.action); }
     const total = (this.db.prepare(`SELECT COUNT(*) as total FROM operation_logs ${where}`).get(...params) as { total: number }).total;
     const page = filters.page || 1;
     const pageSize = filters.pageSize || 50;
     const offset = (page - 1) * pageSize;
-    const logs = this.db.prepare(`SELECT * FROM operation_logs ${where} ORDER BY createdAt DESC LIMIT ? OFFSET ?`).all(...params, pageSize, offset) as Log[];
+    const logs = this.db.prepare(`SELECT * FROM operation_logs ${where} ORDER BY createdAt DESC LIMIT ? OFFSET ?`).all(...params, pageSize, offset) as unknown as Log[];
     return { logs, total };
   }
 
@@ -480,7 +515,7 @@ export class SqliteAdapter implements DatabaseAdapter {
     if (codeIndex === -1 || nameIndex === -1) throw new Error("CSV 必须包含编码和名称列");
     const now = new Date().toISOString();
     let imported = 0; let skipped = 0; const errors: string[] = [];
-    const transaction = this.db.transaction(() => {
+    this.runInTransaction(() => {
       for (let i = 0; i < rows.length; i++) {
         const row = rows[i]; const code = row[codeIndex]; const name = row[nameIndex];
         if (!code || !name) { errors.push(`行 ${i + 2}: 编码或名称为空`); continue; }
@@ -492,7 +527,6 @@ export class SqliteAdapter implements DatabaseAdapter {
         imported++;
       }
     });
-    transaction();
     return { imported, skipped, errors: errors.slice(0, 10) };
   }
 }

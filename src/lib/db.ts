@@ -1,5 +1,3 @@
-import type Database from "better-sqlite3";
-
 // ── Shared Types ──
 
 export interface Part {

@@ -10,7 +10,6 @@
   },
   "dependencies": {
     "@upstash/redis": "^1.38.0",
-    "better-sqlite3": "^12.10.0",
     "html5-qrcode": "^2.3.8",
     "jsqr": "^1.4.0",
     "lucide-react": "^1.17.0",
@@ -22,7 +21,6 @@
   "devDependencies": {
     "@next/env": "^16.2.7",
     "@tailwindcss/postcss": "^4",
-    "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^25",
     "@types/react": "^19",
     "@types/react-dom": "^19",
