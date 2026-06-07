@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Plus, Search, Edit, Trash2, MapPin, X, Loader2, Package, ChevronLeft, ChevronRight, ChevronDown, Eye, Tag, Boxes, Filter, CheckSquare, Square, ArrowDownToLine, ArrowUpFromLine } from "lucide-react";
+import PackageInput from "@/components/PackageInput";
 
 interface Part {
   id: string;
@@ -1153,25 +1154,10 @@ function AddEditModal({ part, onClose, onSaved }: { part: Part | null; onClose: 
             </div>
             <div>
               <label className="block text-sm font-semibold text-gray-700 dark:text-[var(--foreground-muted)] mb-3">封装</label>
-              <input
-                list="package-options"
+              <PackageInput
                 value={form.package}
-                onChange={(e) => setForm({ ...form, package: e.target.value })}
-                className="w-full px-5 py-4 bg-gray-50 dark:bg-[var(--background-subtle)] border border-gray-200 dark:border-[var(--card-border)] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white dark:focus:bg-[var(--card)] transition-all duration-200"
-                placeholder="如 SOT-23, QFP-48"
+                onChange={(val) => setForm({ ...form, package: val })}
               />
-              <datalist id="package-options">
-                <option value="0201" /><option value="0402" /><option value="0603" /><option value="0805" /><option value="1206" />
-                <option value="SOT-23" /><option value="SOT-23-5" /><option value="SOT-23-6" /><option value="SOT-223" /><option value="SOT-89" />
-                <option value="SOIC-8" /><option value="SOIC-14" /><option value="SOIC-16" /><option value="SOIC-20" /><option value="SOIC-28" />
-                <option value="TSSOP-8" /><option value="TSSOP-14" /><option value="TSSOP-16" /><option value="TSSOP-20" />
-                <option value="QFP-32" /><option value="QFP-44" /><option value="QFP-48" /><option value="QFP-64" /><option value="QFP-100" />
-                <option value="QFN-16" /><option value="QFN-20" /><option value="QFN-24" /><option value="QFN-32" /><option value="QFN-48" />
-                <option value="BGA" /><option value="DIP-8" /><option value="DIP-14" /><option value="DIP-16" /><option value="DIP-20" />
-                <option value="TO-220" /><option value="TO-220F" /><option value="TO-252" /><option value="TO-263" /><option value="TO-92" />
-                <option value="LQFP-32" /><option value="LQFP-48" /><option value="LQFP-64" /><option value="LQFP-100" />
-                <option value="MSOP-8" /><option value="SC-70" /><option value="SOD-123" /><option value="SOD-323" />
-              </datalist>
             </div>
             <div>
               <label className="block text-sm font-semibold text-gray-700 dark:text-[var(--foreground-muted)] mb-3">品牌</label>
