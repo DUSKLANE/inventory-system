@@ -17,6 +17,15 @@ export class RedisAdapter implements DatabaseAdapter {
 
   private ts(date?: string): number { return date ? new Date(date).getTime() : Date.now(); }
 
+  private async safeExec(pipe: ReturnType<Redis["pipeline"]>): Promise<unknown[]> {
+    try {
+      return await pipe.exec();
+    } catch (e: unknown) {
+      if (e instanceof Error && e.message.includes("empty")) return [];
+      throw e;
+    }
+  }
+
   // ── Dashboard & Analytics ──
 
   async getDashboard(): Promise<DashboardData> {
@@ -118,7 +127,7 @@ export class RedisAdapter implements DatabaseAdapter {
       const pipe = this.redis.pipeline();
       for (const id of partIds) { pipe.hgetall(`parts:${id}`); pipe.hget(`stock:${id}`, "quantity"); }
       for (const mid of movementIds) { pipe.hgetall(`movements:${mid}`); }
-      const results = await pipe.exec();
+      const results = await this.safeExec(pipe);
       let idx = 0;
       for (const id of partIds) {
         const partData = results[idx++] as Record<string, unknown> | null;
@@ -168,7 +177,7 @@ export class RedisAdapter implements DatabaseAdapter {
     const movementIds = await this.redis.zrange(`movements_by_part:${id}`, 0, 49, { rev: true }) as string[];
     const pipe = this.redis.pipeline();
     for (const mid of movementIds) pipe.hgetall(`movements:${mid}`);
-    const movementData = await pipe.exec();
+    const movementData = await this.safeExec(pipe);
     const movements = movementData.filter(Boolean).map(m => m as unknown as Movement);
     return { id: partData.id as string, code: partData.code as string, name: partData.name as string, category: (partData.category as string) || "", package: (partData.package as string) || "", brand: (partData.brand as string) || "", model: (partData.model as string) || "", unit: (partData.unit as string) || "pcs", minStock: Number(partData.minStock) || 0, location: (partData.location as string) || "", note: (partData.note as string) || "", image: (partData.image as string) || "", createdAt: (partData.createdAt as string) || "", updatedAt: (partData.updatedAt as string) || "", stock: { quantity: qty }, movements };
   }
@@ -191,7 +200,7 @@ export class RedisAdapter implements DatabaseAdapter {
     pipe.set(`parts_by_code:${data.code as string}`, id);
     pipe.zadd("parts_index", { score: this.ts(now), member: id });
     if (data.category) pipe.sadd(`parts_by_cat:${data.category as string}`, id);
-    await pipe.exec();
+    await this.safeExec(pipe);
     if (data.image) {
       try {
         const { fetchProductImage, downloadImage } = require("./image-store");
@@ -212,7 +221,7 @@ export class RedisAdapter implements DatabaseAdapter {
       const pipe = this.redis.pipeline();
       pipe.del(`parts_by_code:${existing.code as string}`);
       pipe.set(`parts_by_code:${data.code as string}`, id);
-      await pipe.exec();
+      await this.safeExec(pipe);
     }
     const now = new Date().toISOString();
     const updateData: Record<string, string> = { updatedAt: now };
@@ -238,7 +247,7 @@ export class RedisAdapter implements DatabaseAdapter {
     pipe.del(`movements_by_part:${id}`);
     const fId = await this.redis.get(`fav_by_part:${id}`) as string | null;
     if (fId) { pipe.del(`favorites:${fId}`); pipe.del(`fav_by_part:${id}`); }
-    await pipe.exec();
+    await this.safeExec(pipe);
     try { const { deleteImage } = require("./image-store"); deleteImage(id); } catch {}
     this.invalidateCache();
   }
@@ -274,7 +283,7 @@ export class RedisAdapter implements DatabaseAdapter {
     pipe.zadd(`movements_by_part:${data.partId as string}`, { score: this.ts(now), member: movementId });
     pipe.hset(`stock:${data.partId as string}`, { quantity: String(newQty), updatedAt: now });
     pipe.hset(`parts:${data.partId as string}`, { updatedAt: now });
-    await pipe.exec();
+    await this.safeExec(pipe);
     this.invalidateCache();
     return { id: movementId, newQuantity: newQty };
   }
@@ -291,7 +300,7 @@ export class RedisAdapter implements DatabaseAdapter {
     if (updates.minStock !== undefined) updateData.minStock = String(updates.minStock);
     const pipe = this.redis.pipeline();
     for (const id of ids) pipe.hset(`parts:${id}`, updateData);
-    await pipe.exec();
+    await this.safeExec(pipe);
     this.invalidateCache();
   }
 
@@ -331,7 +340,7 @@ export class RedisAdapter implements DatabaseAdapter {
     const favIds = await this.redis.zrange("favorites_index", 0, -1, { rev: true }) as string[];
     const pipe = this.redis.pipeline();
     for (const fid of favIds) pipe.hgetall(`favorites:${fid}`);
-    const favData = await pipe.exec();
+    const favData = await this.safeExec(pipe);
     const parts: Part[] = [];
     for (let i = 0; i < favIds.length; i++) {
       const f = favData[i] as Record<string, unknown> | null;
@@ -353,7 +362,7 @@ export class RedisAdapter implements DatabaseAdapter {
       pipe.del(`favorites:${existingFavId}`);
       pipe.del(`fav_by_part:${partId}`);
       pipe.zrem("favorites_index", existingFavId);
-      await pipe.exec();
+      await this.safeExec(pipe);
       return { favorited: false };
     } else {
       const favId = randomUUID();
@@ -362,7 +371,7 @@ export class RedisAdapter implements DatabaseAdapter {
       pipe.hset(`favorites:${favId}`, { id: favId, partId, createdAt: now });
       pipe.set(`fav_by_part:${partId}`, favId);
       pipe.zadd("favorites_index", { score: this.ts(now), member: favId });
-      await pipe.exec();
+      await this.safeExec(pipe);
       return { favorited: true };
     }
   }
@@ -373,7 +382,7 @@ export class RedisAdapter implements DatabaseAdapter {
     const bomIds = await this.redis.zrange("boms_index", 0, -1, { rev: true }) as string[];
     const pipe = this.redis.pipeline();
     for (const bid of bomIds) { pipe.hgetall(`boms:${bid}`); pipe.scard(`bom_items_by_bom:${bid}`); }
-    const results = await pipe.exec();
+    const results = await this.safeExec(pipe);
     const boms: Bom[] = [];
     for (let i = 0; i < bomIds.length; i++) {
       const b = results[i * 2] as Record<string, unknown> | null;
@@ -389,7 +398,7 @@ export class RedisAdapter implements DatabaseAdapter {
     const itemIds = await this.redis.smembers(`bom_items_by_bom:${id}`) as string[];
     const pipe = this.redis.pipeline();
     for (const iid of itemIds) pipe.hgetall(`bom_items:${iid}`);
-    const itemData = await pipe.exec();
+    const itemData = await this.safeExec(pipe);
     const items: BomItem[] = [];
     for (let i = 0; i < itemIds.length; i++) {
       const it = itemData[i] as Record<string, unknown> | null;
@@ -409,7 +418,7 @@ export class RedisAdapter implements DatabaseAdapter {
     pipe.hset(`boms:${id}`, { id, name: data.name, description: data.description || "", createdAt: now, updatedAt: now });
     pipe.zadd("boms_index", { score: this.ts(now), member: id });
     if (data.items) { for (const item of data.items) { const iid = randomUUID(); pipe.hset(`bom_items:${iid}`, { id: iid, bomId: id, partId: item.partId, quantity: String(item.quantity || 1), note: item.note || "" }); pipe.sadd(`bom_items_by_bom:${id}`, iid); } }
-    await pipe.exec();
+    await this.safeExec(pipe);
     this.invalidateCache();
     return { id, name: data.name, description: data.description || "", createdAt: now, updatedAt: now, itemCount: data.items?.length || 0 };
   }
@@ -431,7 +440,7 @@ export class RedisAdapter implements DatabaseAdapter {
       pipe.del(`bom_items_by_bom:${id}`);
       for (const item of data.items) { const iid = randomUUID(); pipe.hset(`bom_items:${iid}`, { id: iid, bomId: id, partId: item.partId, quantity: String(item.quantity || 1), note: item.note || "" }); pipe.sadd(`bom_items_by_bom:${id}`, iid); }
     }
-    await pipe.exec();
+    await this.safeExec(pipe);
     this.invalidateCache();
     return this.getBom(id) as Promise<Bom & { items: BomItem[] }>;
   }
@@ -445,7 +454,7 @@ export class RedisAdapter implements DatabaseAdapter {
     pipe.del(`bom_items_by_bom:${id}`);
     pipe.del(`boms:${id}`);
     pipe.zrem("boms_index", id);
-    await pipe.exec();
+    await this.safeExec(pipe);
     this.invalidateCache();
   }
 
@@ -455,7 +464,7 @@ export class RedisAdapter implements DatabaseAdapter {
     const whIds = await this.redis.smembers("warehouses_index") as string[];
     const pipe = this.redis.pipeline();
     for (const wid of whIds) pipe.hgetall(`warehouses:${wid}`);
-    const whData = await pipe.exec();
+    const whData = await this.safeExec(pipe);
     const warehouses: Warehouse[] = [];
     for (let i = 0; i < whIds.length; i++) {
       const w = whData[i] as Record<string, unknown> | null;
@@ -486,7 +495,7 @@ export class RedisAdapter implements DatabaseAdapter {
   async createWarehouse(data: Record<string, unknown>): Promise<Warehouse> {
     const id = randomUUID();
     const now = new Date().toISOString();
-    if (data.isDefault) { const allIds = await this.redis.smembers("warehouses_index") as string[]; const pipe = this.redis.pipeline(); for (const wid of allIds) pipe.hset(`warehouses:${wid}`, { isDefault: "0" }); await pipe.exec(); }
+    if (data.isDefault) { const allIds = await this.redis.smembers("warehouses_index") as string[]; const pipe = this.redis.pipeline(); for (const wid of allIds) pipe.hset(`warehouses:${wid}`, { isDefault: "0" }); await this.safeExec(pipe); }
     await this.redis.hset(`warehouses:${id}`, { id, name: data.name, location: data.location || "", description: data.description || "", isDefault: String(data.isDefault ? 1 : 0), createdAt: now, updatedAt: now });
     await this.redis.sadd("warehouses_index", id);
     return { id, name: data.name as string, location: (data.location as string) || "", description: (data.description as string) || "", isDefault: data.isDefault ? 1 : 0, createdAt: now, updatedAt: now };
@@ -496,7 +505,7 @@ export class RedisAdapter implements DatabaseAdapter {
     const w = await this.redis.hgetall(`warehouses:${id}`);
     if (!w || !w.id) throw new Error("仓库不存在");
     const now = new Date().toISOString();
-    if (data.isDefault) { const allIds = await this.redis.smembers("warehouses_index") as string[]; const pipe = this.redis.pipeline(); for (const wid of allIds) pipe.hset(`warehouses:${wid}`, { isDefault: "0" }); await pipe.exec(); }
+    if (data.isDefault) { const allIds = await this.redis.smembers("warehouses_index") as string[]; const pipe = this.redis.pipeline(); for (const wid of allIds) pipe.hset(`warehouses:${wid}`, { isDefault: "0" }); await this.safeExec(pipe); }
     const updates: Record<string, string> = { updatedAt: now };
     if (data.name !== undefined) updates.name = String(data.name);
     if (data.location !== undefined) updates.location = String(data.location);
@@ -517,7 +526,7 @@ export class RedisAdapter implements DatabaseAdapter {
     for (const sid of swIds) { pipe.del(`stock_wh:${sid}`); pipe.srem(`stock_wh_by_wh:${id}`, sid); }
     pipe.del(`warehouses:${id}`);
     pipe.srem("warehouses_index", id);
-    await pipe.exec();
+    await this.safeExec(pipe);
   }
 
   // ── Settings ──
@@ -565,7 +574,7 @@ export class RedisAdapter implements DatabaseAdapter {
     const pipe = this.redis.pipeline();
     pipe.hset(`categories:${id}`, { id, name: data.name.trim(), description: data.description || "", sortOrder: String(sortOrder), createdAt: now });
     pipe.zadd("categories_index", { score: sortOrder, member: id });
-    await pipe.exec();
+    await this.safeExec(pipe);
     return { id, name: data.name.trim(), description: data.description || "", sortOrder, createdAt: now, partCount: 0 };
   }
 
@@ -580,7 +589,7 @@ export class RedisAdapter implements DatabaseAdapter {
       const pipe = this.redis.pipeline();
       for (const pid of partIds) pipe.hset(`parts:${pid}`, { category: data.name.trim() });
       if (partIds.length > 0) { pipe.del(`parts_by_cat:${oldCat.name as string}`); for (const pid of partIds) pipe.sadd(`parts_by_cat:${data.name.trim()}`, pid); }
-      await pipe.exec();
+      await this.safeExec(pipe);
     }
     this.invalidateCache();
   }
@@ -594,7 +603,7 @@ export class RedisAdapter implements DatabaseAdapter {
     pipe.del(`parts_by_cat:${cat.name as string}`);
     pipe.del(`categories:${id}`);
     pipe.zrem("categories_index", id);
-    await pipe.exec();
+    await this.safeExec(pipe);
     this.invalidateCache();
   }
 
@@ -604,7 +613,7 @@ export class RedisAdapter implements DatabaseAdapter {
     const allLogIds = await this.redis.zrange("logs_index", 0, -1, { rev: true }) as string[];
     const pipe = this.redis.pipeline();
     for (const lid of allLogIds) pipe.hgetall(`logs:${lid}`);
-    const logData = await pipe.exec();
+    const logData = await this.safeExec(pipe);
     let logs: Log[] = logData.filter(Boolean).map(l => l as unknown as Log);
     if (filters.entityType) logs = logs.filter(l => l.entityType === filters.entityType);
     if (filters.action) logs = logs.filter(l => l.action === filters.action);
@@ -622,7 +631,7 @@ export class RedisAdapter implements DatabaseAdapter {
       const pipe = this.redis.pipeline();
       pipe.hset(`logs:${id}`, { id, action: data.action, entityType: data.entityType, entityId: data.entityId || "", entityName: data.entityName || "", details: data.details || "", operator: data.operator || "system", createdAt: now });
       pipe.zadd("logs_index", { score: this.ts(now), member: id });
-      await pipe.exec();
+      await this.safeExec(pipe);
     } catch (e) { console.error("Failed to log operation:", e); }
   }
 
