@@ -12,7 +12,7 @@ export async function POST(request: Request) {
       response.cookies.set("auth_session", "authenticated", {
         httpOnly: true,
         path: "/",
-        maxAge: 315360000, // 10 years
+        maxAge: 2592000, // 30 days
         sameSite: "lax",
       });
       return response;

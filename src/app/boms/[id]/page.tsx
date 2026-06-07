@@ -113,9 +113,10 @@ export default function BomDetailPage() {
     setEditItems(prev => prev.filter(item => item.partId !== partId));
   };
 
-  const updateItemQuantity = (partId: string, quantity: number) => {
+  const updateItemQuantity = (partId: string, quantity: number | string) => {
+    const qty = typeof quantity === "string" ? (parseInt(quantity) || 1) : quantity;
     setEditItems(prev => prev.map(item =>
-      item.partId === partId ? { ...item, quantity: Math.max(1, quantity) } : item
+      item.partId === partId ? { ...item, quantity: Math.max(1, qty) } : item
     ));
   };
 
@@ -295,7 +296,17 @@ export default function BomDetailPage() {
                           type="number"
                           min="1"
                           value={item.quantity}
-                          onChange={(e) => updateItemQuantity(item.partId, parseInt(e.target.value) || 1)}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            if (val === "") {
+                              setEditItems(prev => prev.map(i =>
+                                i.partId === item.partId ? { ...i, quantity: 0 } : i
+                              ));
+                            } else {
+                              updateItemQuantity(item.partId, val);
+                            }
+                          }}
+                          onBlur={() => { if (item.quantity < 1) updateItemQuantity(item.partId, 1); }}
                           className="w-16 px-2 py-2 text-center border border-gray-200 dark:border-[var(--card-border)] rounded-lg text-gray-900 dark:text-[var(--card-foreground)] bg-white dark:bg-[var(--card)] focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                         <button

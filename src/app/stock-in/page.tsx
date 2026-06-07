@@ -22,7 +22,7 @@ function StockInContent() {
   const [code, setCode] = useState(searchParams.get("code") || "");
   const [part, setPart] = useState<Part | null>(null);
   const [notFound, setNotFound] = useState(false);
-  const [quantity, setQuantity] = useState(1);
+  const [quantity, setQuantity] = useState("1");
   const [operator, setOperator] = useState("");
   const [reason, setReason] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -78,6 +78,7 @@ function StockInContent() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!part) return;
+    const qty = parseInt(quantity) || 1;
     setSubmitting(true);
     setError("");
     try {
@@ -87,7 +88,7 @@ function StockInContent() {
         body: JSON.stringify({
           partId: part.id,
           type: "IN",
-          quantity,
+          quantity: qty,
           operator,
           reason,
           code,
@@ -99,7 +100,7 @@ function StockInContent() {
         return;
       }
       setSuccess(true);
-      setQuantity(1);
+      setQuantity("1");
       setReason("");
       lookupPart(code);
     } catch {
@@ -217,7 +218,7 @@ function StockInContent() {
                 <button
                   type="button"
                   onClick={() => {
-                    setQuantity(1);
+                    setQuantity("1");
                     setSuccess(false);
                   }}
                   className="flex-1 px-3 py-2.5 sm:px-4 sm:py-3 bg-emerald-600 text-white rounded-lg sm:rounded-xl text-xs sm:text-sm font-medium hover:bg-emerald-700 transition-all duration-200"
@@ -252,7 +253,7 @@ function StockInContent() {
               <div className="flex items-center gap-2 sm:gap-4">
                 <button
                   type="button"
-                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                  onClick={() => setQuantity(String(Math.max(1, (parseInt(quantity) || 1) - 1)))}
                   className="w-9 h-9 sm:w-14 sm:h-14 flex items-center justify-center bg-gray-50 dark:bg-[var(--background-subtle)] border border-gray-200 dark:border-[var(--card-border)] rounded-lg sm:rounded-xl text-gray-600 dark:text-[var(--foreground-muted)] hover:bg-gray-100 dark:hover:bg-[var(--background-muted)] hover:border-gray-300 dark:hover:border-[var(--card-border)] transition-all duration-200"
                 >
                   <Minus className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
@@ -262,12 +263,13 @@ function StockInContent() {
                   min="1"
                   required
                   value={quantity}
-                  onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
+                  onChange={(e) => setQuantity(e.target.value)}
+                  onBlur={() => { if (!quantity || parseInt(quantity) < 1) setQuantity("1"); }}
                   className="flex-1 px-2 py-1.5 sm:px-5 sm:py-4 bg-gray-50 dark:bg-[var(--background-subtle)] border border-gray-200 dark:border-[var(--card-border)] rounded-lg sm:rounded-xl text-base sm:text-2xl font-bold text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white dark:focus:bg-[var(--card)] transition-all duration-200"
                 />
                 <button
                   type="button"
-                  onClick={() => setQuantity(quantity + 1)}
+                  onClick={() => setQuantity(String((parseInt(quantity) || 1) + 1))}
                   className="w-9 h-9 sm:w-14 sm:h-14 flex items-center justify-center bg-gray-50 dark:bg-[var(--background-subtle)] border border-gray-200 dark:border-[var(--card-border)] rounded-lg sm:rounded-xl text-gray-600 dark:text-[var(--foreground-muted)] hover:bg-gray-100 dark:hover:bg-[var(--background-muted)] hover:border-gray-300 dark:hover:border-[var(--card-border)] transition-all duration-200"
                 >
                   <Plus className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
@@ -278,9 +280,9 @@ function StockInContent() {
                   <button
                     key={n}
                     type="button"
-                    onClick={() => setQuantity(n)}
+                    onClick={() => setQuantity(String(n))}
                     className={`flex-1 py-2 sm:py-3 text-xs sm:text-sm font-semibold rounded-lg sm:rounded-xl transition-all duration-200 ${
-                      quantity === n
+                      quantity === String(n)
                         ? "bg-blue-600 text-white shadow-md shadow-blue-500/25"
                         : "bg-gray-100 dark:bg-[var(--background-muted)] text-gray-700 dark:text-[var(--foreground-muted)] hover:bg-gray-200 dark:hover:bg-[var(--background-muted)]"
                     }`}

@@ -138,11 +138,20 @@ export class SqliteAdapter implements DatabaseAdapter {
     return { ...part, stock: { quantity: (part.stockQuantity as number) ?? 0 } } as unknown as Part;
   }
 
+  async generateNextCode(): Promise<string> {
+    const row = this.db.prepare("SELECT code FROM parts WHERE code LIKE 'z%' ORDER BY code DESC LIMIT 1").get() as { code: string } | undefined;
+    if (!row) return "z001";
+    const num = parseInt(row.code.slice(1), 10);
+    if (isNaN(num)) return "z001";
+    return "z" + String(num + 1).padStart(3, "0");
+  }
+
   async createPart(data: Record<string, unknown>): Promise<Part> {
     const existing = this.db.prepare("SELECT id FROM parts WHERE code = ?").get(data.code as string);
     if (existing) throw new Error("编码已存在");
     const id = randomUUID();
     const now = new Date().toISOString();
+    const image = (data.image as string) || "";
     this.db.prepare("INSERT INTO parts (id, code, name, category, package, brand, model, unit, minStock, location, note, image, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)").run(
       id,
       data.code as string,
@@ -155,18 +164,12 @@ export class SqliteAdapter implements DatabaseAdapter {
       (data.minStock as number) || 0,
       (data.location as string) || "",
       (data.note as string) || "",
-      "",
+      image,
       now,
       now
     );
     this.db.prepare("INSERT INTO stock (id, partId, quantity) VALUES (?, ?, 0)").run(randomUUID(), id);
-    if (data.image) {
-      const { downloadImage } = require("./image-store");
-      downloadImage(id, data.image as string).then((filename: string | null) => {
-        if (filename) this.db.prepare("UPDATE parts SET image = ? WHERE id = ?").run(filename, id);
-      }).catch(() => {});
-    }
-    return { id, code: data.code as string, name: data.name as string, category: (data.category as string) || "", package: (data.package as string) || "", brand: (data.brand as string) || "", model: (data.model as string) || "", unit: (data.unit as string) || "pcs", minStock: (data.minStock as number) || 0, location: (data.location as string) || "", note: (data.note as string) || "", image: "", createdAt: now, updatedAt: now, stock: { quantity: 0 } };
+    return { id, code: data.code as string, name: data.name as string, category: (data.category as string) || "", package: (data.package as string) || "", brand: (data.brand as string) || "", model: (data.model as string) || "", unit: (data.unit as string) || "pcs", minStock: (data.minStock as number) || 0, location: (data.location as string) || "", note: (data.note as string) || "", image, createdAt: now, updatedAt: now, stock: { quantity: 0 } };
   }
 
   async updatePart(id: string, data: Record<string, unknown>): Promise<Part> {
@@ -282,22 +285,8 @@ export class SqliteAdapter implements DatabaseAdapter {
     return { results, successCount: results.filter(r => r.success).length, failCount: results.filter(r => !r.success).length };
   }
 
-  async backfillImages(ids: string[]): Promise<BatchResult> {
-    const results: BatchResult["results"] = [];
-    const { fetchProductImage, downloadImage } = require("./image-store");
-    for (const id of ids) {
-      const part = this.db.prepare("SELECT id, code, image FROM parts WHERE id = ?").get(id) as { id: string; code: string; image: string } | undefined;
-      if (!part) { results.push({ partId: id, success: false, message: "器件不存在" }); continue; }
-      if (part.image) { results.push({ partId: id, success: true, message: "已有图片" }); continue; }
-      try {
-        const imageUrl = fetchProductImage(part.code);
-        if (!imageUrl) { results.push({ partId: id, success: false, message: "未找到产品图片" }); continue; }
-        const filename = downloadImage(id, imageUrl);
-        if (filename) { this.db.prepare("UPDATE parts SET image = ?, updatedAt = ? WHERE id = ?").run(filename, new Date().toISOString(), id); results.push({ partId: id, success: true }); }
-        else { results.push({ partId: id, success: false, message: "图片下载失败" }); }
-      } catch { results.push({ partId: id, success: false, message: "处理失败" }); }
-    }
-    return { results, successCount: results.filter(r => r.success).length, failCount: results.filter(r => !r.success).length };
+  async backfillImages(): Promise<BatchResult> {
+    return { results: [], successCount: 0, failCount: 0 };
   }
 
   // ── Favorites ──

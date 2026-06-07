@@ -10,8 +10,9 @@ interface QRScannerProps {
   embedded?: boolean;
 }
 
+const ABSENT_THRESHOLD = 5;
+
 export default function QRScanner({ onScan, onClose, continuous = false, embedded = false }: QRScannerProps) {
-  const videoRef = useRef<HTMLVideoElement>(null);
   const [error, setError] = useState("");
   const [scanning, setScanning] = useState(false);
   const [showManualInput, setShowManualInput] = useState(false);
@@ -20,44 +21,31 @@ export default function QRScanner({ onScan, onClose, continuous = false, embedde
   const [showSuccess, setShowSuccess] = useState(false);
   const [torchEnabled, setTorchEnabled] = useState(false);
   const [torchSupported, setTorchSupported] = useState(false);
-  const streamRef = useRef<MediaStream | null>(null);
+
+  const scannerRef = useRef<unknown>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const lastDetectedCodeRef = useRef<string>("");
+  const codePresentRef = useRef<boolean>(false);
+  const consecutiveMissesRef = useRef<number>(0);
   const trackRef = useRef<MediaStreamTrack | null>(null);
-  const animRef = useRef<number>(0);
-  const lastScanTimeRef = useRef<number>(0);
-  const lastCodeRef = useRef<string>("");
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
 
-  const SCAN_INTERVAL = 100;
-  const SCAN_SIZE = 288;
-  const DUPLICATE_TIMEOUT = 1500;
-
-  const isCameraAvailable = typeof navigator !== "undefined" && 
-    navigator.mediaDevices && 
+  const isCameraAvailable = typeof navigator !== "undefined" &&
+    navigator.mediaDevices &&
     typeof navigator.mediaDevices.getUserMedia === "function";
 
-  const handleScanResult = useCallback((code: string, timestamp?: number) => {
-    const now = timestamp || Date.now();
-    if (continuous && code === lastCodeRef.current && now - lastScanTimeRef.current < DUPLICATE_TIMEOUT) {
-      return;
-    }
-
-    lastScanTimeRef.current = now;
-    lastCodeRef.current = code;
-
+  const handleScanResult = useCallback((code: string) => {
     onScan(code);
     setScanCount((prev) => prev + 1);
     setShowSuccess(true);
     setTimeout(() => setShowSuccess(false), 800);
 
     if (!continuous) {
-      stopCamera();
+      stopScanner();
     }
   }, [continuous, onScan]);
 
   const toggleTorch = useCallback(async () => {
     if (!trackRef.current) return;
-
     try {
       const newTorchState = !torchEnabled;
       await trackRef.current.applyConstraints({
@@ -69,6 +57,20 @@ export default function QRScanner({ onScan, onClose, continuous = false, embedde
     }
   }, [torchEnabled]);
 
+  const stopScanner = useCallback(async () => {
+    if (scannerRef.current) {
+      try {
+        const scanner = scannerRef.current as { stop: () => Promise<void>; clear: () => Promise<void> };
+        await scanner.stop();
+        await scanner.clear();
+      } catch {
+        // ignore
+      }
+      scannerRef.current = null;
+    }
+    setScanning(false);
+  }, []);
+
   useEffect(() => {
     if (!isCameraAvailable) {
       setShowManualInput(true);
@@ -77,72 +79,79 @@ export default function QRScanner({ onScan, onClose, continuous = false, embedde
 
     let cancelled = false;
 
-    async function startCamera() {
+    async function startScanner() {
       try {
-        const jsQR = (await import("jsqr")).default;
+        const { Html5Qrcode } = await import("html5-qrcode");
 
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } },
-        });
+        if (cancelled || !containerRef.current) return;
 
-        if (cancelled) {
-          stream.getTracks().forEach((t) => t.stop());
-          return;
+        const containerId = "qr-scanner-region";
+        let container = document.getElementById(containerId);
+        if (!container) {
+          container = document.createElement("div");
+          container.id = containerId;
+          container.style.width = "100%";
+          container.style.height = "100%";
+          containerRef.current.appendChild(container);
         }
 
-        streamRef.current = stream;
-        const videoTrack = stream.getVideoTracks()[0];
-        trackRef.current = videoTrack;
+        const scanner = new Html5Qrcode(containerId);
+        scannerRef.current = scanner;
 
-        const capabilities = videoTrack.getCapabilities();
-        if (capabilities && 'torch' in capabilities) {
-          setTorchSupported(capabilities.torch as boolean);
-        }
+        await scanner.start(
+          { facingMode: "environment" },
+          {
+            fps: 10,
+            qrbox: { width: 250, height: 250 },
+            aspectRatio: 1.0,
+            disableFlip: false,
+          },
+          (decodedText: string) => {
+            if (cancelled) return;
 
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-          await videoRef.current.play();
-          setScanning(true);
+            const now = Date.now();
+            const isSameCode = decodedText === lastDetectedCodeRef.current;
 
-          const canvas = document.createElement("canvas");
-          canvasRef.current = canvas;
-          const ctx = canvas.getContext("2d", { willReadFrequently: true });
-          if (!ctx) return;
-          ctxRef.current = ctx;
-
-          function tick(timestamp: number) {
-            if (cancelled || !videoRef.current || !ctx) return;
-
-            if (timestamp - lastScanTimeRef.current >= SCAN_INTERVAL) {
-              if (videoRef.current.readyState === videoRef.current.HAVE_ENOUGH_DATA) {
-                if (canvas.width !== videoRef.current.videoWidth) {
-                  canvas.width = videoRef.current.videoWidth;
-                  canvas.height = videoRef.current.videoHeight;
-                }
-
-                ctx.drawImage(videoRef.current, 0, 0);
-
-                const centerX = (canvas.width - SCAN_SIZE) / 2;
-                const centerY = (canvas.height - SCAN_SIZE) / 2;
-                const imageData = ctx.getImageData(
-                  Math.max(0, centerX),
-                  Math.max(0, centerY),
-                  SCAN_SIZE,
-                  SCAN_SIZE
-                );
-
-                const code = jsQR(imageData.data, imageData.width, imageData.height);
-                if (code && code.data) {
-                  handleScanResult(code.data, timestamp);
-                  if (!continuous) return;
-                }
-              }
+            if (isSameCode && codePresentRef.current) {
+              return;
             }
 
-            animRef.current = requestAnimationFrame(tick);
-          }
+            if (isSameCode && !codePresentRef.current) {
+              codePresentRef.current = true;
+              consecutiveMissesRef.current = 0;
+              handleScanResult(decodedText);
+              return;
+            }
 
-          animRef.current = requestAnimationFrame(tick);
+            lastDetectedCodeRef.current = decodedText;
+            codePresentRef.current = true;
+            consecutiveMissesRef.current = 0;
+            handleScanResult(decodedText);
+          },
+          () => {
+            if (cancelled) return;
+            consecutiveMissesRef.current++;
+            if (consecutiveMissesRef.current >= ABSENT_THRESHOLD) {
+              codePresentRef.current = false;
+            }
+          }
+        );
+
+        if (!cancelled) {
+          setScanning(true);
+
+          const videoEl = container.querySelector("video") as HTMLVideoElement | null;
+          if (videoEl) {
+            const stream = videoEl.srcObject as MediaStream | null;
+            if (stream) {
+              const videoTrack = stream.getVideoTracks()[0];
+              trackRef.current = videoTrack;
+              const capabilities = videoTrack.getCapabilities();
+              if (capabilities && "torch" in capabilities) {
+                setTorchSupported(capabilities.torch as boolean);
+              }
+            }
+          }
         }
       } catch (e) {
         if (!cancelled) {
@@ -153,34 +162,22 @@ export default function QRScanner({ onScan, onClose, continuous = false, embedde
       }
     }
 
-    startCamera();
+    startScanner();
 
     return () => {
       cancelled = true;
-      stopCamera();
+      stopScanner();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  function stopCamera() {
-    cancelAnimationFrame(animRef.current);
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach((t) => t.stop());
-      streamRef.current = null;
-    }
-    setScanning(false);
-  }
-
   function closeManualInput() {
     setShowManualInput(false);
-    if (videoRef.current && streamRef.current) {
-      videoRef.current.play().catch(() => {});
-    }
   }
 
   function handleManualSubmit() {
     if (manualCode.trim()) {
-      handleScanResult(manualCode.trim(), Date.now());
+      handleScanResult(manualCode.trim());
       setManualCode("");
       if (!continuous) {
         setShowManualInput(false);
@@ -189,23 +186,13 @@ export default function QRScanner({ onScan, onClose, continuous = false, embedde
   }
 
   function handleClose() {
-    stopCamera();
+    stopScanner();
     onClose();
   }
 
   const scannerContent = (
     <>
-      {/* 视频始终渲染 */}
-      {!error && (
-        <div className="absolute inset-0">
-          <video
-            ref={videoRef}
-            className="w-full h-full object-cover"
-            playsInline
-            muted
-          />
-        </div>
-      )}
+      <div ref={containerRef} className="absolute inset-0" id="qr-scanner-region-wrapper" />
 
       {showSuccess && (
         <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 animate-fade-in">
@@ -286,7 +273,6 @@ export default function QRScanner({ onScan, onClose, continuous = false, embedde
         </div>
       ) : (
         <>
-          {/* 扫描框覆盖层 */}
           <div className="absolute inset-0 z-10">
             <div className="absolute inset-0 bg-black/30" />
 
@@ -333,8 +319,8 @@ export default function QRScanner({ onScan, onClose, continuous = false, embedde
                 <button
                   onClick={toggleTorch}
                   className={`px-4 py-1.5 backdrop-blur-sm text-white text-sm rounded-full transition-colors ${
-                    torchEnabled 
-                      ? "bg-amber-500/80 hover:bg-amber-500" 
+                    torchEnabled
+                      ? "bg-amber-500/80 hover:bg-amber-500"
                       : "bg-white/20 hover:bg-white/30"
                   }`}
                 >

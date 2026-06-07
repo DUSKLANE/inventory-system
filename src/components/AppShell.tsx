@@ -1,11 +1,22 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect } from "react";
 import Navigation from "./Navigation";
 import KeyboardShortcuts from "./KeyboardShortcuts";
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (pathname === "/login") return;
+    fetch("/api/auth/me").then((res) => {
+      if (res.status === 401) {
+        router.replace("/login");
+      }
+    });
+  }, [pathname, router]);
 
   if (pathname === "/login") {
     return <>{children}</>;

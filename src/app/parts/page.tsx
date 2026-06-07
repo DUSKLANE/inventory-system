@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Plus, Search, Edit, Trash2, MapPin, X, Loader2, Package, ChevronLeft, ChevronRight, ChevronDown, Eye, Tag, Boxes, Filter, CheckSquare, Square, ArrowDownToLine, ArrowUpFromLine, ImageIcon } from "lucide-react";
+import { Plus, Search, Edit, Trash2, MapPin, X, Loader2, Package, ChevronLeft, ChevronRight, ChevronDown, Eye, Tag, Boxes, Filter, CheckSquare, Square, ArrowDownToLine, ArrowUpFromLine } from "lucide-react";
 
 interface Part {
   id: string;
@@ -389,36 +389,7 @@ function PartsPageContent() {
     }
   };
 
-  // Batch backfill images
-  const handleBackfillImages = async () => {
-    if (selectedIds.size === 0) return;
-    if (!confirm(`将为选中的 ${selectedIds.size} 个器件从 LCSC 补全产品图片，是否继续？`)) return;
-
-    setBatchProcessing(true);
-    try {
-      const res = await fetch("/api/parts/batch", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "backfillImages",
-          ids: Array.from(selectedIds),
-        }),
-      });
-      const result = await res.json();
-      if (res.ok) {
-        alert(result.message);
-        clearSelection();
-        fetchParts();
-      } else {
-        alert(result.error || "补全图片失败");
-      }
-    } catch (e) {
-      console.error(e);
-      alert("补全图片失败");
-    } finally {
-      setBatchProcessing(false);
-    }
-  };
+  // Batch backfill images - removed (images now stored as remote URLs)
 
   return (
     <div className="page-container">
@@ -738,14 +709,6 @@ function PartsPageContent() {
             >
               {batchProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
               批量删除
-            </button>
-            <button
-              onClick={handleBackfillImages}
-              disabled={batchProcessing}
-              className="inline-flex items-center gap-2 px-4 py-2.5 bg-violet-600 text-white rounded-xl text-sm font-medium hover:bg-violet-700 transition-all duration-200 shadow-sm disabled:opacity-50"
-            >
-              {batchProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : <ImageIcon className="w-4 h-4" />}
-              补全图片
             </button>
             <button
               onClick={clearSelection}
@@ -1091,6 +1054,17 @@ function AddEditModal({ part, onClose, onSaved }: { part: Part | null; onClose: 
     note: "",
   });
 
+  useEffect(() => {
+    if (!isEdit) {
+      fetch("/api/parts/next-code")
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.code) setForm((prev) => ({ ...prev, code: data.code }));
+        })
+        .catch(() => {});
+    }
+  }, [isEdit]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
@@ -1142,9 +1116,9 @@ function AddEditModal({ part, onClose, onSaved }: { part: Part | null; onClose: 
               <input
                 required
                 value={form.code}
-                onChange={(e) => setForm({ ...form, code: e.target.value })}
-                className="w-full px-5 py-4 bg-gray-50 dark:bg-[var(--background-subtle)] border border-gray-200 dark:border-[var(--card-border)] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white dark:focus:bg-[var(--card)] transition-all duration-200"
-                placeholder="唯一编码"
+                readOnly
+                className="w-full px-5 py-4 bg-gray-100 dark:bg-[var(--background-muted)] border border-gray-200 dark:border-[var(--card-border)] rounded-xl text-sm text-gray-600 dark:text-[var(--foreground-muted)] cursor-not-allowed"
+                placeholder="自动生成中..."
               />
             </div>
             <div>
@@ -1180,11 +1154,24 @@ function AddEditModal({ part, onClose, onSaved }: { part: Part | null; onClose: 
             <div>
               <label className="block text-sm font-semibold text-gray-700 dark:text-[var(--foreground-muted)] mb-3">封装</label>
               <input
+                list="package-options"
                 value={form.package}
                 onChange={(e) => setForm({ ...form, package: e.target.value })}
                 className="w-full px-5 py-4 bg-gray-50 dark:bg-[var(--background-subtle)] border border-gray-200 dark:border-[var(--card-border)] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white dark:focus:bg-[var(--card)] transition-all duration-200"
                 placeholder="如 SOT-23, QFP-48"
               />
+              <datalist id="package-options">
+                <option value="0201" /><option value="0402" /><option value="0603" /><option value="0805" /><option value="1206" />
+                <option value="SOT-23" /><option value="SOT-23-5" /><option value="SOT-23-6" /><option value="SOT-223" /><option value="SOT-89" />
+                <option value="SOIC-8" /><option value="SOIC-14" /><option value="SOIC-16" /><option value="SOIC-20" /><option value="SOIC-28" />
+                <option value="TSSOP-8" /><option value="TSSOP-14" /><option value="TSSOP-16" /><option value="TSSOP-20" />
+                <option value="QFP-32" /><option value="QFP-44" /><option value="QFP-48" /><option value="QFP-64" /><option value="QFP-100" />
+                <option value="QFN-16" /><option value="QFN-20" /><option value="QFN-24" /><option value="QFN-32" /><option value="QFN-48" />
+                <option value="BGA" /><option value="DIP-8" /><option value="DIP-14" /><option value="DIP-16" /><option value="DIP-20" />
+                <option value="TO-220" /><option value="TO-220F" /><option value="TO-252" /><option value="TO-263" /><option value="TO-92" />
+                <option value="LQFP-32" /><option value="LQFP-48" /><option value="LQFP-64" /><option value="LQFP-100" />
+                <option value="MSOP-8" /><option value="SC-70" /><option value="SOD-123" /><option value="SOD-323" />
+              </datalist>
             </div>
             <div>
               <label className="block text-sm font-semibold text-gray-700 dark:text-[var(--foreground-muted)] mb-3">品牌</label>

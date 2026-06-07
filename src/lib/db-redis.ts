@@ -183,27 +183,33 @@ export class RedisAdapter implements DatabaseAdapter {
     return part ? { ...part, movements: undefined } as Part : null;
   }
 
+  async generateNextCode(): Promise<string> {
+    const keys = await this.redis.keys("parts_by_code:z*");
+    if (keys.length === 0) return "z001";
+    let maxNum = 0;
+    for (const key of keys) {
+      const code = key.replace("parts_by_code:", "");
+      const num = parseInt(code.slice(1), 10);
+      if (!isNaN(num) && num > maxNum) maxNum = num;
+    }
+    return "z" + String(maxNum + 1).padStart(3, "0");
+  }
+
   async createPart(data: Record<string, unknown>): Promise<Part> {
     const existing = await this.redis.get(`parts_by_code:${data.code}`) as string | null;
     if (existing) throw new Error("编码已存在");
     const id = randomUUID();
     const now = new Date().toISOString();
+    const image = (data.image as string) || "";
     const pipe = this.redis.pipeline();
-    pipe.hset(`parts:${id}`, { id, code: String(data.code), name: String(data.name), category: String(data.category || ""), package: String(data.package || ""), brand: String(data.brand || ""), model: String(data.model || ""), unit: String(data.unit || "pcs"), minStock: String(data.minStock || 0), location: String(data.location || ""), note: String(data.note || ""), image: "", createdAt: now, updatedAt: now });
+    pipe.hset(`parts:${id}`, { id, code: String(data.code), name: String(data.name), category: String(data.category || ""), package: String(data.package || ""), brand: String(data.brand || ""), model: String(data.model || ""), unit: String(data.unit || "pcs"), minStock: String(data.minStock || 0), location: String(data.location || ""), note: String(data.note || ""), image, createdAt: now, updatedAt: now });
     pipe.hset(`stock:${id}`, { quantity: "0", updatedAt: now });
     pipe.set(`parts_by_code:${data.code as string}`, id);
     pipe.zadd("parts_index", { score: this.ts(now), member: id });
     if (data.category) pipe.sadd(`parts_by_cat:${data.category as string}`, id);
     await this.safeExec(pipe);
-    if (data.image) {
-      try {
-        const { fetchProductImage, downloadImage } = require("./image-store");
-        const imageUrl = await fetchProductImage(data.code as string);
-        if (imageUrl) { const fn = await downloadImage(id, imageUrl); if (fn) await this.redis.hset(`parts:${id}`, { image: fn }); }
-      } catch {}
-    }
     this.invalidateCache();
-    return { id, code: data.code as string, name: data.name as string, category: (data.category as string) || "", package: (data.package as string) || "", brand: (data.brand as string) || "", model: (data.model as string) || "", unit: (data.unit as string) || "pcs", minStock: Number(data.minStock) || 0, location: (data.location as string) || "", note: (data.note as string) || "", image: "", createdAt: now, updatedAt: now, stock: { quantity: 0 } };
+    return { id, code: data.code as string, name: data.name as string, category: (data.category as string) || "", package: (data.package as string) || "", brand: (data.brand as string) || "", model: (data.model as string) || "", unit: (data.unit as string) || "pcs", minStock: Number(data.minStock) || 0, location: (data.location as string) || "", note: (data.note as string) || "", image, createdAt: now, updatedAt: now, stock: { quantity: 0 } };
   }
 
   async updatePart(id: string, data: Record<string, unknown>): Promise<Part> {
@@ -309,23 +315,8 @@ export class RedisAdapter implements DatabaseAdapter {
     return { results, successCount: results.filter(r => r.success).length, failCount: results.filter(r => !r.success).length };
   }
 
-  async backfillImages(ids: string[]): Promise<BatchResult> {
-    const results: BatchResult["results"] = [];
-    for (const id of ids) {
-      const part = await this.redis.hgetall(`parts:${id}`);
-      if (!part || !part.id) { results.push({ partId: id, success: false, message: "器件不存在" }); continue; }
-      if (part.image) { results.push({ partId: id, success: true, message: "已有图片" }); continue; }
-      try {
-        const { fetchProductImage, downloadImage } = require("./image-store");
-        const imageUrl = await fetchProductImage(part.code as string);
-        if (!imageUrl) { results.push({ partId: id, success: false, message: "未找到产品图片" }); continue; }
-        const filename = await downloadImage(id, imageUrl);
-        if (filename) { await this.redis.hset(`parts:${id}`, { image: filename }); results.push({ partId: id, success: true }); }
-        else { results.push({ partId: id, success: false, message: "图片下载失败" }); }
-      } catch { results.push({ partId: id, success: false, message: "处理失败" }); }
-    }
-    this.invalidateCache();
-    return { results, successCount: results.filter(r => r.success).length, failCount: results.filter(r => !r.success).length };
+  async backfillImages(): Promise<BatchResult> {
+    return { results: [], successCount: 0, failCount: 0 };
   }
 
   // ── Favorites ──

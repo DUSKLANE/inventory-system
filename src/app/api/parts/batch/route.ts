@@ -31,12 +31,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: true, message: `批量${type === "IN" ? "入库" : "出库"}完成：成功 ${result.successCount}，失败 ${result.failCount}`, ...result });
     }
 
-    if (action === "backfillImages") {
-      const { ids } = batchDeleteSchema.parse(body);
-      const result = await db.backfillImages(ids);
-      return NextResponse.json({ success: true, message: `补全图片完成：成功 ${result.successCount}，失败 ${result.failCount}`, ...result });
-    }
-
     return NextResponse.json({ error: "未知操作" }, { status: 400 });
   } catch (error) {
     console.error("POST /api/parts/batch error:", error);

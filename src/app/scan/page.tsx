@@ -193,6 +193,14 @@ export default function ScanPage() {
     );
   };
 
+  const setQuantityDirectly = (id: string, quantity: number) => {
+    setPendingItems((prev) =>
+      prev.map((item) =>
+        item.id === id ? { ...item, quantity: Math.max(1, quantity) } : item
+      )
+    );
+  };
+
   const updateLocation = (id: string, location: string) => {
     setPendingItems((prev) =>
       prev.map((item) => (item.id === id ? { ...item, location } : item))
@@ -403,6 +411,7 @@ export default function ScanPage() {
                 key={item.id}
                 item={item}
                 onUpdateQuantity={updateQuantity}
+                onSetQuantity={setQuantityDirectly}
                 onUpdateLocation={updateLocation}
                 onUpdateName={updateName}
                 onRemove={removeItem}
@@ -500,6 +509,7 @@ export default function ScanPage() {
 function PendingItemCard({
   item,
   onUpdateQuantity,
+  onSetQuantity,
   onUpdateLocation,
   onUpdateName,
   onRemove,
@@ -507,6 +517,7 @@ function PendingItemCard({
 }: {
   item: PendingItem;
   onUpdateQuantity: (id: string, delta: number) => void;
+  onSetQuantity: (id: string, quantity: number) => void;
   onUpdateLocation: (id: string, location: string) => void;
   onUpdateName: (id: string, name: string) => void;
   onRemove: (id: string) => void;
@@ -601,10 +612,11 @@ function PendingItemCard({
               value={item.quantity}
               onChange={(e) => {
                 const val = parseInt(e.target.value, 10);
-                if (val > 0) {
-                  onUpdateQuantity(item.id, val - item.quantity);
+                if (!isNaN(val)) {
+                  onSetQuantity(item.id, val);
                 }
               }}
+              onBlur={() => { if (item.quantity < 1) onSetQuantity(item.id, 1); }}
               className="w-16 text-center py-1 border border-gray-200 dark:border-[var(--card-border)] rounded-lg bg-white dark:bg-[var(--card)] text-gray-900 dark:text-[var(--card-foreground)] text-sm"
             />
             <button

@@ -22,7 +22,7 @@ function StockOutContent() {
   const [code, setCode] = useState(searchParams.get("code") || "");
   const [part, setPart] = useState<Part | null>(null);
   const [notFound, setNotFound] = useState(false);
-  const [quantity, setQuantity] = useState(1);
+  const [quantity, setQuantity] = useState("1");
   const [operator, setOperator] = useState("");
   const [reason, setReason] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -78,6 +78,7 @@ function StockOutContent() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!part) return;
+    const qty = parseInt(quantity) || 1;
     setSubmitting(true);
     setError("");
     try {
@@ -87,7 +88,7 @@ function StockOutContent() {
         body: JSON.stringify({
           partId: part.id,
           type: "OUT",
-          quantity,
+          quantity: qty,
           operator,
           reason,
           code,
@@ -99,7 +100,7 @@ function StockOutContent() {
         return;
       }
       setSuccess(true);
-      setQuantity(1);
+      setQuantity("1");
       setReason("");
       lookupPart(code);
     } catch {
@@ -217,7 +218,7 @@ function StockOutContent() {
                 <button
                   type="button"
                   onClick={() => {
-                    setQuantity(1);
+                    setQuantity("1");
                     setSuccess(false);
                   }}
                   className="flex-1 px-2 py-2 sm:px-4 sm:py-3 bg-emerald-600 text-white rounded-lg sm:rounded-xl text-xs sm:text-sm font-medium hover:bg-emerald-700 transition-all duration-200"
@@ -252,7 +253,7 @@ function StockOutContent() {
               <div className="flex items-center gap-1.5 sm:gap-3">
                 <button
                   type="button"
-                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                  onClick={() => setQuantity(String(Math.max(1, (parseInt(quantity) || 1) - 1)))}
                   className="w-9 h-9 sm:w-12 sm:h-12 flex items-center justify-center bg-gray-50 dark:bg-[var(--background-subtle)] border border-gray-200 dark:border-[var(--card-border)] rounded-lg sm:rounded-xl text-gray-600 dark:text-[var(--foreground-muted)] hover:bg-gray-100 dark:hover:bg-[var(--background-muted)] hover:border-gray-300 dark:hover:border-[var(--card-border)] transition-all duration-200"
                 >
                   <Minus className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
@@ -263,12 +264,13 @@ function StockOutContent() {
                   max={part.stock?.quantity ?? 0}
                   required
                   value={quantity}
-                  onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
+                  onChange={(e) => setQuantity(e.target.value)}
+                  onBlur={() => { if (!quantity || parseInt(quantity) < 1) setQuantity("1"); }}
                   className="flex-1 px-2 py-1.5 sm:px-4 sm:py-3 bg-gray-50 dark:bg-[var(--background-subtle)] border border-gray-200 dark:border-[var(--card-border)] rounded-lg sm:rounded-xl text-base sm:text-2xl font-bold text-center focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent focus:bg-white dark:focus:bg-[var(--card)] transition-all duration-200"
                 />
                 <button
                   type="button"
-                  onClick={() => setQuantity(Math.min(part.stock?.quantity ?? 0, quantity + 1))}
+                  onClick={() => setQuantity(String(Math.min(part.stock?.quantity ?? 0, (parseInt(quantity) || 1) + 1)))}
                   className="w-9 h-9 sm:w-12 sm:h-12 flex items-center justify-center bg-gray-50 dark:bg-[var(--background-subtle)] border border-gray-200 dark:border-[var(--card-border)] rounded-lg sm:rounded-xl text-gray-600 dark:text-[var(--foreground-muted)] hover:bg-gray-100 dark:hover:bg-[var(--background-muted)] hover:border-gray-300 dark:hover:border-[var(--card-border)] transition-all duration-200"
                 >
                   <Plus className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
@@ -280,7 +282,7 @@ function StockOutContent() {
                 </p>
                 <button
                   type="button"
-                  onClick={() => setQuantity(part.stock?.quantity ?? 0)}
+                  onClick={() => setQuantity(String(part.stock?.quantity ?? 0))}
                   className="text-xs sm:text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 font-semibold transition-colors duration-200"
                 >
                   全部出库

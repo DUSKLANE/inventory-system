@@ -162,6 +162,7 @@ export interface DatabaseAdapter {
   listParts(filters: PartFilters): Promise<{ parts: Part[]; total: number }>;
   getPart(id: string): Promise<PartDetail | null>;
   getPartByCode(code: string): Promise<Part | null>;
+  generateNextCode(): Promise<string>;
   createPart(data: Record<string, unknown>): Promise<Part>;
   updatePart(id: string, data: Record<string, unknown>): Promise<Part>;
   deletePart(id: string): Promise<void>;
