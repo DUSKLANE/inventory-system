@@ -111,26 +111,28 @@ export class RedisAdapter implements DatabaseAdapter {
   private async loadCache(): Promise<{ parts: Part[]; stock: Map<string, { quantity: number }>; movements: Movement[] }> {
     if (this._cache.parts && Date.now() - this._cacheTime < 5000) return this._cache as { parts: Part[]; stock: Map<string, { quantity: number }>; movements: Movement[] };
     const [partIds, movementIds] = await Promise.all([this.redis.zrange("parts_index", 0, -1, { rev: true }) as Promise<string[]>, this.redis.zrange("movements_index", 0, -1, { rev: true }) as Promise<string[]>]);
-    const pipe = this.redis.pipeline();
-    for (const id of partIds) { pipe.hgetall(`parts:${id}`); pipe.hget(`stock:${id}`, "quantity"); }
-    for (const mid of movementIds) { pipe.hgetall(`movements:${mid}`); }
-    const results = await pipe.exec();
     const parts: Part[] = [];
     const stock = new Map<string, { quantity: number }>();
     const movements: Movement[] = [];
-    let idx = 0;
-    for (const id of partIds) {
-      const partData = results[idx++] as Record<string, unknown> | null;
-      const qty = results[idx++] as number | null;
-      if (partData && partData.id) {
-        const p: Part = { id: partData.id as string, code: partData.code as string, name: partData.name as string, category: (partData.category as string) || "", package: (partData.package as string) || "", brand: (partData.brand as string) || "", model: (partData.model as string) || "", unit: (partData.unit as string) || "pcs", minStock: Number(partData.minStock) || 0, location: (partData.location as string) || "", note: (partData.note as string) || "", image: (partData.image as string) || "", createdAt: (partData.createdAt as string) || "", updatedAt: (partData.updatedAt as string) || "", stock: { quantity: qty ?? 0 } };
-        parts.push(p);
-        stock.set(p.id, { quantity: qty ?? 0 });
+    if (partIds.length > 0 || movementIds.length > 0) {
+      const pipe = this.redis.pipeline();
+      for (const id of partIds) { pipe.hgetall(`parts:${id}`); pipe.hget(`stock:${id}`, "quantity"); }
+      for (const mid of movementIds) { pipe.hgetall(`movements:${mid}`); }
+      const results = await pipe.exec();
+      let idx = 0;
+      for (const id of partIds) {
+        const partData = results[idx++] as Record<string, unknown> | null;
+        const qty = results[idx++] as number | null;
+        if (partData && partData.id) {
+          const p: Part = { id: partData.id as string, code: partData.code as string, name: partData.name as string, category: (partData.category as string) || "", package: (partData.package as string) || "", brand: (partData.brand as string) || "", model: (partData.model as string) || "", unit: (partData.unit as string) || "pcs", minStock: Number(partData.minStock) || 0, location: (partData.location as string) || "", note: (partData.note as string) || "", image: (partData.image as string) || "", createdAt: (partData.createdAt as string) || "", updatedAt: (partData.updatedAt as string) || "", stock: { quantity: qty ?? 0 } };
+          parts.push(p);
+          stock.set(p.id, { quantity: qty ?? 0 });
+        }
       }
-    }
-    for (const mid of movementIds) {
-      const mData = results[idx++] as Record<string, unknown> | null;
-      if (mData && mData.id) { movements.push({ id: mData.id as string, partId: mData.partId as string, type: mData.type as string, quantity: Number(mData.quantity) || 0, operator: (mData.operator as string) || "", reason: (mData.reason as string) || "", code: (mData.code as string) || "", createdAt: (mData.createdAt as string) || "" }); }
+      for (const mid of movementIds) {
+        const mData = results[idx++] as Record<string, unknown> | null;
+        if (mData && mData.id) { movements.push({ id: mData.id as string, partId: mData.partId as string, type: mData.type as string, quantity: Number(mData.quantity) || 0, operator: (mData.operator as string) || "", reason: (mData.reason as string) || "", code: (mData.code as string) || "", createdAt: (mData.createdAt as string) || "" }); }
+      }
     }
     this._cache = { parts, stock, movements };
     this._cacheTime = Date.now();
