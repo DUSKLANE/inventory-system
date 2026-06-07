@@ -133,7 +133,7 @@ export class RedisAdapter implements DatabaseAdapter {
         const partData = results[idx++] as Record<string, unknown> | null;
         const qty = results[idx++] as number | null;
         if (partData && partData.id) {
-          const p: Part = { id: partData.id as string, code: partData.code as string, name: partData.name as string, category: (partData.category as string) || "", package: (partData.package as string) || "", brand: (partData.brand as string) || "", model: (partData.model as string) || "", unit: (partData.unit as string) || "pcs", minStock: Number(partData.minStock) || 0, location: (partData.location as string) || "", note: (partData.note as string) || "", image: (partData.image as string) || "", createdAt: (partData.createdAt as string) || "", updatedAt: (partData.updatedAt as string) || "", stock: { quantity: qty ?? 0 } };
+          const p: Part = { id: String(partData.id), code: String(partData.code), name: String(partData.name), category: String(partData.category || ""), package: String(partData.package || ""), brand: String(partData.brand || ""), model: String(partData.model || ""), unit: String(partData.unit || "pcs"), minStock: Number(partData.minStock) || 0, location: String(partData.location || ""), note: String(partData.note || ""), image: String(partData.image || ""), createdAt: String(partData.createdAt || ""), updatedAt: String(partData.updatedAt || ""), stock: { quantity: qty ?? 0 } };
           parts.push(p);
           stock.set(p.id, { quantity: qty ?? 0 });
         }
@@ -179,7 +179,7 @@ export class RedisAdapter implements DatabaseAdapter {
     for (const mid of movementIds) pipe.hgetall(`movements:${mid}`);
     const movementData = await this.safeExec(pipe);
     const movements = movementData.filter(Boolean).map(m => m as unknown as Movement);
-    return { id: partData.id as string, code: partData.code as string, name: partData.name as string, category: (partData.category as string) || "", package: (partData.package as string) || "", brand: (partData.brand as string) || "", model: (partData.model as string) || "", unit: (partData.unit as string) || "pcs", minStock: Number(partData.minStock) || 0, location: (partData.location as string) || "", note: (partData.note as string) || "", image: (partData.image as string) || "", createdAt: (partData.createdAt as string) || "", updatedAt: (partData.updatedAt as string) || "", stock: { quantity: qty }, movements };
+    return { id: String(partData.id), code: String(partData.code), name: String(partData.name), category: String(partData.category || ""), package: String(partData.package || ""), brand: String(partData.brand || ""), model: String(partData.model || ""), unit: String(partData.unit || "pcs"), minStock: Number(partData.minStock) || 0, location: String(partData.location || ""), note: String(partData.note || ""), image: String(partData.image || ""), createdAt: String(partData.createdAt || ""), updatedAt: String(partData.updatedAt || ""), stock: { quantity: qty }, movements };
   }
 
   async getPartByCode(code: string): Promise<Part | null> {
@@ -195,7 +195,7 @@ export class RedisAdapter implements DatabaseAdapter {
     const id = randomUUID();
     const now = new Date().toISOString();
     const pipe = this.redis.pipeline();
-    pipe.hset(`parts:${id}`, { id, code: data.code, name: data.name, category: data.category || "", package: data.package || "", brand: data.brand || "", model: data.model || "", unit: data.unit || "pcs", minStock: String(data.minStock || 0), location: data.location || "", note: data.note || "", image: "", createdAt: now, updatedAt: now });
+    pipe.hset(`parts:${id}`, { id, code: String(data.code), name: String(data.name), category: String(data.category || ""), package: String(data.package || ""), brand: String(data.brand || ""), model: String(data.model || ""), unit: String(data.unit || "pcs"), minStock: String(data.minStock || 0), location: String(data.location || ""), note: String(data.note || ""), image: "", createdAt: now, updatedAt: now });
     pipe.hset(`stock:${id}`, { quantity: "0", updatedAt: now });
     pipe.set(`parts_by_code:${data.code as string}`, id);
     pipe.zadd("parts_index", { score: this.ts(now), member: id });
