@@ -29,9 +29,7 @@ export class RedisAdapter implements DatabaseAdapter {
   // ── Dashboard & Analytics ──
 
   async getDashboard(): Promise<DashboardData> {
-    const allParts = this.getAllPartsSync();
-    const allStock = this.getAllStockSync();
-    const allMovements = this.getAllMovementsSync();
+    const { parts: allParts, stock: allStock, movements: allMovements } = await this.loadCache();
     const today = new Date().toISOString().split("T")[0];
     const totalParts = allParts.length;
     let lowStockCount = 0;
@@ -47,9 +45,7 @@ export class RedisAdapter implements DatabaseAdapter {
   }
 
   async getAlerts(): Promise<AlertsData> {
-    const allParts = this.getAllPartsSync();
-    const allStock = this.getAllStockSync();
-    const allMovements = this.getAllMovementsSync();
+    const { parts: allParts, stock: allStock, movements: allMovements } = await this.loadCache();
     const cutoff7 = new Date(Date.now() - 7 * 86400000).toISOString();
     const cutoff30 = new Date(Date.now() - 30 * 86400000).toISOString();
     const lowStockParts = allParts.filter(p => { const s = allStock.get(p.id); return p.minStock > 0 && (s?.quantity ?? 0) < p.minStock; }).map(p => { const s = allStock.get(p.id); const cs = s?.quantity ?? 0; return { ...p, currentStock: cs, stockPercentage: p.minStock > 0 ? Math.round(cs * 100 / p.minStock * 10) / 10 : 0 }; }).sort((a, b) => (a.currentStock / (a.minStock || 1)) - (b.currentStock / (b.minStock || 1)));
@@ -69,9 +65,7 @@ export class RedisAdapter implements DatabaseAdapter {
   }
 
   async getAnalytics(period: number): Promise<AnalyticsData> {
-    const allParts = this.getAllPartsSync();
-    const allStock = this.getAllStockSync();
-    const allMovements = this.getAllMovementsSync();
+    const { parts: allParts, stock: allStock, movements: allMovements } = await this.loadCache();
     const cutoff = new Date(Date.now() - period * 86400000).toISOString();
     const filtered = allMovements.filter(m => m.createdAt >= cutoff);
     const catMap = new Map<string, { partCount: number; totalStock: number; lowStockCount: number }>();
