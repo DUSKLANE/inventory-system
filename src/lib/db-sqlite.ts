@@ -139,11 +139,11 @@ export class SqliteAdapter implements DatabaseAdapter {
   }
 
   async generateNextCode(): Promise<string> {
-    const row = this.db.prepare("SELECT code FROM parts WHERE code LIKE 'z%' ORDER BY code DESC LIMIT 1").get() as { code: string } | undefined;
-    if (!row) return "z001";
+    const row = this.db.prepare("SELECT code FROM parts WHERE code LIKE 'z%' OR code LIKE 'Z%' ORDER BY code DESC LIMIT 1").get() as { code: string } | undefined;
+    if (!row) return "Z0001";
     const num = parseInt(row.code.slice(1), 10);
-    if (isNaN(num)) return "z001";
-    return "z" + String(num + 1).padStart(3, "0");
+    if (isNaN(num)) return "Z0001";
+    return "Z" + String(num + 1).padStart(4, "0");
   }
 
   async createPart(data: Record<string, unknown>): Promise<Part> {

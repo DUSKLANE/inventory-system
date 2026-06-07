@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ArrowDownToLine, ArrowUpFromLine, Tag, Package, MapPin, Building2, FileText, Ruler, Hash, AlertTriangle, Clock, TrendingDown, TrendingUp, Settings, Edit, Boxes, Activity, X, Loader2, Star, ZoomIn } from "lucide-react";
 import Breadcrumb from "@/components/Breadcrumb";
 import PackageInput from "@/components/PackageInput";
+import CategoryInput from "@/components/CategoryInput";
 
 interface PartDetail {
   id: string;
@@ -436,23 +437,10 @@ function EditPartModal({ part, onClose, onSaved }: { part: PartDetail; onClose: 
             </div>
             <div>
               <label className="block text-sm font-semibold text-gray-700 dark:text-[var(--foreground-muted)] mb-3">分类</label>
-              <select
+              <CategoryInput
                 value={form.category}
-                onChange={(e) => setForm({ ...form, category: e.target.value })}
-                className="w-full px-5 py-4 bg-gray-50 dark:bg-[var(--background-subtle)] border border-gray-200 dark:border-[var(--card-border)] rounded-xl text-sm text-gray-900 dark:text-[var(--card-foreground)] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-[var(--card)] transition-all duration-200 cursor-pointer"
-              >
-                <option value="">选择分类</option>
-                <option value="电阻">电阻</option>
-                <option value="电容">电容</option>
-                <option value="电感">电感</option>
-                <option value="二极管">二极管</option>
-                <option value="三极管">三极管</option>
-                <option value="IC">IC</option>
-                <option value="连接器">连接器</option>
-                <option value="晶振">晶振</option>
-                <option value="LED">LED</option>
-                <option value="其他">其他</option>
-              </select>
+                onChange={(val) => setForm({ ...form, category: val })}
+              />
             </div>
             <div>
               <label className="block text-sm font-semibold text-gray-700 dark:text-[var(--foreground-muted)] mb-3">封装</label>

@@ -184,15 +184,19 @@ export class RedisAdapter implements DatabaseAdapter {
   }
 
   async generateNextCode(): Promise<string> {
-    const keys = await this.redis.keys("parts_by_code:z*");
-    if (keys.length === 0) return "z001";
+    const keys = await this.redis.keys("parts_by_code:*");
+    const zKeys = keys.filter((k: string) => {
+      const code = k.replace("parts_by_code:", "");
+      return code.startsWith("z") || code.startsWith("Z");
+    });
+    if (zKeys.length === 0) return "Z0001";
     let maxNum = 0;
-    for (const key of keys) {
+    for (const key of zKeys) {
       const code = key.replace("parts_by_code:", "");
       const num = parseInt(code.slice(1), 10);
       if (!isNaN(num) && num > maxNum) maxNum = num;
     }
-    return "z" + String(maxNum + 1).padStart(3, "0");
+    return "Z" + String(maxNum + 1).padStart(4, "0");
   }
 
   async createPart(data: Record<string, unknown>): Promise<Part> {
