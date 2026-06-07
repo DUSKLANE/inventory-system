@@ -30,6 +30,7 @@ export default function QRScanner({ onScan, onClose, continuous = false, embedde
     typeof navigator.mediaDevices.getUserMedia === "function";
 
   const handleScanResult = useCallback((code: string) => {
+    if (navigator.vibrate) navigator.vibrate(200);
     onScan(code);
     setScanCount((prev) => prev + 1);
     setShowSuccess(true);
@@ -95,10 +96,16 @@ export default function QRScanner({ onScan, onClose, continuous = false, embedde
         scannerRef.current = scanner;
 
         await scanner.start(
-          { facingMode: "environment" },
+          { facingMode: { ideal: "environment" } },
           {
-            fps: 10,
+            fps: 15,
+            qrbox: { width: 250, height: 250 },
             disableFlip: false,
+            videoConstraints: {
+              facingMode: { ideal: "environment" },
+              width: { ideal: 1920 },
+              height: { ideal: 1080 },
+            },
           },
           (decodedText: string) => {
             if (cancelled) return;
