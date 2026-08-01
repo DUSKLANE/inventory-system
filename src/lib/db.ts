@@ -150,6 +150,16 @@ export interface BatchResult {
   failCount: number;
 }
 
+export interface CheckoutResult {
+  success: true;
+  results: Array<{ partId: string; code: string; name: string; quantity: number; newQuantity: number }>;
+}
+
+export interface CheckoutInsufficient {
+  success: false;
+  insufficient: Array<{ partId: string; code: string; name: string; required: number; available: number; shortfall: number }>;
+}
+
 export interface StockInUpsertItem {
   code: string;
   name: string;
@@ -193,6 +203,7 @@ export interface DatabaseAdapter {
   batchUpdate(ids: string[], updates: Record<string, unknown>): Promise<void>;
   batchMovement(items: Array<{ partId: string; quantity: number }>, type: "IN" | "OUT", operator?: string, reason?: string): Promise<BatchResult>;
   batchStockInUpsert(items: StockInUpsertItem[], operator?: string, reason?: string): Promise<StockInUpsertResult>;
+  checkoutBomItems(items: Array<{ partId: string; quantity: number }>, operator?: string, reason?: string): Promise<CheckoutResult | CheckoutInsufficient>;
   backfillImages(ids: string[]): Promise<BatchResult>;
 
   // Favorites

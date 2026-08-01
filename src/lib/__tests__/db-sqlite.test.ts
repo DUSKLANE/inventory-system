@@ -63,3 +63,33 @@ describe("batchStockInUpsert", () => {
     expect(part?.stock?.quantity).toBe(10);
   });
 });
+
+describe("checkoutBomItems", () => {
+  it("库存充足时批量出库成功", async () => {
+    await db.batchStockInUpsert([{ code: "Z0001", name: "A", quantity: 100 }]);
+    await db.batchStockInUpsert([{ code: "Z0002", name: "B", quantity: 50 }]);
+    const a = await db.getPartByCode("Z0001");
+    const b = await db.getPartByCode("Z0002");
+    const r = await db.checkoutBomItems([
+      { partId: a!.id, quantity: 10 },
+      { partId: b!.id, quantity: 5 },
+    ], "admin", "BOM 领料");
+    expect(r.success).toBe(true);
+    if (!r.success) return;
+    expect(r.results).toHaveLength(2);
+    expect((await db.getPartByCode("Z0001"))?.stock?.quantity).toBe(90);
+    expect((await db.getPartByCode("Z0002"))?.stock?.quantity).toBe(45);
+  });
+
+  it("任一缺料则整体失败且不产生流水", async () => {
+    await db.batchStockInUpsert([{ code: "Z0001", name: "A", quantity: 5 }]);
+    const a = await db.getPartByCode("Z0001");
+    const r = await db.checkoutBomItems([{ partId: a!.id, quantity: 10 }], "admin", "BOM 领料");
+    expect(r.success).toBe(false);
+    if (r.success) return;
+    expect(r.insufficient[0]).toMatchObject({ partId: a!.id, required: 10, available: 5, shortfall: 5 });
+    expect((await db.getPartByCode("Z0001"))?.stock?.quantity).toBe(5);
+    const mv = await db.listMovements({ partId: a!.id });
+    expect(mv.movements).toHaveLength(1); // 只有入库流水，无出库
+  });
+});

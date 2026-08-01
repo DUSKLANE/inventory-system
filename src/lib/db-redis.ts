@@ -3,7 +3,7 @@ import { randomUUID } from "crypto";
 import type {
   DatabaseAdapter, Part, PartDetail, Movement, Bom, BomItem, Warehouse, Category, Log,
   DashboardData, AlertsData, AnalyticsData, PartFilters, MovementFilters, LogFilters, BatchResult,
-  StockInUpsertItem, StockInUpsertResult,
+  StockInUpsertItem, StockInUpsertResult, CheckoutResult, CheckoutInsufficient,
 } from "./db";
 
 export class RedisAdapter implements DatabaseAdapter {
@@ -418,6 +418,28 @@ export class RedisAdapter implements DatabaseAdapter {
       }
     }
     return { results, successCount: results.filter(r => r.success).length, failCount: results.filter(r => !r.success).length };
+  }
+
+  async checkoutBomItems(items: Array<{ partId: string; quantity: number }>, operator?: string, reason?: string): Promise<CheckoutResult | CheckoutInsufficient> {
+    const insufficient: CheckoutInsufficient["insufficient"] = [];
+    for (const item of items) {
+      const part = await this.getPart(item.partId);
+      if (!part) { insufficient.push({ partId: item.partId, code: "?", name: "器件不存在", required: item.quantity, available: 0, shortfall: item.quantity }); continue; }
+      const available = part.stock?.quantity ?? 0;
+      if (available < item.quantity) {
+        insufficient.push({ partId: item.partId, code: part.code, name: part.name, required: item.quantity, available, shortfall: item.quantity - available });
+      }
+    }
+    if (insufficient.length > 0) return { success: false, insufficient };
+
+    const results: CheckoutResult["results"] = [];
+    for (const item of items) {
+      const part = await this.getPart(item.partId);
+      if (!part) throw new Error("器件不存在");
+      const movement = await this.createMovement({ partId: item.partId, type: "OUT", quantity: item.quantity, operator, reason: reason || "BOM 领料" });
+      results.push({ partId: item.partId, code: part.code, name: part.name, quantity: item.quantity, newQuantity: movement.newQuantity });
+    }
+    return { success: true, results };
   }
 
   // ── Favorites ──

@@ -5,7 +5,7 @@ import { randomUUID } from "crypto";
 import type {
   DatabaseAdapter, Part, PartDetail, Movement, Bom, BomItem, Warehouse, Category, Log,
   DashboardData, AlertsData, AnalyticsData, PartFilters, MovementFilters, LogFilters, BatchResult,
-  StockInUpsertItem, StockInUpsertResult,
+  StockInUpsertItem, StockInUpsertResult, CheckoutResult, CheckoutInsufficient,
 } from "./db";
 
 export class SqliteAdapter implements DatabaseAdapter {
@@ -329,6 +329,33 @@ export class SqliteAdapter implements DatabaseAdapter {
       }
     });
     return { results, successCount: results.filter(r => r.success).length, failCount: results.filter(r => !r.success).length };
+  }
+
+  async checkoutBomItems(items: Array<{ partId: string; quantity: number }>, operator?: string, reason?: string): Promise<CheckoutResult | CheckoutInsufficient> {
+    const insufficient: CheckoutInsufficient["insufficient"] = [];
+    for (const item of items) {
+      const part = this.db.prepare("SELECT p.id, p.code, p.name, COALESCE(s.quantity, 0) as available FROM parts p LEFT JOIN stock s ON s.partId = p.id WHERE p.id = ?").get(item.partId) as { id: string; code: string; name: string; available: number } | undefined;
+      if (!part) { insufficient.push({ partId: item.partId, code: "?", name: "器件不存在", required: item.quantity, available: 0, shortfall: item.quantity }); continue; }
+      if (part.available < item.quantity) {
+        insufficient.push({ partId: item.partId, code: part.code, name: part.name, required: item.quantity, available: part.available, shortfall: item.quantity - part.available });
+      }
+    }
+    if (insufficient.length > 0) return { success: false, insufficient };
+
+    const now = new Date().toISOString();
+    const results: CheckoutResult["results"] = [];
+    this.runInTransaction(() => {
+      for (const item of items) {
+        const part = this.db.prepare("SELECT p.id, p.code, p.name, COALESCE(s.quantity, 0) as available FROM parts p LEFT JOIN stock s ON s.partId = p.id WHERE p.id = ?").get(item.partId) as { id: string; code: string; name: string; available: number };
+        if (part.available < item.quantity) throw new Error("库存不足"); // 事务内二次校验，竞态时整体回滚
+        const newQty = part.available - item.quantity;
+        this.db.prepare("INSERT INTO stock_movements (id, partId, type, quantity, operator, reason, code, createdAt) VALUES (?, ?, 'OUT', ?, ?, ?, '', ?)").run(randomUUID(), item.partId, item.quantity, operator || "", reason || "BOM 领料", now);
+        this.db.prepare("UPDATE stock SET quantity = ?, updatedAt = ? WHERE partId = ?").run(newQty, now, item.partId);
+        this.db.prepare("UPDATE parts SET updatedAt = ? WHERE id = ?").run(now, item.partId);
+        results.push({ partId: item.partId, code: part.code, name: part.name, quantity: item.quantity, newQuantity: newQty });
+      }
+    });
+    return { success: true, results };
   }
 
   // ── Favorites ──
