@@ -22,37 +22,15 @@ export default function QRScanner({ onScan, onClose, continuous = false, embedde
 
   const scannerRef = useRef<unknown>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const scannedCodesRef = useRef<Set<string>>(new Set());
   const trackRef = useRef<MediaStreamTrack | null>(null);
+  const onScanRef = useRef(onScan);
+  useEffect(() => {
+    onScanRef.current = onScan;
+  });
 
   const isCameraAvailable = typeof navigator !== "undefined" &&
     navigator.mediaDevices &&
     typeof navigator.mediaDevices.getUserMedia === "function";
-
-  const handleScanResult = useCallback((code: string) => {
-    if (navigator.vibrate) navigator.vibrate(200);
-    onScan(code);
-    setScanCount((prev) => prev + 1);
-    setShowSuccess(true);
-    setTimeout(() => setShowSuccess(false), 800);
-
-    if (!continuous) {
-      stopScanner();
-    }
-  }, [continuous, onScan]);
-
-  const toggleTorch = useCallback(async () => {
-    if (!trackRef.current) return;
-    try {
-      const newTorchState = !torchEnabled;
-      await trackRef.current.applyConstraints({
-        advanced: [{ torch: newTorchState } as MediaTrackConstraints]
-      });
-      setTorchEnabled(newTorchState);
-    } catch (e) {
-      console.error("Failed to toggle torch:", e);
-    }
-  }, [torchEnabled]);
 
   const stopScanner = useCallback(async () => {
     if (scannerRef.current) {
@@ -67,6 +45,31 @@ export default function QRScanner({ onScan, onClose, continuous = false, embedde
     }
     setScanning(false);
   }, []);
+
+  const handleScanResult = useCallback((code: string) => {
+    if (navigator.vibrate) navigator.vibrate(200);
+    onScanRef.current(code);
+    setScanCount((prev) => prev + 1);
+    setShowSuccess(true);
+    setTimeout(() => setShowSuccess(false), 800);
+
+    if (!continuous) {
+      stopScanner();
+    }
+  }, [continuous, stopScanner]);
+
+  const toggleTorch = useCallback(async () => {
+    if (!trackRef.current) return;
+    try {
+      const newTorchState = !torchEnabled;
+      await trackRef.current.applyConstraints({
+        advanced: [{ torch: newTorchState } as MediaTrackConstraints]
+      });
+      setTorchEnabled(newTorchState);
+    } catch (e) {
+      console.error("Failed to toggle torch:", e);
+    }
+  }, [torchEnabled]);
 
   useEffect(() => {
     if (!isCameraAvailable) {
@@ -109,8 +112,6 @@ export default function QRScanner({ onScan, onClose, continuous = false, embedde
           },
           (decodedText: string) => {
             if (cancelled) return;
-            if (scannedCodesRef.current.has(decodedText)) return;
-            scannedCodesRef.current.add(decodedText);
             handleScanResult(decodedText);
           },
           () => {}
@@ -165,7 +166,6 @@ export default function QRScanner({ onScan, onClose, continuous = false, embedde
   }
 
   function handleClose() {
-    scannedCodesRef.current.clear();
     stopScanner();
     onClose();
   }

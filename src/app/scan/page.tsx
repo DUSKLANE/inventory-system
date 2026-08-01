@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import {
   ScanBarcode,
   Camera,
@@ -19,18 +19,7 @@ import Breadcrumb from "@/components/Breadcrumb";
 import NumberInput from "@/components/NumberInput";
 import { useConfirm } from "@/components/ConfirmProvider";
 import { fetchProductInfo, buildProductFromScanData, type LcedaProduct } from "@/lib/api/lceda";
-
-interface ScanResult {
-  on?: string;
-  pc?: string;
-  pm?: string;
-  qty?: string;
-  mc?: string;
-  cc?: string;
-  pdi?: string;
-  hp?: string;
-  [key: string]: string | undefined;
-}
+import { parseScanData, type ScanResult } from "@/lib/parse-qr";
 
 interface PendingItem {
   id: string;
@@ -42,32 +31,6 @@ interface PendingItem {
   location: string;
   customName?: string;
   errorMessage?: string;
-}
-
-function parseScanData(raw: string): ScanResult | null {
-  try {
-    let cleaned = raw.trim();
-
-    if (/^[A-Za-z]\d+$/.test(cleaned)) {
-      return { pc: cleaned };
-    }
-
-    if (cleaned.startsWith("{") && cleaned.endsWith("}")) {
-      cleaned = cleaned.slice(1, -1);
-    }
-
-    const result: ScanResult = {};
-    const pairs = cleaned.split(",");
-    for (const pair of pairs) {
-      const [key, ...valueParts] = pair.split(":");
-      if (key) {
-        result[key.trim()] = valueParts.join(":").trim();
-      }
-    }
-    return Object.keys(result).length > 0 ? result : null;
-  } catch {
-    return null;
-  }
 }
 
 export default function ScanPage() {
@@ -103,39 +66,42 @@ export default function ScanPage() {
     }
   }, [pendingItems, mounted]);
 
+  const lastScanRef = useRef<{ code: string; time: number }>({ code: "", time: 0 });
+
   const processScanData = useCallback(async (raw: string) => {
     const scanData = parseScanData(raw);
     if (!scanData || !scanData.pc) {
       return;
     }
 
-    const scanQty = parseInt(scanData.qty || "1", 10) || 1;
+    const now = Date.now();
+    if (lastScanRef.current.code === scanData.pc && now - lastScanRef.current.time < 1500) {
+      return;
+    }
+    lastScanRef.current = { code: scanData.pc, time: now };
 
-    const existingItem = pendingItems.find(
-      (item) => item.scanData.pc === scanData.pc
-    );
-    if (existingItem) {
-      setPendingItems((prev) =>
-        prev.map((item) =>
+    const scanQty = parseInt(scanData.qty || "1", 10) || 1;
+    const itemId = Date.now().toString() + Math.random().toString(36).slice(2);
+
+    setPendingItems((prev) => {
+      const existing = prev.find((item) => item.scanData.pc === scanData.pc);
+      if (existing) {
+        return prev.map((item) =>
           item.scanData.pc === scanData.pc
             ? { ...item, quantity: item.quantity + scanQty }
             : item
-        )
-      );
-      return;
-    }
-
-    const itemId = Date.now().toString() + Math.random().toString(36).slice(2);
-    const newItem: PendingItem = {
-      id: itemId,
-      scanData,
-      productInfo: null,
-      status: "loading",
-      quantity: scanQty,
-      location: "",
-    };
-
-    setPendingItems((prev) => [newItem, ...prev]);
+        );
+      }
+      const newItem: PendingItem = {
+        id: itemId,
+        scanData,
+        productInfo: null,
+        status: "loading",
+        quantity: scanQty,
+        location: "",
+      };
+      return [newItem, ...prev];
+    });
 
     try {
       // 先查找库存中是否已有该元器件
@@ -203,7 +169,7 @@ export default function ScanPage() {
         )
       );
     }
-  }, [pendingItems]);
+  }, []);
 
   const handleScan = useCallback(
     (code: string) => {
