@@ -45,9 +45,9 @@ export default function NumberInput({ value, onChange, min = 1, max, className =
 
   const handleBlur = () => {
     setEditingValue(null);
-    const parsedVal = Number(value);
+    const parsedVal = value.trim() === "" ? NaN : Number(value);
     const finalVal = Number.isFinite(parsedVal) ? parsedVal : min;
-    const clamped = Math.min(max ?? finalVal, Math.max(min, finalVal));
+    const clamped = max !== undefined ? Math.min(max, Math.max(min, finalVal)) : Math.max(min, finalVal);
     onChange(String(clamped));
   };
 
