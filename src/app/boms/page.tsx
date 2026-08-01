@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Plus, Package, Trash2, Edit, Eye, FileText, ChevronRight, Loader2, X, Search } from "lucide-react";
 import Breadcrumb from "@/components/Breadcrumb";
+import { useToast } from "@/components/ToastProvider";
+import { useConfirm } from "@/components/ConfirmProvider";
 
 interface Bom {
   id: string;
@@ -20,6 +22,8 @@ export default function BomsPage() {
   const [boms, setBoms] = useState<Bom[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
+  const { toast } = useToast();
+  const confirm = useConfirm();
 
   const fetchBoms = async () => {
     try {
@@ -38,13 +42,14 @@ export default function BomsPage() {
   }, []);
 
   const handleDelete = async (id: string, name: string) => {
-    if (!confirm(`确定删除BOM"${name}"？此操作不可撤销。`)) return;
+    const ok = await confirm({ title: "删除BOM", message: `确定删除BOM"${name}"？此操作不可撤销。`, danger: true });
+    if (!ok) return;
     try {
       await fetch(`/api/boms/${id}`, { method: "DELETE" });
       fetchBoms();
     } catch (e) {
       console.error(e);
-      alert("删除失败");
+      toast("删除失败", "error");
     }
   };
 
@@ -155,11 +160,12 @@ function AddBomModal({ onClose, onSaved }: { onClose: () => void; onSaved: () =>
   const [saving, setSaving] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) {
-      alert("请输入BOM名称");
+      toast("请输入BOM名称", "error");
       return;
     }
 
@@ -172,13 +178,13 @@ function AddBomModal({ onClose, onSaved }: { onClose: () => void; onSaved: () =>
       });
       if (!res.ok) {
         const data = await res.json();
-        alert(data.error || "创建失败");
+        toast(data.error || "创建失败", "error");
         return;
       }
       onSaved();
     } catch (e) {
       console.error(e);
-      alert("创建失败");
+      toast("创建失败", "error");
     } finally {
       setSaving(false);
     }

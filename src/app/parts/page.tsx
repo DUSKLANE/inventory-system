@@ -3,10 +3,12 @@
 import { useEffect, useState, useCallback, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Plus, Search, Edit, Trash2, MapPin, X, Loader2, Package, ChevronLeft, ChevronRight, ChevronDown, Eye, Tag, Boxes, Filter, CheckSquare, Square, ArrowDownToLine, ArrowUpFromLine } from "lucide-react";
-import PackageInput from "@/components/PackageInput";
+import { Plus, Search, Edit, Trash2, MapPin, X, Loader2, Package, ChevronLeft, ChevronRight, Eye, Boxes, Filter, CheckSquare, Square, ArrowDownToLine, ArrowUpFromLine } from "lucide-react";
 import CategoryInput from "@/components/CategoryInput";
 import NumberInput from "@/components/NumberInput";
+import PartFormModal from "@/components/PartFormModal";
+import { useToast } from "@/components/ToastProvider";
+import { useConfirm } from "@/components/ConfirmProvider";
 
 interface Part {
   id: string;
@@ -46,6 +48,8 @@ function PartsPageContent() {
   const [sortField, setSortField] = useState<SortField>("name");
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
   const searchTimeoutRef = useRef<NodeJS.Timeout>(undefined);
+  const { toast } = useToast();
+  const confirm = useConfirm();
   
   // Batch operations state
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -63,6 +67,8 @@ function PartsPageContent() {
   const [searchHistory, setSearchHistory] = useState<string[]>([]);
   const [savedSearches, setSavedSearches] = useState<Array<{ name: string; params: Record<string, string> }>>([]);
   const [showSearchHistory, setShowSearchHistory] = useState(false);
+  const [showSaveSearch, setShowSaveSearch] = useState(false);
+  const [saveSearchName, setSaveSearchName] = useState("");
   
   // Import/Export state
   const [showImportExport, setShowImportExport] = useState(false);
@@ -149,7 +155,11 @@ function PartsPageContent() {
 
   // Save current search
   const saveCurrentSearch = () => {
-    const name = prompt("请输入搜索名称:");
+    setShowSaveSearch(true);
+  };
+
+  const confirmSaveSearch = () => {
+    const name = saveSearchName.trim();
     if (!name) return;
     const params: Record<string, string> = {};
     if (search) params.q = search;
@@ -159,10 +169,12 @@ function PartsPageContent() {
     if (stockMax) params.stockMax = stockMax;
     if (lowStockOnly) params.lowStock = "true";
     if (hasStockOnly) params.hasStock = "true";
-    
     const newSaved = [...savedSearches, { name, params }];
     setSavedSearches(newSaved);
     localStorage.setItem("savedSearches", JSON.stringify(newSaved));
+    setShowSaveSearch(false);
+    setSaveSearchName("");
+    toast("搜索条件已保存", "success");
   };
 
   // Load saved search
@@ -212,7 +224,7 @@ function PartsPageContent() {
       }
     } catch (e) {
       console.error(e);
-      alert("导出失败");
+      toast("导出失败", "error");
     }
   };
 
@@ -275,32 +287,34 @@ function PartsPageContent() {
 
     try {
       const res = await fetch(`/api/parts?${params}`, { signal });
+      if (!res.ok) throw new Error(`加载失败: ${res.status}`);
       const json = await res.json();
       setData(json);
     } catch (e) {
       if (e instanceof Error && e.name !== 'AbortError') {
         console.error(e);
+        toast("加载失败", "error");
       }
     } finally {
       setLoading(false);
     }
-  }, [debouncedSearch, category, brand, stockMin, stockMax, lowStockOnly, hasStockOnly, page]);
+  }, [debouncedSearch, category, brand, stockMin, stockMax, lowStockOnly, hasStockOnly, page, toast]);
 
   useEffect(() => {
     const controller = new AbortController();
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchParts(controller.signal);
     return () => controller.abort();
   }, [fetchParts]);
 
   const handleDelete = async (id: string, name: string) => {
-    if (!confirm(`确定删除器件"${name}"？此操作不可撤销。`)) return;
+    const ok = await confirm({ title: "删除器件", message: `确定删除器件"${name}"？此操作不可撤销。`, danger: true });
+    if (!ok) return;
     try {
       await fetch(`/api/parts/${id}`, { method: "DELETE" });
       fetchParts();
     } catch (e) {
       console.error(e);
-      alert("删除失败");
+      toast("删除失败", "error");
     }
   };
 
@@ -332,7 +346,8 @@ function PartsPageContent() {
   // Batch delete
   const handleBatchDelete = async () => {
     if (selectedIds.size === 0) return;
-    if (!confirm(`确定删除选中的 ${selectedIds.size} 个器件？此操作不可撤销。`)) return;
+    const ok = await confirm({ title: "批量删除", message: `确定删除选中的 ${selectedIds.size} 个器件？此操作不可撤销。`, danger: true });
+    if (!ok) return;
 
     setBatchProcessing(true);
     try {
@@ -346,15 +361,15 @@ function PartsPageContent() {
       });
       const result = await res.json();
       if (res.ok) {
-        alert(result.message);
+        toast(result.message, "success");
         clearSelection();
         fetchParts();
       } else {
-        alert(result.error || "批量删除失败");
+        toast(result.error || "批量删除失败", "error");
       }
     } catch (e) {
       console.error(e);
-      alert("批量删除失败");
+      toast("批量删除失败", "error");
     } finally {
       setBatchProcessing(false);
     }
@@ -371,22 +386,21 @@ function PartsPageContent() {
           action: "movement",
           items,
           type: batchMovementType,
-          operator: "管理员",
           reason: `批量${batchMovementType === "IN" ? "入库" : "出库"}`,
         }),
       });
       const result = await res.json();
       if (res.ok) {
-        alert(result.message);
+        toast(result.message, "success");
         setShowBatchMovement(false);
         clearSelection();
         fetchParts();
       } else {
-        alert(result.error || "批量操作失败");
+        toast(result.error || "批量操作失败", "error");
       }
     } catch (e) {
       console.error(e);
-      alert("批量操作失败");
+      toast("批量操作失败", "error");
     } finally {
       setBatchProcessing(false);
     }
@@ -981,7 +995,7 @@ function PartsPageContent() {
 
       {/* Add/Edit Modal */}
       {showAdd && (
-        <AddEditModal
+        <PartFormModal
           part={editPart}
           onClose={() => { setShowAdd(false); setEditPart(null); }}
           onSaved={() => { setShowAdd(false); setEditPart(null); fetchParts(); }}
@@ -1009,6 +1023,52 @@ function PartsPageContent() {
           importResult={importResult}
         />
       )}
+
+      {/* Save Search Modal */}
+      {showSaveSearch && (
+        <div className="fixed inset-0 modal-backdrop z-50 flex items-center justify-center p-4 animate-fade-in">
+          <div className="bg-white dark:bg-[var(--card)] rounded-2xl w-full max-w-lg shadow-2xl border border-gray-200/80 dark:border-[var(--card-border)]">
+            <div className="px-8 py-6 border-b border-gray-100 dark:border-[var(--card-border)] flex items-center justify-between rounded-t-2xl">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-[var(--card-foreground)]">保存当前搜索</h2>
+              <button
+                onClick={() => setShowSaveSearch(false)}
+                className="p-2.5 text-gray-400 dark:text-[var(--foreground-subtle)] hover:text-gray-600 dark:hover:text-[var(--foreground-muted)] hover:bg-gray-100 dark:hover:bg-[var(--background-muted)] rounded-xl transition-all"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-8 space-y-5">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 dark:text-[var(--foreground-muted)] mb-2">搜索名称 *</label>
+                <input
+                  autoFocus
+                  value={saveSearchName}
+                  onChange={(e) => setSaveSearchName(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter") confirmSaveSearch(); }}
+                  className="w-full px-5 py-4 bg-gray-50 dark:bg-[var(--background-subtle)] border border-gray-200 dark:border-[var(--card-border)] rounded-xl text-sm text-gray-900 dark:text-[var(--card-foreground)] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-[var(--card)] transition-all"
+                  placeholder="如：常用电阻"
+                />
+              </div>
+              <div className="flex gap-4 pt-3">
+                <button
+                  type="button"
+                  onClick={() => { setShowSaveSearch(false); setSaveSearchName(""); }}
+                  className="flex-1 px-5 py-4 border border-gray-200 dark:border-[var(--card-border)] rounded-xl text-sm font-semibold text-gray-700 dark:text-[var(--foreground-muted)] hover:bg-gray-50 dark:hover:bg-[var(--background-subtle)] transition-all"
+                >
+                  取消
+                </button>
+                <button
+                  type="button"
+                  onClick={confirmSaveSearch}
+                  className="flex-1 px-5 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl text-sm font-semibold hover:from-blue-700 hover:to-blue-800 transition-all shadow-lg shadow-blue-500/25"
+                >
+                  保存
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -1028,199 +1088,6 @@ export default function PartsPage() {
   );
 }
 
-function AddEditModal({ part, onClose, onSaved }: { part: Part | null; onClose: () => void; onSaved: () => void }) {
-  const isEdit = !!part;
-  const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState({
-    code: part?.code || "",
-    name: part?.name || "",
-    category: part?.category || "",
-    package: part?.package || "",
-    brand: part?.brand || "",
-    model: part?.model || "",
-    unit: part?.unit || "pcs",
-    minStock: part?.minStock || 0,
-    location: part?.location || "",
-    note: "",
-  });
-
-  useEffect(() => {
-    if (!isEdit) {
-      fetch("/api/parts/next-code")
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.code) setForm((prev) => ({ ...prev, code: data.code }));
-        })
-        .catch(() => {});
-    }
-  }, [isEdit]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSaving(true);
-    try {
-      const url = isEdit ? `/api/parts/${part.id}` : "/api/parts";
-      const method = isEdit ? "PUT" : "POST";
-      const res = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
-      if (!res.ok) {
-        const data = await res.json();
-        alert(data.error || "保存失败");
-        return;
-      }
-      onSaved();
-    } catch (e) {
-      console.error(e);
-      alert("保存失败");
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 modal-backdrop z-50 flex items-center justify-center p-4 animate-fade-in">
-      <div className="bg-white dark:bg-[var(--card)] rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-200/80 dark:border-[var(--card-border)]">
-        <div className="px-8 py-6 border-b border-gray-100 dark:border-[var(--card-border)] flex items-center justify-between sticky top-0 bg-white dark:bg-[var(--card)] z-10 rounded-t-2xl">
-          <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center">
-              <Tag className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-            </div>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-[var(--card-foreground)]">
-              {isEdit ? "编辑器件" : "新增器件"}
-            </h2>
-          </div>
-          <button
-            onClick={onClose}
-            className="p-2.5 text-gray-400 dark:text-[var(--foreground-subtle)] hover:text-gray-600 dark:hover:text-[var(--foreground-muted)] hover:bg-gray-100 dark:hover:bg-[var(--background-muted)] rounded-xl transition-all duration-200"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-        <form onSubmit={handleSubmit} className="p-8 space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-[var(--foreground-muted)] mb-3">编码 *</label>
-              <input
-                required
-                value={form.code}
-                readOnly
-                className="w-full px-5 py-4 bg-gray-100 dark:bg-[var(--background-muted)] border border-gray-200 dark:border-[var(--card-border)] rounded-xl text-sm text-gray-600 dark:text-[var(--foreground-muted)] cursor-not-allowed"
-                placeholder="自动生成中..."
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-[var(--foreground-muted)] mb-3">名称 *</label>
-              <input
-                required
-                value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-                className="w-full px-5 py-4 bg-gray-50 dark:bg-[var(--background-subtle)] border border-gray-200 dark:border-[var(--card-border)] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white dark:focus:bg-[var(--card)] transition-all duration-200"
-                placeholder="器件名称"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-[var(--foreground-muted)] mb-3">分类</label>
-              <CategoryInput
-                value={form.category}
-                onChange={(val) => setForm({ ...form, category: val })}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-[var(--foreground-muted)] mb-3">封装</label>
-              <PackageInput
-                value={form.package}
-                onChange={(val) => setForm({ ...form, package: val })}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-[var(--foreground-muted)] mb-3">品牌</label>
-              <input
-                value={form.brand}
-                onChange={(e) => setForm({ ...form, brand: e.target.value })}
-                className="w-full px-5 py-4 bg-gray-50 dark:bg-[var(--background-subtle)] border border-gray-200 dark:border-[var(--card-border)] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white dark:focus:bg-[var(--card)] transition-all duration-200"
-                placeholder="品牌"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-[var(--foreground-muted)] mb-3">型号</label>
-              <input
-                value={form.model}
-                onChange={(e) => setForm({ ...form, model: e.target.value })}
-                className="w-full px-5 py-4 bg-gray-50 dark:bg-[var(--background-subtle)] border border-gray-200 dark:border-[var(--card-border)] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white dark:focus:bg-[var(--card)] transition-all duration-200"
-                placeholder="型号"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-[var(--foreground-muted)] mb-3">单位</label>
-              <input
-                value={form.unit}
-                onChange={(e) => setForm({ ...form, unit: e.target.value })}
-                className="w-full px-5 py-4 bg-gray-50 dark:bg-[var(--background-subtle)] border border-gray-200 dark:border-[var(--card-border)] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white dark:focus:bg-[var(--card)] transition-all duration-200"
-                placeholder="pcs"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-[var(--foreground-muted)] mb-3">最低库存</label>
-              <input
-                type="number"
-                min="0"
-                value={form.minStock}
-                onChange={(e) => setForm({ ...form, minStock: parseInt(e.target.value) || 0 })}
-                className="w-full px-5 py-4 bg-gray-50 dark:bg-[var(--background-subtle)] border border-gray-200 dark:border-[var(--card-border)] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white dark:focus:bg-[var(--card)] transition-all duration-200"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-[var(--foreground-muted)] mb-3">仓位</label>
-              <input
-                value={form.location}
-                onChange={(e) => setForm({ ...form, location: e.target.value })}
-                className="w-full px-5 py-4 bg-gray-50 dark:bg-[var(--background-subtle)] border border-gray-200 dark:border-[var(--card-border)] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white dark:focus:bg-[var(--card)] transition-all duration-200"
-                placeholder="如 A-1-03"
-              />
-            </div>
-          </div>
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 dark:text-[var(--foreground-muted)] mb-3">备注</label>
-            <textarea
-              value={form.note}
-              onChange={(e) => setForm({ ...form, note: e.target.value })}
-              className="w-full px-5 py-4 bg-gray-50 dark:bg-[var(--background-subtle)] border border-gray-200 dark:border-[var(--card-border)] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white dark:focus:bg-[var(--card)] transition-all duration-200 resize-none"
-              rows={4}
-              placeholder="备注信息"
-            />
-          </div>
-          <div className="flex gap-4 pt-3">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 px-5 py-4 border border-gray-200 dark:border-[var(--card-border)] rounded-xl text-sm font-semibold text-gray-700 dark:text-[var(--foreground-muted)] hover:bg-gray-50 dark:hover:bg-[var(--background-subtle)] hover:border-gray-300 transition-all duration-200"
-            >
-              取消
-            </button>
-            <button
-              type="submit"
-              disabled={saving}
-              className="flex-1 px-5 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl text-sm font-semibold hover:from-blue-700 hover:to-blue-800 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-blue-500/25"
-            >
-              {saving ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  保存中...
-                </>
-              ) : (
-                isEdit ? "保存修改" : "创建器件"
-              )}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-}
-
 function BatchMovementModal({
   type,
   parts,
@@ -1237,6 +1104,7 @@ function BatchMovementModal({
   const [quantities, setQuantities] = useState<Record<string, number>>(
     Object.fromEntries(parts.map(p => [p.id, 1]))
   );
+  const { toast } = useToast();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -1245,7 +1113,7 @@ function BatchMovementModal({
       .map(p => ({ partId: p.id, quantity: quantities[p.id] }));
     
     if (items.length === 0) {
-      alert("请至少输入一个数量");
+      toast("请至少输入一个数量", "error");
       return;
     }
     onSubmit(items);
@@ -1351,6 +1219,7 @@ function ImportExportModal({
 }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
+  const { toast } = useToast();
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
@@ -1359,7 +1228,7 @@ function ImportExportModal({
     if (file && file.name.endsWith(".csv")) {
       onImport(file);
     } else {
-      alert("请上传 CSV 文件");
+      toast("请上传 CSV 文件", "error");
     }
   };
 

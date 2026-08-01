@@ -3,10 +3,10 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowDownToLine, ArrowUpFromLine, Tag, Package, MapPin, Building2, FileText, Ruler, Hash, AlertTriangle, Clock, TrendingDown, TrendingUp, Settings, Edit, Boxes, Activity, X, Loader2, Star, ZoomIn } from "lucide-react";
+import { ArrowDownToLine, ArrowUpFromLine, Tag, Package, MapPin, Building2, FileText, Ruler, Hash, AlertTriangle, Clock, TrendingDown, TrendingUp, Settings, Edit, Boxes, Activity, X, Star } from "lucide-react";
 import Breadcrumb from "@/components/Breadcrumb";
-import PackageInput from "@/components/PackageInput";
-import CategoryInput from "@/components/CategoryInput";
+import PartFormModal from "@/components/PartFormModal";
+import { useToast } from "@/components/ToastProvider";
 
 interface PartDetail {
   id: string;
@@ -41,6 +41,7 @@ export default function PartDetailPage() {
   const [showEdit, setShowEdit] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
+  const { toast } = useToast();
 
   const fetchPart = async () => {
     if (!params.id) return;
@@ -48,7 +49,7 @@ export default function PartDetailPage() {
       const res = await fetch(`/api/parts/${params.id}`);
       const data = await res.json();
       if (data.error) {
-        alert(data.error);
+        toast(data.error, "error");
         router.push("/parts");
         return;
       }
@@ -346,7 +347,7 @@ export default function PartDetailPage() {
 
       {/* Edit Modal */}
       {showEdit && part && (
-        <EditPartModal
+        <PartFormModal
           part={part}
           onClose={() => setShowEdit(false)}
           onSaved={() => {
@@ -355,182 +356,6 @@ export default function PartDetailPage() {
           }}
         />
       )}
-    </div>
-  );
-}
-
-function EditPartModal({ part, onClose, onSaved }: { part: PartDetail; onClose: () => void; onSaved: () => void }) {
-  const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState({
-    code: part.code,
-    name: part.name,
-    category: part.category || "",
-    package: part.package || "",
-    brand: part.brand || "",
-    model: part.model || "",
-    unit: part.unit || "pcs",
-    minStock: part.minStock || 0,
-    location: part.location || "",
-    note: part.note || "",
-  });
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSaving(true);
-    try {
-      const res = await fetch(`/api/parts/${part.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
-      if (!res.ok) {
-        const data = await res.json();
-        alert(data.error || "保存失败");
-        return;
-      }
-      onSaved();
-    } catch (e) {
-      console.error(e);
-      alert("保存失败");
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 modal-backdrop z-50 flex items-center justify-center p-4 animate-fade-in">
-      <div className="bg-white dark:bg-[var(--card)] rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl dark:shadow-black/40 border border-gray-200/80 dark:border-[var(--card-border)]">
-        <div className="px-8 py-6 border-b border-gray-100 dark:border-[var(--card-border)] flex items-center justify-between sticky top-0 bg-white dark:bg-[var(--card)] z-10 rounded-t-2xl">
-          <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center">
-              <Tag className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-            </div>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-[var(--card-foreground)]">编辑器件</h2>
-          </div>
-          <button
-            onClick={onClose}
-            className="p-2.5 text-gray-400 dark:text-[var(--foreground-subtle)] hover:text-gray-600 dark:hover:text-[var(--foreground-muted)] hover:bg-gray-100 dark:hover:bg-[var(--background-muted)] rounded-xl transition-all duration-200"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-        <form onSubmit={handleSubmit} className="p-8 space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-[var(--foreground-muted)] mb-3">编码 *</label>
-              <input
-                required
-                value={form.code}
-                readOnly
-                className="w-full px-5 py-4 bg-gray-100 dark:bg-[var(--background-muted)] border border-gray-200 dark:border-[var(--card-border)] rounded-xl text-sm text-gray-600 dark:text-[var(--foreground-muted)] cursor-not-allowed"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-[var(--foreground-muted)] mb-3">名称 *</label>
-              <input
-                required
-                value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-                className="w-full px-5 py-4 bg-gray-50 dark:bg-[var(--background-subtle)] border border-gray-200 dark:border-[var(--card-border)] rounded-xl text-sm text-gray-900 dark:text-[var(--card-foreground)] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white dark:focus:bg-[var(--card)] transition-all duration-200"
-                placeholder="器件名称"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-[var(--foreground-muted)] mb-3">分类</label>
-              <CategoryInput
-                value={form.category}
-                onChange={(val) => setForm({ ...form, category: val })}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-[var(--foreground-muted)] mb-3">封装</label>
-              <PackageInput
-                value={form.package}
-                onChange={(val) => setForm({ ...form, package: val })}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-[var(--foreground-muted)] mb-3">品牌</label>
-              <input
-                value={form.brand}
-                onChange={(e) => setForm({ ...form, brand: e.target.value })}
-                className="w-full px-5 py-4 bg-gray-50 dark:bg-[var(--background-subtle)] border border-gray-200 dark:border-[var(--card-border)] rounded-xl text-sm text-gray-900 dark:text-[var(--card-foreground)] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white dark:focus:bg-[var(--card)] transition-all duration-200"
-                placeholder="品牌"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-[var(--foreground-muted)] mb-3">型号</label>
-              <input
-                value={form.model}
-                onChange={(e) => setForm({ ...form, model: e.target.value })}
-                className="w-full px-5 py-4 bg-gray-50 dark:bg-[var(--background-subtle)] border border-gray-200 dark:border-[var(--card-border)] rounded-xl text-sm text-gray-900 dark:text-[var(--card-foreground)] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white dark:focus:bg-[var(--card)] transition-all duration-200"
-                placeholder="型号"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-[var(--foreground-muted)] mb-3">单位</label>
-              <input
-                value={form.unit}
-                onChange={(e) => setForm({ ...form, unit: e.target.value })}
-                className="w-full px-5 py-4 bg-gray-50 dark:bg-[var(--background-subtle)] border border-gray-200 dark:border-[var(--card-border)] rounded-xl text-sm text-gray-900 dark:text-[var(--card-foreground)] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white dark:focus:bg-[var(--card)] transition-all duration-200"
-                placeholder="pcs"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-[var(--foreground-muted)] mb-3">最低库存</label>
-              <input
-                type="number"
-                min="0"
-                value={form.minStock}
-                onChange={(e) => setForm({ ...form, minStock: parseInt(e.target.value) || 0 })}
-                className="w-full px-5 py-4 bg-gray-50 dark:bg-[var(--background-subtle)] border border-gray-200 dark:border-[var(--card-border)] rounded-xl text-sm text-gray-900 dark:text-[var(--card-foreground)] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white dark:focus:bg-[var(--card)] transition-all duration-200"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-[var(--foreground-muted)] mb-3">仓位</label>
-              <input
-                value={form.location}
-                onChange={(e) => setForm({ ...form, location: e.target.value })}
-                className="w-full px-5 py-4 bg-gray-50 dark:bg-[var(--background-subtle)] border border-gray-200 dark:border-[var(--card-border)] rounded-xl text-sm text-gray-900 dark:text-[var(--card-foreground)] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white dark:focus:bg-[var(--card)] transition-all duration-200"
-                placeholder="如 A-1-03"
-              />
-            </div>
-          </div>
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 dark:text-[var(--foreground-muted)] mb-3">备注</label>
-            <textarea
-              value={form.note}
-              onChange={(e) => setForm({ ...form, note: e.target.value })}
-              className="w-full px-5 py-4 bg-gray-50 dark:bg-[var(--background-subtle)] border border-gray-200 dark:border-[var(--card-border)] rounded-xl text-sm text-gray-900 dark:text-[var(--card-foreground)] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white dark:focus:bg-[var(--card)] transition-all duration-200 resize-none"
-              rows={4}
-              placeholder="备注信息"
-            />
-          </div>
-          <div className="flex gap-4 pt-3">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 px-5 py-4 border border-gray-200 dark:border-[var(--card-border)] rounded-xl text-sm font-semibold text-gray-700 dark:text-[var(--foreground-muted)] hover:bg-gray-50 dark:hover:bg-[var(--background-subtle)] hover:border-gray-300 dark:hover:border-[var(--card-border)] transition-all duration-200"
-            >
-              取消
-            </button>
-            <button
-              type="submit"
-              disabled={saving}
-              className="flex-1 px-5 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl text-sm font-semibold hover:from-blue-700 hover:to-blue-800 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-blue-500/25 dark:shadow-blue-500/10"
-            >
-              {saving ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  保存中...
-                </>
-              ) : (
-                "保存修改"
-              )}
-            </button>
-          </div>
-        </form>
-      </div>
     </div>
   );
 }

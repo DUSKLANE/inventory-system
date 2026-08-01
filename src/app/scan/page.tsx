@@ -17,6 +17,7 @@ import {
 import QRScanner from "@/components/QRScanner";
 import Breadcrumb from "@/components/Breadcrumb";
 import NumberInput from "@/components/NumberInput";
+import { useConfirm } from "@/components/ConfirmProvider";
 import { fetchProductInfo, buildProductFromScanData, type LcedaProduct } from "@/lib/api/lceda";
 
 interface ScanResult {
@@ -70,6 +71,7 @@ function parseScanData(raw: string): ScanResult | null {
 }
 
 export default function ScanPage() {
+  const confirm = useConfirm();
   const [mounted, setMounted] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
   const [showManualInput, setShowManualInput] = useState(false);
@@ -242,10 +244,10 @@ export default function ScanPage() {
     setPendingItems((prev) => prev.filter((item) => item.id !== id));
   };
 
-  const clearAll = () => {
-    if (confirm("确定清除所有待入库数据？")) {
-      setPendingItems([]);
-    }
+  const clearAll = async () => {
+    const ok = await confirm({ title: "清除待入库数据", message: "确定清除所有待入库数据？", danger: true });
+    if (!ok) return;
+    setPendingItems([]);
   };
 
   const retryFetch = async (id: string) => {
@@ -281,6 +283,8 @@ export default function ScanPage() {
 
     let success = 0;
     let failed = 0;
+    const succeededIds: string[] = [];
+    const failedIds: string[] = [];
 
     for (const item of readyItems) {
       try {
@@ -294,9 +298,9 @@ export default function ScanPage() {
           const lookupRes = await fetch(`/api/parts/lookup?code=${item.scanData.pc}`);
           const lookupData = await lookupRes.json();
 
-          if (lookupData.found) {
+          if (lookupRes.ok && lookupData.found) {
             partId = lookupData.part.id;
-          } else {
+          } else if (lookupRes.ok) {
             const createRes = await fetch("/api/parts", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -314,11 +318,16 @@ export default function ScanPage() {
 
             if (!createRes.ok) {
               failed++;
+              failedIds.push(item.id);
               continue;
             }
 
             const createdPart = await createRes.json();
             partId = createdPart.id;
+          } else {
+            failed++;
+            failedIds.push(item.id);
+            continue;
           }
         }
 
@@ -336,11 +345,14 @@ export default function ScanPage() {
 
         if (stockRes.ok) {
           success++;
+          succeededIds.push(item.id);
         } else {
           failed++;
+          failedIds.push(item.id);
         }
       } catch {
         failed++;
+        failedIds.push(item.id);
       }
     }
 
@@ -351,8 +363,16 @@ export default function ScanPage() {
       message: `入库完成：成功 ${success} 件${failed > 0 ? `，失败 ${failed} 件` : ""}`,
     });
 
-    if (success > 0) {
-      setPendingItems((prev) => prev.filter((item) => item.status !== "ready"));
+    if (succeededIds.length > 0) {
+      setPendingItems((prev) =>
+        prev
+          .filter((item) => !succeededIds.includes(item.id))
+          .map((item) =>
+            failedIds.includes(item.id)
+              ? { ...item, status: "error" as const, errorMessage: "入库失败，请重试" }
+              : item
+          )
+      );
     }
   };
 

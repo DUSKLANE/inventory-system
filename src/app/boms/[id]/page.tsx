@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowDownToLine, ArrowUpFromLine, Package, Plus, Trash2, Edit, Save, X, Search, Loader2, FileText, AlertTriangle } from "lucide-react";
 import Breadcrumb from "@/components/Breadcrumb";
 import NumberInput from "@/components/NumberInput";
+import { useToast } from "@/components/ToastProvider";
 
 interface BomItem {
   id: string;
@@ -49,14 +50,18 @@ export default function BomDetailPage() {
   const [editDescription, setEditDescription] = useState("");
   const [editItems, setEditItems] = useState<BomItem[]>([]);
   const [saving, setSaving] = useState(false);
+  const requestSeq = useRef(0);
+  const { toast } = useToast();
 
   const fetchBom = async () => {
     if (!params.id) return;
+    const seq = ++requestSeq.current;
     try {
       const res = await fetch(`/api/boms/${params.id}`);
       const data = await res.json();
+      if (seq !== requestSeq.current) return;
       if (data.error) {
-        alert(data.error);
+        toast(data.error, "error");
         router.push("/boms");
         return;
       }
@@ -67,7 +72,7 @@ export default function BomDetailPage() {
     } catch (e) {
       console.error(e);
     } finally {
-      setLoading(false);
+      if (seq === requestSeq.current) setLoading(false);
     }
   };
 
@@ -91,7 +96,7 @@ export default function BomDetailPage() {
 
   const addPartToBom = (part: Part) => {
     if (editItems.some(item => item.partId === part.id)) {
-      alert("该器件已在BOM中");
+      toast("该器件已在BOM中", "error");
       return;
     }
     setEditItems(prev => [...prev, {
@@ -139,7 +144,7 @@ export default function BomDetailPage() {
       });
       if (!res.ok) {
         const data = await res.json();
-        alert(data.error || "保存失败");
+        toast(data.error || "保存失败", "error");
         return;
       }
       const data = await res.json();
@@ -147,7 +152,7 @@ export default function BomDetailPage() {
       setEditing(false);
     } catch (e) {
       console.error(e);
-      alert("保存失败");
+      toast("保存失败", "error");
     } finally {
       setSaving(false);
     }
@@ -216,6 +221,12 @@ export default function BomDetailPage() {
             {editing ? (
               <>
                 <button
+                  onClick={() => setShowAddPart(true)}
+                  className="px-5 py-3 border border-blue-200 dark:border-blue-500/30 text-blue-600 dark:text-blue-400 rounded-xl text-sm font-medium hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-all flex items-center gap-2"
+                >
+                  <Plus className="w-4 h-4" /> 添加器件
+                </button>
+                <button
                   onClick={() => { setEditing(false); setEditItems(bom.items || []); }}
                   className="px-5 py-3 border border-gray-200 dark:border-[var(--card-border)] text-gray-700 dark:text-[var(--foreground-muted)] rounded-xl text-sm font-medium hover:bg-gray-50 dark:hover:bg-[var(--background-subtle)] transition-all"
                 >
@@ -239,7 +250,7 @@ export default function BomDetailPage() {
                   <Edit className="w-4 h-4" /> 编辑
                 </button>
                 <button
-                  onClick={() => setShowAddPart(true)}
+                  onClick={() => { setEditing(true); setShowAddPart(true); }}
                   className="px-5 py-3 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 transition-all flex items-center gap-2"
                 >
                   <Plus className="w-4 h-4" /> 添加器件
