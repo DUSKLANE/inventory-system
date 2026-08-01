@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useCallback, useEffect, ReactNode } from "react";
+import { createContext, useContext, useState, useCallback, useEffect, useRef, ReactNode } from "react";
 
 type Theme = "light" | "dark" | "system";
 
@@ -23,9 +23,13 @@ function applyTheme(theme: "light" | "dark") {
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>("system");
+  const [theme, setThemeState] = useState<Theme>(() => {
+    if (typeof window === "undefined") return "system";
+    return (localStorage.getItem("theme") as Theme) || "system";
+  });
   const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">("light");
   const [mounted, setMounted] = useState(false);
+  const systemHandlerRef = useRef<((e: MediaQueryListEvent) => void) | null>(null);
 
   const resolveAndApply = useCallback((t: Theme) => {
     const resolved = t === "system" ? getSystemTheme() : t;
@@ -33,32 +37,40 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     applyTheme(resolved);
   }, []);
 
-  // eslint-disable-next-line react-hooks/set-state-in-effect
+  // 系统主题监听器只注册一次，避免 setTheme 重复添加导致泄漏
+  const syncSystemListener = useCallback((t: Theme) => {
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    if (t === "system" && !systemHandlerRef.current) {
+      const handler = () => resolveAndApply("system");
+      systemHandlerRef.current = handler;
+      mediaQuery.addEventListener("change", handler);
+    } else if (t !== "system" && systemHandlerRef.current) {
+      mediaQuery.removeEventListener("change", systemHandlerRef.current);
+      systemHandlerRef.current = null;
+    }
+  }, [resolveAndApply]);
+
   useEffect(() => {
     setMounted(true);
     const savedTheme = (localStorage.getItem("theme") as Theme) || "system";
     setThemeState(savedTheme);
     resolveAndApply(savedTheme);
+    syncSystemListener(savedTheme);
 
-    if (savedTheme === "system") {
-      const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-      const handler = () => resolveAndApply("system");
-      mediaQuery.addEventListener("change", handler);
-      return () => mediaQuery.removeEventListener("change", handler);
-    }
-  }, [resolveAndApply]);
+    return () => {
+      if (systemHandlerRef.current) {
+        window.matchMedia("(prefers-color-scheme: dark)").removeEventListener("change", systemHandlerRef.current);
+        systemHandlerRef.current = null;
+      }
+    };
+  }, [resolveAndApply, syncSystemListener]);
 
   const setTheme = useCallback((newTheme: Theme) => {
     setThemeState(newTheme);
     localStorage.setItem("theme", newTheme);
     resolveAndApply(newTheme);
-
-    if (newTheme === "system") {
-      const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-      const handler = () => resolveAndApply("system");
-      mediaQuery.addEventListener("change", handler);
-    }
-  }, [resolveAndApply]);
+    syncSystemListener(newTheme);
+  }, [resolveAndApply, syncSystemListener]);
 
   const toggleTheme = useCallback(() => {
     const next = resolvedTheme === "light" ? "dark" : "light";

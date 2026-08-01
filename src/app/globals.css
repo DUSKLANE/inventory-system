@@ -765,17 +765,8 @@ thead.sticky th {
 }
 
 /* Unified component styles */
-.bg-white.rounded-2xl,
-.bg-white.rounded-xl {
-  padding: 10px;
-}
-
 th, td {
   padding: 8px 10px;
-}
-
-.gap-5, .gap-6 {
-  gap: 10px;
 }
 
 .section {
