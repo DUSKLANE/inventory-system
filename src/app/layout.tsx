@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import AppShell from "@/components/AppShell";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { ToastProvider } from "@/components/ToastProvider";
+import { ConfirmProvider } from "@/components/ConfirmProvider";
 
 export const metadata: Metadata = {
   title: "元器件库存管理",
@@ -23,7 +25,11 @@ export default function RootLayout({
     <html lang="zh-CN" suppressHydrationWarning>
       <body className="bg-[var(--background)] antialiased noise-texture">
         <ThemeProvider>
-          <AppShell>{children}</AppShell>
+          <ToastProvider>
+            <ConfirmProvider>
+              <AppShell>{children}</AppShell>
+            </ConfirmProvider>
+          </ToastProvider>
         </ThemeProvider>
       </body>
     </html>
