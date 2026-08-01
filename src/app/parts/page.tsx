@@ -701,7 +701,7 @@ function PartsPageContent() {
 
       {/* Batch Operations Toolbar */}
       {selectedIds.size > 0 && (
-        <div className="bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/30 rounded-2xl p-4 section flex items-center justify-between animate-fade-in">
+        <div className="bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/30 rounded-2xl p-4 section flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-fade-in">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-500/20 flex items-center justify-center">
               <CheckSquare className="w-4 h-4 text-blue-600 dark:text-blue-400" />
@@ -710,7 +710,7 @@ function PartsPageContent() {
               已选择 <span className="font-bold">{selectedIds.size}</span> 个器件
             </span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={() => { setBatchMovementType("IN"); setShowBatchMovement(true); }}
               className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-medium hover:bg-emerald-700 transition-all duration-200 shadow-sm"
@@ -948,40 +948,66 @@ function PartsPageContent() {
               {data?.parts.map((part) => {
                 const qty = part.stock?.quantity ?? 0;
                 const lowStock = part.minStock > 0 && qty < part.minStock;
+                const isSelected = selectedIds.has(part.id);
                 return (
-                  <Link key={part.id} href={`/parts/${part.id}`} className="block p-6 hover:bg-gray-50/80 dark:hover:bg-[var(--background-subtle)] transition-colors duration-150">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-gray-900 dark:text-[var(--card-foreground)] truncate">{part.name}</p>
-                        <p className="text-xs text-gray-500 dark:text-[var(--foreground-subtle)] font-mono mt-1">{part.code}</p>
-                        <div className="flex items-center gap-2 mt-3 flex-wrap">
-                          {part.category && (
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-medium bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400">
-                              {part.category}
-                            </span>
-                          )}
-                          {part.location && (
-                            <span className="inline-flex items-center gap-0.5 text-xs text-gray-500 dark:text-[var(--foreground-subtle)]">
-                              <MapPin className="w-3 h-3" /> {part.location}
+                  <div key={part.id} className={`p-6 flex items-start gap-3 transition-colors duration-150 ${isSelected ? "bg-blue-50/50 dark:bg-blue-500/10" : ""}`}>
+                    <button
+                      onClick={() => toggleSelect(part.id)}
+                      className="p-2 -ml-1 shrink-0 text-gray-400 dark:text-[var(--foreground-subtle)] hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                    >
+                      {isSelected ? (
+                        <CheckSquare className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                      ) : (
+                        <Square className="w-5 h-5" />
+                      )}
+                    </button>
+                    <Link href={`/parts/${part.id}`} className="flex-1 min-w-0 block hover:bg-gray-50/80 dark:hover:bg-[var(--background-subtle)] transition-colors duration-150">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-gray-900 dark:text-[var(--card-foreground)] truncate">{part.name}</p>
+                          <p className="text-xs text-gray-500 dark:text-[var(--foreground-subtle)] font-mono mt-1">{part.code}</p>
+                          <div className="flex items-center gap-2 mt-3 flex-wrap">
+                            {part.category && (
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-medium bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400">
+                                {part.category}
+                              </span>
+                            )}
+                            {part.location && (
+                              <span className="inline-flex items-center gap-0.5 text-xs text-gray-500 dark:text-[var(--foreground-subtle)]">
+                                <MapPin className="w-3 h-3" /> {part.location}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="text-right ml-4">
+                          <p className={`text-lg font-bold ${lowStock ? "text-red-600 dark:text-red-400" : "text-gray-900 dark:text-[var(--card-foreground)]"}`}>
+                            {qty}
+                          </p>
+                          <p className="text-xs text-gray-500 dark:text-[var(--foreground-subtle)]">{part.unit}</p>
+                          {lowStock && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-red-50 dark:bg-red-500/10 text-red-700 dark:text-red-400 mt-1">
+                              低库存
                             </span>
                           )}
                         </div>
                       </div>
-                      <div className="text-right ml-4">
-                        <p className={`text-lg font-bold ${lowStock ? "text-red-600 dark:text-red-400" : "text-gray-900 dark:text-[var(--card-foreground)]"}`}>
-                          {qty}
-                        </p>
-                        <p className="text-xs text-gray-500 dark:text-[var(--foreground-subtle)]">{part.unit}</p>
-                        {lowStock && (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-red-50 dark:bg-red-500/10 text-red-700 dark:text-red-400 mt-1">
-                            低库存
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </Link>
+                    </Link>
+                  </div>
                 );
               })}
+              {(data?.parts ?? []).length > 0 && (
+                <button
+                  onClick={toggleSelectAll}
+                  className="w-full flex items-center justify-center gap-2 px-6 py-4 text-sm font-medium text-gray-600 dark:text-[var(--foreground-muted)] hover:bg-gray-50 dark:hover:bg-[var(--background-subtle)] transition-colors duration-150"
+                >
+                  {selectedIds.size === (data?.parts ?? []).length ? (
+                    <CheckSquare className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                  ) : (
+                    <Square className="w-5 h-5 text-gray-400 dark:text-[var(--foreground-subtle)]" />
+                  )}
+                  {selectedIds.size === (data?.parts ?? []).length ? "取消全选" : "全选"}
+                </button>
+              )}
             </div>
 
             {/* Pagination */}
