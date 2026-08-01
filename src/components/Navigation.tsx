@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { LayoutDashboard, Package, ArrowDownToLine, ArrowUpFromLine, Cpu, Settings, HelpCircle, BarChart3, FileText, Sun, Moon, Clock, Warehouse, MoreHorizontal, ScanBarcode, LogOut } from "lucide-react";
+import { LayoutDashboard, Package, ArrowDownToLine, ArrowUpFromLine, Cpu, Settings, HelpCircle, BarChart3, FileText, Sun, Moon, Clock, MoreHorizontal, ScanBarcode, LogOut } from "lucide-react";
 import { useTheme } from "./ThemeProvider";
 import { useState, useEffect } from "react";
 
@@ -14,7 +14,6 @@ const mainLinks = [
   { href: "/scan", label: "扫描识别", icon: ScanBarcode },
   { href: "/analytics", label: "数据分析", icon: BarChart3 },
   { href: "/boms", label: "BOM清单", icon: FileText },
-  { href: "/warehouses", label: "仓库管理", icon: Warehouse },
   { href: "/logs", label: "操作日志", icon: Clock },
 ];
 
@@ -37,12 +36,12 @@ export default function Navigation() {
   const pathname = usePathname();
   const { theme, resolvedTheme, toggleTheme } = useTheme();
   const [showMoreMenu, setShowMoreMenu] = useState(false);
-  const [username, setUsername] = useState("admin");
+  const [username, setUsername] = useState("");
 
   useEffect(() => {
     fetch("/api/auth/me")
-      .then((res) => res.json())
-      .then((data) => setUsername(data.username || "admin"))
+      .then((res) => (res.ok ? res.json() : Promise.reject()))
+      .then((data) => setUsername(data.username || ""))
       .catch(() => {});
   }, []);
 

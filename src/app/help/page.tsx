@@ -12,7 +12,6 @@ import {
   ArrowUpFromLine,
   BarChart3,
   FileText,
-  Warehouse,
   Clock,
   Star,
   Search,
@@ -41,7 +40,6 @@ const pageShortcuts: Record<string, { key: string; description: string }[]> = {
     { key: "g o", description: "跳转出库页面" },
     { key: "g a", description: "跳转数据分析" },
     { key: "g b", description: "跳转BOM清单" },
-    { key: "g w", description: "跳转仓库管理" },
     { key: "g l", description: "跳转操作日志" },
     { key: "g s", description: "跳转扫码入库" },
     { key: "g t", description: "跳转设置" },
@@ -118,11 +116,11 @@ function QuickStartSection() {
             </li>
             <li className="flex items-center gap-2">
               <ChevronRight className="w-4 h-4" />
-              扫码入库工作台（连续扫码 + 自动下载图片）
+              扫码入库工作台（连续扫码批量入库）
             </li>
             <li className="flex items-center gap-2">
               <ChevronRight className="w-4 h-4" />
-              多仓库支持与库存预警
+              库存预警
             </li>
             <li className="flex items-center gap-2">
               <ChevronRight className="w-4 h-4" />
@@ -183,13 +181,13 @@ function FeaturesSection() {
       icon: Package,
       title: "器件管理",
       description: "管理所有电子元器件的基本信息，包括编号、名称、分类、品牌、型号、封装等。支持批量导入导出、收藏夹功能。",
-      items: ["高级搜索与筛选", "批量操作（入库/出库/删除/补全图片）", "CSV/JSON 数据导入导出", "器件收藏夹", "产品图片显示与放大查看"],
+      items: ["高级搜索与筛选", "批量操作（入库/出库/删除）", "CSV/JSON 数据导入导出", "器件收藏夹", "产品图片显示与放大查看"],
     },
     {
       icon: ScanBarcode,
       title: "扫码入库工作台",
-      description: "连续扫描 LCSC 二维码，自动识别器件信息并批量入库。自动下载产品图片。",
-      items: ["连续扫码自动去重", "自动查询本地库存", "LCEDA API 获取产品信息", "自动下载产品图片", "批量入库提交"],
+      description: "连续扫描 LCSC 二维码，自动识别器件信息并批量入库。",
+      items: ["连续扫码自动去重", "自动查询本地库存", "LCEDA API 获取产品信息", "批量入库提交"],
     },
     {
       icon: ArrowDownToLine,
@@ -216,16 +214,10 @@ function FeaturesSection() {
       items: ["创建和管理BOM", "添加BOM器件", "库存充足性检查"],
     },
     {
-      icon: Warehouse,
-      title: "仓库管理",
-      description: "支持多仓库管理，可为器件分配不同仓库的库存。",
-      items: ["创建多个仓库", "设置默认仓库", "分仓库存查询"],
-    },
-    {
       icon: Clock,
       title: "操作日志",
       description: "记录所有操作历史，便于追溯和审计。",
-      items: ["操作类型筛选", "时间范围查询", "详细操作记录"],
+      items: ["操作类型筛选", "详细操作记录"],
     },
     {
       icon: Star,
@@ -254,8 +246,8 @@ function FeaturesSection() {
     {
       icon: ImageIcon,
       title: "产品图片",
-      description: "自动从 LCSC 下载元器件产品图片，本地存储，详情页可点击放大查看。",
-      items: ["扫码入库自动下载", "批量补全图片", "点击放大全屏查看", "本地存储避免跨域"],
+      description: "器件详情页通过代理接口显示产品图片，可点击放大查看。",
+      items: ["点击放大全屏查看", "代理访问避免跨域"],
     },
   ];
 

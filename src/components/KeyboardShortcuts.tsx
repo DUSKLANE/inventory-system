@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { X, Keyboard } from "lucide-react";
 
 interface Shortcut {
@@ -20,6 +21,12 @@ const pageShortcuts: Record<string, Shortcut[]> = {
     { key: "g p", label: "器件列表", description: "跳转到器件列表" },
     { key: "g i", label: "入库", description: "跳转入库页面" },
     { key: "g o", label: "出库", description: "跳转出库页面" },
+    { key: "g a", label: "数据分析", description: "跳转数据分析" },
+    { key: "g b", label: "BOM清单", description: "跳转BOM清单" },
+    { key: "g l", label: "操作日志", description: "跳转操作日志" },
+    { key: "g s", label: "扫描识别", description: "跳转扫描识别" },
+    { key: "g t", label: "设置", description: "跳转设置" },
+    { key: "g h", label: "帮助", description: "跳转帮助" },
   ],
   "/parts": [
     { key: "n", label: "新增", description: "打开新增器件弹窗" },
@@ -28,6 +35,7 @@ const pageShortcuts: Record<string, Shortcut[]> = {
 
 export default function KeyboardShortcuts() {
   const [showHelp, setShowHelp] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     let lastKeyTime = 0;
@@ -56,18 +64,36 @@ export default function KeyboardShortcuts() {
         return;
       }
 
-      // g + p/i/o 跳转页面
+      // g + 字母 跳转页面
       const now = Date.now();
       if (lastKey === "g" && now - lastKeyTime < 1000) {
         switch (e.key) {
           case "p":
-            window.location.href = "/parts";
+            router.push("/parts");
             return;
           case "i":
-            window.location.href = "/stock-in";
+            router.push("/stock-in");
             return;
           case "o":
-            window.location.href = "/stock-out";
+            router.push("/stock-out");
+            return;
+          case "a":
+            router.push("/analytics");
+            return;
+          case "b":
+            router.push("/boms");
+            return;
+          case "l":
+            router.push("/logs");
+            return;
+          case "s":
+            router.push("/scan");
+            return;
+          case "t":
+            router.push("/settings");
+            return;
+          case "h":
+            router.push("/help");
             return;
         }
       }
@@ -86,7 +112,7 @@ export default function KeyboardShortcuts() {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
+  }, [router]);
 
   if (!showHelp) return null;
 
