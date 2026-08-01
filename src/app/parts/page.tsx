@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback, useRef, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Plus, Search, Edit, Trash2, MapPin, X, Loader2, Package, ChevronLeft, ChevronRight, Eye, Boxes, Filter, CheckSquare, Square, ArrowDownToLine, ArrowUpFromLine } from "lucide-react";
 import CategoryInput from "@/components/CategoryInput";
@@ -41,13 +41,13 @@ function PartsPageContent() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState(searchParams.get("q") || "");
   const [debouncedSearch, setDebouncedSearch] = useState(searchParams.get("q") || "");
-  const [category, setCategory] = useState("");
-  const [page, setPage] = useState(1);
+  const [category, setCategory] = useState(searchParams.get("category") || "");
+  const [page, setPage] = useState(Number(searchParams.get("page")) || 1);
   const [showAdd, setShowAdd] = useState(false);
   const [editPart, setEditPart] = useState<Part | null>(null);
-  const [sortField, setSortField] = useState<SortField>("name");
-  const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
-  const [pageSize, setPageSize] = useState(20);
+  const [sortField, setSortField] = useState<SortField>((searchParams.get("sortField") as SortField) || "name");
+  const [sortDirection, setSortDirection] = useState<SortDirection>((searchParams.get("sortOrder") as SortDirection) || "asc");
+  const [pageSize, setPageSize] = useState(Number(searchParams.get("pageSize")) || 20);
   const [settingsLoaded, setSettingsLoaded] = useState(false);
   const searchTimeoutRef = useRef<NodeJS.Timeout>(undefined);
   const { toast } = useToast();
@@ -61,11 +61,11 @@ function PartsPageContent() {
   
   // Advanced search state
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
-  const [brand, setBrand] = useState("");
-  const [stockMin, setStockMin] = useState("");
-  const [stockMax, setStockMax] = useState("");
-  const [lowStockOnly, setLowStockOnly] = useState(false);
-  const [hasStockOnly, setHasStockOnly] = useState(false);
+  const [brand, setBrand] = useState(searchParams.get("brand") || "");
+  const [stockMin, setStockMin] = useState(searchParams.get("stockMin") || "");
+  const [stockMax, setStockMax] = useState(searchParams.get("stockMax") || "");
+  const [lowStockOnly, setLowStockOnly] = useState(searchParams.get("lowStock") === "true");
+  const [hasStockOnly, setHasStockOnly] = useState(searchParams.get("hasStock") === "true");
   const [searchHistory, setSearchHistory] = useState<string[]>([]);
   const [savedSearches, setSavedSearches] = useState<Array<{ name: string; params: Record<string, string> }>>([]);
   const [showSearchHistory, setShowSearchHistory] = useState(false);
@@ -89,11 +89,37 @@ function PartsPageContent() {
   // Load preferences from settings
   useEffect(() => {
     fetch("/api/settings").then((r) => r.json()).then((s) => {
-      if (s?.page_size) setPageSize(Number(s.page_size) || 20);
-      if (s?.default_sort_field) setSortField((s.default_sort_field as SortField) || "name");
-      if (s?.default_sort_order) setSortDirection((s.default_sort_order as SortDirection) || "asc");
+      if (s?.page_size && !searchParams.get("pageSize")) setPageSize(Number(s.page_size) || 20);
+      if (s?.default_sort_field && !searchParams.get("sortField")) setSortField((s.default_sort_field as SortField) || "name");
+      if (s?.default_sort_order && !searchParams.get("sortOrder")) setSortDirection((s.default_sort_order as SortDirection) || "asc");
     }).catch(() => {}).finally(() => setSettingsLoaded(true));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const router = useRouter();
+  const firstRender = useRef(true);
+
+  // Sync filter/sort/pagination state to URL
+  useEffect(() => {
+    if (firstRender.current) { firstRender.current = false; return; }
+    const params = new URLSearchParams();
+    if (debouncedSearch) params.set("q", debouncedSearch);
+    if (category) params.set("category", category);
+    if (brand) params.set("brand", brand);
+    if (stockMin) params.set("stockMin", stockMin);
+    if (stockMax) params.set("stockMax", stockMax);
+    if (lowStockOnly) params.set("lowStock", "true");
+    if (hasStockOnly) params.set("hasStock", "true");
+    params.set("page", String(page));
+    params.set("pageSize", String(pageSize));
+    params.set("sortField", sortField);
+    params.set("sortOrder", sortDirection);
+    const t = setTimeout(() => {
+      router.replace(`/parts?${params.toString()}`, { scroll: false });
+    }, 300);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSearch, category, brand, stockMin, stockMax, lowStockOnly, hasStockOnly, page, pageSize, sortField, sortDirection]);
 
   // Search debounce
   useEffect(() => {
@@ -102,13 +128,14 @@ function PartsPageContent() {
     }
     searchTimeoutRef.current = setTimeout(() => {
       setDebouncedSearch(search);
-      setPage(1);
+      if (search !== debouncedSearch) setPage(1);
     }, 300);
     return () => {
       if (searchTimeoutRef.current) {
         clearTimeout(searchTimeoutRef.current);
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search]);
 
   // Load search history from localStorage
