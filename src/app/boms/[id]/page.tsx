@@ -7,6 +7,7 @@ import { ArrowDownToLine, ArrowUpFromLine, Package, Plus, Trash2, Edit, Save, X,
 import Breadcrumb from "@/components/Breadcrumb";
 import NumberInput from "@/components/NumberInput";
 import { useToast } from "@/components/ToastProvider";
+import { useConfirm } from "@/components/ConfirmProvider";
 
 interface BomItem {
   id: string;
@@ -52,6 +53,10 @@ export default function BomDetailPage() {
   const [saving, setSaving] = useState(false);
   const requestSeq = useRef(0);
   const { toast } = useToast();
+  const confirm = useConfirm();
+  const [showCheckout, setShowCheckout] = useState(false);
+  const [checkoutItems, setCheckoutItems] = useState<Record<string, boolean>>({});
+  const [checkoutSubmitting, setCheckoutSubmitting] = useState(false);
 
   const fetchBom = async () => {
     if (!params.id) return;
@@ -158,6 +163,53 @@ export default function BomDetailPage() {
     }
   };
 
+  const isDirty = editing && (
+    editName !== bom?.name ||
+    editDescription !== bom?.description ||
+    JSON.stringify(editItems.map((i) => ({ partId: i.partId, quantity: i.quantity }))) !==
+      JSON.stringify((bom?.items || []).map((i) => ({ partId: i.partId, quantity: i.quantity })))
+  );
+
+  const handleCancelEdit = async () => {
+    if (isDirty) {
+      const ok = await confirm({ title: "放弃修改", message: "有未保存的改动，确定放弃？", danger: true });
+      if (!ok) return;
+    }
+    setEditing(false);
+    setEditItems(bom?.items || []);
+    setEditName(bom?.name || "");
+    setEditDescription(bom?.description || "");
+  };
+
+  const openCheckout = () => {
+    if (!bom) return;
+    setCheckoutItems(Object.fromEntries(bom.items.map(i => [i.partId, i.currentStock >= i.quantity])));
+    setShowCheckout(true);
+  };
+
+  const handleCheckout = async () => {
+    if (!bom) return;
+    const selected = bom.items.filter((i) => checkoutItems[i.partId]);
+    if (selected.length === 0) { toast("请至少选择一项", "error"); return; }
+    setCheckoutSubmitting(true);
+    try {
+      const res = await fetch(`/api/boms/${params.id}/checkout`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ items: selected.map((i) => ({ partId: i.partId, quantity: i.quantity })) }),
+      });
+      const data = await res.json();
+      if (!res.ok) { toast(data.error || "领料失败", "error"); return; }
+      toast(`领料成功：${data.results.length} 项`, "success");
+      setShowCheckout(false);
+      fetchBom();
+    } catch {
+      toast("领料失败", "error");
+    } finally {
+      setCheckoutSubmitting(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
@@ -227,7 +279,7 @@ export default function BomDetailPage() {
                   <Plus className="w-4 h-4" /> 添加器件
                 </button>
                 <button
-                  onClick={() => { setEditing(false); setEditItems(bom.items || []); }}
+                  onClick={handleCancelEdit}
                   className="px-5 py-3 border border-gray-200 dark:border-[var(--card-border)] text-gray-700 dark:text-[var(--foreground-muted)] rounded-xl text-sm font-medium hover:bg-gray-50 dark:hover:bg-[var(--background-subtle)] transition-all"
                 >
                   取消
@@ -248,6 +300,12 @@ export default function BomDetailPage() {
                   className="px-5 py-3 border border-gray-200 dark:border-[var(--card-border)] text-gray-700 dark:text-[var(--foreground-muted)] rounded-xl text-sm font-medium hover:bg-gray-50 dark:hover:bg-[var(--background-subtle)] transition-all flex items-center gap-2"
                 >
                   <Edit className="w-4 h-4" /> 编辑
+                </button>
+                <button
+                  onClick={openCheckout}
+                  className="px-5 py-3 border border-gray-200 dark:border-[var(--card-border)] text-gray-700 dark:text-[var(--foreground-muted)] rounded-xl text-sm font-medium hover:bg-gray-50 dark:hover:bg-[var(--background-subtle)] transition-all flex items-center gap-2"
+                >
+                  <ArrowUpFromLine className="w-4 h-4" /> 领料出库
                 </button>
                 <button
                   onClick={() => { setEditing(true); setShowAddPart(true); }}
@@ -332,6 +390,73 @@ export default function BomDetailPage() {
           </div>
         )}
       </div>
+
+      {/* Checkout Modal */}
+      {showCheckout && bom && (
+        <div className="fixed inset-0 modal-backdrop z-50 flex items-center justify-center p-4 animate-fade-in">
+          <div className="bg-white dark:bg-[var(--card)] rounded-2xl w-full max-w-md shadow-2xl border border-gray-200/80 dark:border-[var(--card-border)] max-h-[80vh] overflow-hidden flex flex-col">
+            <div className="px-8 py-6 border-b border-gray-100 dark:border-[var(--card-border)] flex items-center justify-between">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-[var(--card-foreground)]">领料出库</h2>
+              <button
+                onClick={() => setShowCheckout(false)}
+                className="p-2.5 text-gray-400 dark:text-[var(--foreground-subtle)] hover:text-gray-600 dark:hover:text-[var(--foreground-muted)] hover:bg-gray-100 dark:hover:bg-[var(--background-muted)] rounded-xl transition-all"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto">
+              <div className="divide-y divide-gray-100 dark:divide-[var(--card-border)]">
+                {bom.items.map((item) => {
+                  const insufficient = item.currentStock < item.quantity;
+                  const shortfall = item.quantity - item.currentStock;
+                  return (
+                    <label key={item.partId} className="px-8 py-4 flex items-center gap-4 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={!!checkoutItems[item.partId]}
+                        onChange={(e) => setCheckoutItems(prev => ({ ...prev, [item.partId]: e.target.checked }))}
+                        className="w-4 h-4 accent-blue-600 shrink-0"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-gray-900 dark:text-[var(--card-foreground)]">{item.name}</p>
+                        <p className="text-xs text-gray-500 dark:text-[var(--foreground-subtle)] font-mono mt-0.5">{item.code}</p>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <p className={`text-sm font-medium ${insufficient ? "text-red-600 dark:text-red-400" : "text-gray-900 dark:text-[var(--card-foreground)]"}`}>
+                          需要 {item.quantity} / 库存 {item.currentStock} {item.unit}
+                        </p>
+                        {insufficient && (
+                          <p className="text-xs text-red-600 dark:text-red-400 mt-0.5">
+                            <AlertTriangle className="w-3 h-3 inline" /> 缺口 {shortfall}
+                          </p>
+                        )}
+                      </div>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="px-8 py-5 border-t border-gray-100 dark:border-[var(--card-border)] flex justify-end gap-3">
+              <button
+                onClick={() => setShowCheckout(false)}
+                className="px-5 py-3 border border-gray-200 dark:border-[var(--card-border)] text-gray-700 dark:text-[var(--foreground-muted)] rounded-xl text-sm font-medium hover:bg-gray-50 dark:hover:bg-[var(--background-subtle)] transition-all"
+              >
+                取消
+              </button>
+              <button
+                onClick={handleCheckout}
+                disabled={checkoutSubmitting}
+                className="px-5 py-3 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 transition-all disabled:opacity-50 flex items-center gap-2"
+              >
+                {checkoutSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <ArrowUpFromLine className="w-4 h-4" />}
+                确认领料
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Add Part Modal */}
       {showAddPart && (
