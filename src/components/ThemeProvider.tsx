@@ -51,6 +51,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }, [resolveAndApply]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
     const savedTheme = (localStorage.getItem("theme") as Theme) || "system";
     setThemeState(savedTheme);
