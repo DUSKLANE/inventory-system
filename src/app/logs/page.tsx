@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Clock, Filter, ChevronLeft, ChevronRight, Trash2, Edit, Plus } from "lucide-react";
 import Breadcrumb from "@/components/Breadcrumb";
 
@@ -29,8 +29,10 @@ export default function LogsPage() {
   const [page, setPage] = useState(1);
   const [entityType, setEntityType] = useState("");
   const [action, setAction] = useState("");
+  const requestSeq = useRef(0);
 
   const fetchLogs = async () => {
+    const seq = ++requestSeq.current;
     setLoading(true);
     const params = new URLSearchParams();
     if (entityType) params.set("entityType", entityType);
@@ -40,12 +42,13 @@ export default function LogsPage() {
 
     try {
       const res = await fetch(`/api/logs?${params}`);
+      if (!res.ok) return;
       const json = await res.json();
-      setData(json);
+      if (seq === requestSeq.current) setData(json);
     } catch (e) {
       console.error(e);
     } finally {
-      setLoading(false);
+      if (seq === requestSeq.current) setLoading(false);
     }
   };
 

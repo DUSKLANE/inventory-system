@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { Activity, ArrowDownToLine, ArrowUpFromLine, BarChart3, Package, TrendingDown, TrendingUp, Boxes, Clock, ChevronRight } from "lucide-react";
 import Breadcrumb from "@/components/Breadcrumb";
@@ -53,14 +53,28 @@ interface AnalyticsData {
 export default function AnalyticsPage() {
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [period, setPeriod] = useState("30");
+  const requestSeq = useRef(0);
 
   useEffect(() => {
+    const seq = ++requestSeq.current;
+    setLoading(true);
     fetch(`/api/analytics?period=${period}`)
-      .then(r => r.json())
-      .then(setData)
-      .catch(console.error)
-      .finally(() => setLoading(false));
+      .then(r => {
+        if (!r.ok) throw new Error(`加载失败: ${r.status}`);
+        return r.json();
+      })
+      .then((result) => {
+        if (seq === requestSeq.current) setData(result);
+      })
+      .catch((e) => {
+        console.error(e);
+        if (seq === requestSeq.current) setError("数据加载失败");
+      })
+      .finally(() => {
+        if (seq === requestSeq.current) setLoading(false);
+      });
   }, [period]);
 
   if (loading) {
@@ -77,7 +91,15 @@ export default function AnalyticsPage() {
     );
   }
 
-  if (!data) return null;
+  if (!data) {
+    return (
+      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
+        <p className="text-gray-500 dark:text-[var(--foreground-subtle)] text-sm font-medium">
+          {error || "暂无数据"}
+        </p>
+      </div>
+    );
+  }
 
   const totalIn = data.movementTypeDistribution.find(m => m.type === "IN")?.totalQuantity || 0;
   const totalOut = data.movementTypeDistribution.find(m => m.type === "OUT")?.totalQuantity || 0;

@@ -6,11 +6,13 @@ export const dynamic = "force-dynamic";
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
+    const rawPage = parseInt(searchParams.get("page") || "1", 10);
+    const rawPageSize = parseInt(searchParams.get("pageSize") || "50", 10);
     const filters = {
       entityType: searchParams.get("entityType") || undefined,
       action: searchParams.get("action") || undefined,
-      page: parseInt(searchParams.get("page") || "1"),
-      pageSize: parseInt(searchParams.get("pageSize") || "50"),
+      page: Number.isFinite(rawPage) && rawPage >= 1 ? rawPage : 1,
+      pageSize: Number.isFinite(rawPageSize) && rawPageSize >= 1 && rawPageSize <= 100 ? rawPageSize : 50,
     };
     const result = await db.listLogs(filters);
     return NextResponse.json({

@@ -82,18 +82,22 @@ export default function Home() {
   const [showAlerts, setShowAlerts] = useState(false);
 
   useEffect(() => {
-    Promise.all([
-      fetch("/api/dashboard").then(r => r.json()),
-      fetch("/api/alerts").then(r => r.json()),
-      fetch("/api/favorites").then(r => r.json()),
-    ])
-      .then(([dashboardData, alertsData, favoritesData]) => {
-        setData(dashboardData);
-        setAlerts(alertsData);
-        setFavorites(favoritesData.favorites || []);
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false));
+    const fetchJson = async (url: string) => {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`${url}: ${res.status}`);
+      return res.json();
+    };
+    Promise.allSettled([
+      fetchJson("/api/dashboard"),
+      fetchJson("/api/alerts"),
+      fetchJson("/api/favorites"),
+    ]).then(([dashboardResult, alertsResult, favoritesResult]) => {
+      if (dashboardResult.status === "fulfilled") setData(dashboardResult.value);
+      if (alertsResult.status === "fulfilled") setAlerts(alertsResult.value);
+      if (favoritesResult.status === "fulfilled") {
+        setFavorites(favoritesResult.value.favorites || []);
+      }
+    }).finally(() => setLoading(false));
   }, []);
 
   const toggleFavorite = async (partId: string) => {

@@ -1,17 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import db from "@/lib/db";
 import { movementSchema } from "@/lib/validations";
+import { verifySessionToken, AUTH_COOKIE } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
+    const rawPage = parseInt(searchParams.get("page") || "1", 10);
+    const rawPageSize = parseInt(searchParams.get("pageSize") || "50", 10);
     const filters = {
       partId: searchParams.get("partId") || undefined,
       type: searchParams.get("type") || undefined,
-      page: parseInt(searchParams.get("page") || "1"),
-      pageSize: parseInt(searchParams.get("pageSize") || "50"),
+      page: Number.isFinite(rawPage) && rawPage >= 1 ? rawPage : 1,
+      pageSize: Number.isFinite(rawPageSize) && rawPageSize >= 1 && rawPageSize <= 100 ? rawPageSize : 50,
     };
     const result = await db.listMovements(filters);
     return NextResponse.json({ movements: result.movements, total: result.total, page: filters.page, pageSize: filters.pageSize });
@@ -25,6 +28,8 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const data = movementSchema.parse(body);
+    const sessionUser = await verifySessionToken(request.cookies.get(AUTH_COOKIE)?.value);
+    data.operator = sessionUser || data.operator || "";
     const result = await db.createMovement(data);
     return NextResponse.json({ id: result.id, ...data, createdAt: new Date().toISOString(), newQuantity: result.newQuantity }, { status: 201 });
   } catch (error) {

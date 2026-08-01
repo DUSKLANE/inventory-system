@@ -13,6 +13,7 @@ export async function GET(request: Request) {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ keyword, page: 1, pageSize: 5 }),
+      signal: AbortSignal.timeout(15000),
     });
 
     if (!res.ok) {

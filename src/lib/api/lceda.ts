@@ -38,7 +38,9 @@ interface LcedaProductItem {
 
 export async function fetchProductInfo(lcscCode: string): Promise<LcedaProduct | null> {
   try {
-    const res = await fetch(`/api/lceda?keyword=${encodeURIComponent(lcscCode)}`);
+    const res = await fetch(`/api/lceda?keyword=${encodeURIComponent(lcscCode)}`, {
+      signal: AbortSignal.timeout(10000),
+    });
 
     if (!res.ok) {
       console.error("LCEDA proxy request failed:", res.status);

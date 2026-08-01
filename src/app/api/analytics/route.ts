@@ -6,7 +6,8 @@ export const dynamic = "force-dynamic";
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const period = parseInt(searchParams.get("period") || "30");
+    const rawPeriod = parseInt(searchParams.get("period") || "30", 10);
+    const period = Number.isFinite(rawPeriod) && rawPeriod >= 1 && rawPeriod <= 3650 ? rawPeriod : 30;
     const data = await db.getAnalytics(period);
     return NextResponse.json(data);
   } catch (error) {
