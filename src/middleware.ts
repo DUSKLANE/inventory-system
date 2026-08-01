@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { verifySessionToken, AUTH_COOKIE } from "@/lib/auth";
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Allow login page and API auth routes
+  // Allow login page and auth API routes
   if (
     pathname === "/login" ||
     pathname.startsWith("/api/auth/") ||
@@ -14,9 +15,12 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Check auth cookie
-  const session = request.cookies.get("auth_session")?.value;
-  if (session !== "authenticated") {
+  // Check signed session cookie
+  const session = await verifySessionToken(request.cookies.get(AUTH_COOKIE)?.value);
+  if (!session) {
+    if (pathname.startsWith("/api/")) {
+      return NextResponse.json({ error: "未登录" }, { status: 401 });
+    }
     const loginUrl = new URL("/login", request.url);
     return NextResponse.redirect(loginUrl);
   }

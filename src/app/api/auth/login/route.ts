@@ -1,18 +1,33 @@
 import { NextResponse } from "next/server";
+import { createSessionToken, getCredentials, AUTH_COOKIE } from "@/lib/auth";
 
 export async function POST(request: Request) {
   try {
     const { username, password } = await request.json();
+    const credentials = getCredentials();
 
-    const validUsername = process.env.AUTH_USERNAME || "admin";
-    const validPassword = process.env.AUTH_PASSWORD || "admin123";
+    if (!credentials) {
+      return NextResponse.json(
+        { success: false, error: "未配置登录凭据，请设置 AUTH_USERNAME/AUTH_PASSWORD 环境变量" },
+        { status: 503 }
+      );
+    }
 
-    if (username === validUsername && password === validPassword) {
+    if (username === credentials.username && password === credentials.password) {
+      let token: string;
+      try {
+        token = await createSessionToken(username);
+      } catch {
+        return NextResponse.json(
+          { success: false, error: "服务端未配置 AUTH_SECRET 环境变量（至少 16 字符），请联系管理员" },
+          { status: 500 }
+        );
+      }
       const response = NextResponse.json({ success: true });
-      response.cookies.set("auth_session", "authenticated", {
+      response.cookies.set(AUTH_COOKIE, token, {
         httpOnly: true,
         path: "/",
-        maxAge: 2592000, // 30 days
+        maxAge: 30 * 24 * 60 * 60, // 30 days
         sameSite: "lax",
       });
       return response;
