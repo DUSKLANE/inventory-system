@@ -31,11 +31,11 @@ describe("batchStockInUpsert", () => {
 
   it("已存在编码累加入库", async () => {
     await db.batchStockInUpsert([{ code: "Z0001", name: "10K 电阻", quantity: 100 }]);
-    const r = await db.batchStockInUpsert([{ code: "Z0001", name: "10K 电阻", quantity: 50 }]);
+    const r = await db.batchStockInUpsert([{ code: "Z0001", name: "10K 电阻 1%", quantity: 50 }]);
     expect(r.successCount).toBe(1);
     const part = await db.getPartByCode("Z0001");
     expect(part?.stock?.quantity).toBe(150);
-    expect(part?.name).toBe("10K 电阻"); // 不覆盖已有信息
+    expect(part?.name).toBe("10K 电阻"); // 不覆盖已有信息（第二次传入不同名称）
   });
 
   it("部分失败不影响其他条目", async () => {
@@ -48,5 +48,18 @@ describe("batchStockInUpsert", () => {
     expect(r.failCount).toBe(1);
     const part = await db.getPartByCode("Z0001");
     expect(part?.stock?.quantity).toBe(10); // 第一条已提交
+  });
+
+  it("条目级 SQL 失败不影响其他条目提交", async () => {
+    const r = await db.batchStockInUpsert([
+      { code: "Z0001", name: "A", quantity: 10 },
+      { code: "Z0002", name: undefined as unknown as string, quantity: 20 },
+    ]);
+    expect(r.results[0].success).toBe(true);
+    expect(r.results[1].success).toBe(false);
+    expect(r.successCount).toBe(1);
+    expect(r.failCount).toBe(1);
+    const part = await db.getPartByCode("Z0001");
+    expect(part?.stock?.quantity).toBe(10);
   });
 });
