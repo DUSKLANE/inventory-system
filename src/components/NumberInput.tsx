@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Minus, Plus } from "lucide-react";
 
 interface NumberInputProps {
@@ -13,8 +13,15 @@ interface NumberInputProps {
 
 export default function NumberInput({ value, onChange, min = 1, max, className = "" }: NumberInputProps) {
   const [editingValue, setEditingValue] = useState<string | null>(null);
+
+  // 外部 value 变化时丢弃未提交的编辑值，避免显示陈旧值（如扫码页同码累加）
+  useEffect(() => {
+    setEditingValue(null);
+  }, [value]);
+
   const displayValue = editingValue !== null ? editingValue : value;
-  const numValue = parseInt(value) || min;
+  const parsed = parseInt(value, 10);
+  const numValue = Number.isFinite(parsed) ? parsed : min;
 
   const handleDecrement = () => {
     setEditingValue(null);
@@ -30,19 +37,18 @@ export default function NumberInput({ value, onChange, min = 1, max, className =
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setEditingValue(val);
-    if (val !== "" && val !== "-") {
-      const num = parseInt(val);
-      if (!isNaN(num)) {
-        onChange(String(num));
-      }
+    const num = Number(val);
+    if (val !== "" && val !== "-" && Number.isInteger(num) && num >= 0) {
+      onChange(String(num));
     }
   };
 
   const handleBlur = () => {
     setEditingValue(null);
-    if (!value || parseInt(value) < min) {
-      onChange(String(min));
-    }
+    const parsedVal = Number(value);
+    const finalVal = Number.isFinite(parsedVal) ? parsedVal : min;
+    const clamped = Math.min(max ?? finalVal, Math.max(min, finalVal));
+    onChange(String(clamped));
   };
 
   return (
