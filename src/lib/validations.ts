@@ -31,10 +31,12 @@ export const searchSchema = z.object({
   brand: z.string().optional(),
   stockMin: z.coerce.number().int().min(0).optional(),
   stockMax: z.coerce.number().int().min(0).optional(),
-  hasStock: z.coerce.boolean().optional(),
-  lowStock: z.coerce.boolean().optional(),
+  hasStock: z.preprocess((v) => v === "true", z.boolean().optional()),
+  lowStock: z.preprocess((v) => v === "true", z.boolean().optional()),
   page: z.coerce.number().int().min(1).default(1),
   pageSize: z.coerce.number().int().min(1).max(100).default(20),
+  sortField: z.enum(["code", "name", "category", "brand", "stock", "location", "updatedAt", "createdAt"]).optional(),
+  sortOrder: z.enum(["asc", "desc"]).optional(),
 });
 
 export type SearchParams = z.infer<typeof searchSchema>;

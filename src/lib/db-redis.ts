@@ -35,8 +35,9 @@ export class RedisAdapter implements DatabaseAdapter {
     todayStart.setHours(0, 0, 0, 0);
     const today = todayStart.toISOString();
     const totalParts = allParts.length;
+    const threshold = parseInt((await this.getSetting("low_stock_threshold")) || "10", 10);
     let lowStockCount = 0;
-    for (const p of allParts) { const s = allStock.get(p.id); if (p.minStock > 0 && (s?.quantity ?? 0) < p.minStock) lowStockCount++; }
+    for (const p of allParts) { const s = allStock.get(p.id); if ((s?.quantity ?? 0) < (p.minStock > 0 ? p.minStock : threshold)) lowStockCount++; }
     const todayMovements = allMovements.filter(m => m.createdAt >= today);
     const todayInCount = todayMovements.filter(m => m.type === "IN").length;
     const todayOutCount = todayMovements.filter(m => m.type === "OUT").length;
@@ -51,7 +52,8 @@ export class RedisAdapter implements DatabaseAdapter {
     const { parts: allParts, stock: allStock, movements: allMovements } = await this.loadCache();
     const cutoff7 = new Date(Date.now() - 7 * 86400000).toISOString();
     const cutoff30 = new Date(Date.now() - 30 * 86400000).toISOString();
-    const lowStockParts = allParts.filter(p => { const s = allStock.get(p.id); return p.minStock > 0 && (s?.quantity ?? 0) < p.minStock; }).map(p => { const s = allStock.get(p.id); const cs = s?.quantity ?? 0; return { ...p, currentStock: cs, stockPercentage: p.minStock > 0 ? Math.round(cs * 100 / p.minStock * 10) / 10 : 0 }; }).sort((a, b) => (a.currentStock / (a.minStock || 1)) - (b.currentStock / (b.minStock || 1)));
+    const threshold = parseInt((await this.getSetting("low_stock_threshold")) || "10", 10);
+    const lowStockParts = allParts.filter(p => { const s = allStock.get(p.id); return (s?.quantity ?? 0) < (p.minStock > 0 ? p.minStock : threshold); }).map(p => { const s = allStock.get(p.id); const cs = s?.quantity ?? 0; const eff = p.minStock > 0 ? p.minStock : threshold; return { ...p, currentStock: cs, stockPercentage: eff > 0 ? Math.round(cs * 100 / eff * 10) / 10 : 0 }; }).sort((a, b) => { const ea = a.minStock > 0 ? a.minStock : threshold; const eb = b.minStock > 0 ? b.minStock : threshold; return (a.currentStock / ea) - (b.currentStock / eb); });
     const outOfStockParts = allParts.filter(p => (allStock.get(p.id)?.quantity ?? 0) === 0).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)).slice(0, 20);
     const recent7 = allMovements.filter(m => m.createdAt >= cutoff7);
     const trendMap = new Map<string, { totalIn: number; totalOut: number; count: number }>();
@@ -63,7 +65,7 @@ export class RedisAdapter implements DatabaseAdapter {
     const activeParts = [...activeMap.entries()].sort((a, b) => b[1].count - a[1].count).slice(0, 10).map(([pid, a]) => { const p = allParts.find(pp => pp.id === pid)!; return { id: p.id, code: p.code, name: p.name, category: p.category, movementCount: a.count, totalIn: a.totalIn, totalOut: a.totalOut }; });
     const totalParts = allParts.length;
     let outOfStockCount = 0, lowStockCount2 = 0;
-    for (const p of allParts) { const s = allStock.get(p.id)?.quantity ?? 0; if (s === 0) outOfStockCount++; if (p.minStock > 0 && s < p.minStock) lowStockCount2++; }
+    for (const p of allParts) { const s = allStock.get(p.id)?.quantity ?? 0; if (s === 0) outOfStockCount++; if (s < (p.minStock > 0 ? p.minStock : threshold)) lowStockCount2++; }
     return { lowStockParts: lowStockParts as unknown as Record<string, unknown>[], outOfStockParts: outOfStockParts as unknown as Record<string, unknown>[], recentMovements: recentMovements as unknown as Record<string, unknown>[], activeParts: activeParts as unknown as Record<string, unknown>[], stats: { totalParts, outOfStockCount, lowStockCount: lowStockCount2, criticalCount: lowStockCount2 } };
   }
 
@@ -158,8 +160,23 @@ export class RedisAdapter implements DatabaseAdapter {
     if (filters.stockMin !== undefined) filtered = filtered.filter(p => (stock.get(p.id)?.quantity ?? 0) >= filters.stockMin!);
     if (filters.stockMax !== undefined) filtered = filtered.filter(p => (stock.get(p.id)?.quantity ?? 0) <= filters.stockMax!);
     if (filters.hasStock === true) filtered = filtered.filter(p => (stock.get(p.id)?.quantity ?? 0) > 0);
-    if (filters.lowStock === true) filtered = filtered.filter(p => p.minStock > 0 && (stock.get(p.id)?.quantity ?? 0) < p.minStock);
-    filtered.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+    if (filters.lowStock === true) {
+      const threshold = parseInt((await this.getSetting("low_stock_threshold")) || "10", 10);
+      filtered = filtered.filter(p => (stock.get(p.id)?.quantity ?? 0) < (p.minStock > 0 ? p.minStock : threshold));
+    }
+    const sortFieldMap: Record<string, (a: Part, b: Part) => number> = {
+      code: (a, b) => a.code.localeCompare(b.code),
+      name: (a, b) => a.name.localeCompare(b.name),
+      category: (a, b) => (a.category || "").localeCompare(b.category || ""),
+      brand: (a, b) => (a.brand || "").localeCompare(b.brand || ""),
+      stock: (a, b) => (stock.get(a.id)?.quantity ?? 0) - (stock.get(b.id)?.quantity ?? 0),
+      location: (a, b) => (a.location || "").localeCompare(b.location || ""),
+      updatedAt: (a, b) => a.updatedAt.localeCompare(b.updatedAt),
+      createdAt: (a, b) => a.createdAt.localeCompare(b.createdAt),
+    };
+    const sortField = filters.sortField && sortFieldMap[filters.sortField] ? filters.sortField : "updatedAt";
+    const sortOrder = filters.sortOrder === "asc" ? 1 : -1;
+    filtered.sort((a, b) => sortOrder * sortFieldMap[sortField](a, b));
     const total = filtered.length;
     const page = filters.page || 1;
     const pageSize = filters.pageSize || 20;

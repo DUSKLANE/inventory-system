@@ -32,7 +32,7 @@ interface PartsResponse {
   totalPages: number;
 }
 
-type SortField = "code" | "name" | "category" | "brand" | "stock" | "location";
+type SortField = "code" | "name" | "category" | "brand" | "stock" | "location" | "updatedAt" | "createdAt";
 type SortDirection = "asc" | "desc";
 
 function PartsPageContent() {
@@ -47,6 +47,8 @@ function PartsPageContent() {
   const [editPart, setEditPart] = useState<Part | null>(null);
   const [sortField, setSortField] = useState<SortField>("name");
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
+  const [pageSize, setPageSize] = useState(20);
+  const [settingsLoaded, setSettingsLoaded] = useState(false);
   const searchTimeoutRef = useRef<NodeJS.Timeout>(undefined);
   const { toast } = useToast();
   const confirm = useConfirm();
@@ -84,30 +86,14 @@ function PartsPageContent() {
     }
   };
 
-  const sortedParts = data?.parts ? [...data.parts].sort((a, b) => {
-    let comparison = 0;
-    switch (sortField) {
-      case "code":
-        comparison = a.code.localeCompare(b.code);
-        break;
-      case "name":
-        comparison = a.name.localeCompare(b.name);
-        break;
-      case "category":
-        comparison = (a.category || "").localeCompare(b.category || "");
-        break;
-      case "brand":
-        comparison = (a.brand || "").localeCompare(b.brand || "");
-        break;
-      case "stock":
-        comparison = (a.stock?.quantity ?? 0) - (b.stock?.quantity ?? 0);
-        break;
-      case "location":
-        comparison = (a.location || "").localeCompare(b.location || "");
-        break;
-    }
-    return sortDirection === "asc" ? comparison : -comparison;
-  }) : [];
+  // Load preferences from settings
+  useEffect(() => {
+    fetch("/api/settings").then((r) => r.json()).then((s) => {
+      if (s?.page_size) setPageSize(Number(s.page_size) || 20);
+      if (s?.default_sort_field) setSortField((s.default_sort_field as SortField) || "name");
+      if (s?.default_sort_order) setSortDirection((s.default_sort_order as SortDirection) || "asc");
+    }).catch(() => {}).finally(() => setSettingsLoaded(true));
+  }, []);
 
   // Search debounce
   useEffect(() => {
@@ -283,7 +269,9 @@ function PartsPageContent() {
     if (lowStockOnly) params.set("lowStock", "true");
     if (hasStockOnly) params.set("hasStock", "true");
     params.set("page", String(page));
-    params.set("pageSize", "20");
+    params.set("pageSize", String(pageSize));
+    params.set("sortField", sortField);
+    params.set("sortOrder", sortDirection);
 
     try {
       const res = await fetch(`/api/parts?${params}`, { signal });
@@ -298,13 +286,14 @@ function PartsPageContent() {
     } finally {
       setLoading(false);
     }
-  }, [debouncedSearch, category, brand, stockMin, stockMax, lowStockOnly, hasStockOnly, page, toast]);
+  }, [debouncedSearch, category, brand, stockMin, stockMax, lowStockOnly, hasStockOnly, page, pageSize, sortField, sortDirection, toast]);
 
   useEffect(() => {
+    if (!settingsLoaded) return;
     const controller = new AbortController();
     fetchParts(controller.signal);
     return () => controller.abort();
-  }, [fetchParts]);
+  }, [fetchParts, settingsLoaded]);
 
   const handleDelete = async (id: string, name: string) => {
     const ok = await confirm({ title: "删除器件", message: `确定删除器件"${name}"？此操作不可撤销。`, danger: true });
@@ -332,10 +321,11 @@ function PartsPageContent() {
   };
 
   const toggleSelectAll = () => {
-    if (selectedIds.size === sortedParts.length) {
+    if (!data) return;
+    if (selectedIds.size === data.parts.length) {
       setSelectedIds(new Set());
     } else {
-      setSelectedIds(new Set(sortedParts.map(p => p.id)));
+      setSelectedIds(new Set(data.parts.map(p => p.id)));
     }
   };
 
@@ -760,7 +750,7 @@ function PartsPageContent() {
                         onClick={toggleSelectAll}
                         className="p-1 text-gray-400 dark:text-[var(--foreground-subtle)] hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                       >
-                        {selectedIds.size === sortedParts.length && sortedParts.length > 0 ? (
+                        {selectedIds.size === (data?.parts ?? []).length && (data?.parts ?? []).length > 0 ? (
                           <CheckSquare className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                         ) : (
                           <Square className="w-5 h-5" />
@@ -837,7 +827,7 @@ function PartsPageContent() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100 dark:divide-[var(--card-border)]">
-                  {sortedParts.map((part) => {
+                  {(data?.parts ?? []).map((part) => {
                     const qty = part.stock?.quantity ?? 0;
                     const lowStock = part.minStock > 0 && qty < part.minStock;
                     const isSelected = selectedIds.has(part.id);
@@ -1006,7 +996,7 @@ function PartsPageContent() {
       {showBatchMovement && (
         <BatchMovementModal
           type={batchMovementType}
-          parts={sortedParts.filter(p => selectedIds.has(p.id))}
+          parts={(data?.parts ?? []).filter(p => selectedIds.has(p.id))}
           onClose={() => setShowBatchMovement(false)}
           onSubmit={handleBatchMovement}
           processing={batchProcessing}

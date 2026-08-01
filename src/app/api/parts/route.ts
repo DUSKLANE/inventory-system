@@ -20,6 +20,8 @@ export async function GET(request: NextRequest) {
       lowStock: searchParams.get("lowStock") || undefined,
       page: searchParams.get("page") || "1",
       pageSize: searchParams.get("pageSize") || "20",
+      sortField: searchParams.get("sortField") || undefined,
+      sortOrder: (searchParams.get("sortOrder") as "asc" | "desc") || undefined,
     });
     const result = await db.listParts(filters);
     return NextResponse.json({

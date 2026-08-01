@@ -51,6 +51,12 @@ export default function PartFormModal({ part, onClose, onSaved }: PartFormModalP
           if (data.code) setForm((prev) => ({ ...prev, code: data.code }));
         })
         .catch(() => {});
+      fetch("/api/settings")
+        .then((res) => res.json())
+        .then((s) => {
+          if (s?.default_unit) setForm((prev) => ({ ...prev, unit: s.default_unit }));
+        })
+        .catch(() => {});
     }
   }, [isEdit]);
 

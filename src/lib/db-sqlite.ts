@@ -72,11 +72,12 @@ export class SqliteAdapter implements DatabaseAdapter {
   // ── Dashboard & Analytics ──
 
   async getDashboard(): Promise<DashboardData> {
+    const threshold = parseInt((await this.getSetting("low_stock_threshold")) || "10", 10);
     const todayStart = new Date();
     todayStart.setHours(0, 0, 0, 0);
     const today = todayStart.toISOString();
     const totalParts = (this.db.prepare("SELECT COUNT(*) as count FROM parts").get() as { count: number }).count;
-    const lowStockCount = (this.db.prepare("SELECT COUNT(*) as count FROM stock s JOIN parts p ON s.partId = p.id WHERE p.minStock > 0 AND s.quantity < p.minStock").get() as { count: number }).count;
+    const lowStockCount = (this.db.prepare("SELECT COUNT(*) as count FROM stock s JOIN parts p ON s.partId = p.id WHERE COALESCE(s.quantity, 0) < CASE WHEN p.minStock > 0 THEN p.minStock ELSE ? END").get(threshold) as { count: number }).count;
     const todayInCount = (this.db.prepare("SELECT COUNT(*) as count FROM stock_movements WHERE type = 'IN' AND createdAt >= ?").get(today) as { count: number }).count;
     const todayOutCount = (this.db.prepare("SELECT COUNT(*) as count FROM stock_movements WHERE type = 'OUT' AND createdAt >= ?").get(today) as { count: number }).count;
     const rawMovements = this.db.prepare("SELECT m.*, p.id as partId, p.code as partCode, p.name as partName, p.unit as partUnit FROM stock_movements m JOIN parts p ON p.id = m.partId ORDER BY m.createdAt DESC LIMIT 10").all() as Record<string, unknown>[];
@@ -86,11 +87,12 @@ export class SqliteAdapter implements DatabaseAdapter {
   }
 
   async getAlerts(): Promise<AlertsData> {
-    const lowStockParts = this.db.prepare("SELECT p.id, p.code, p.name, p.category, p.minStock, p.unit, COALESCE(s.quantity, 0) as currentStock, ROUND(COALESCE(s.quantity, 0) * 100.0 / NULLIF(p.minStock, 0), 1) as stockPercentage FROM parts p LEFT JOIN stock s ON s.partId = p.id WHERE p.minStock > 0 AND COALESCE(s.quantity, 0) < p.minStock ORDER BY (COALESCE(s.quantity, 0) * 1.0 / NULLIF(p.minStock, 0)) ASC").all() as Record<string, unknown>[];
+    const threshold = parseInt((await this.getSetting("low_stock_threshold")) || "10", 10);
+    const lowStockParts = this.db.prepare("SELECT p.id, p.code, p.name, p.category, p.minStock, p.unit, COALESCE(s.quantity, 0) as currentStock, ROUND(COALESCE(s.quantity, 0) * 100.0 / NULLIF(CASE WHEN p.minStock > 0 THEN p.minStock ELSE ? END, 0), 1) as stockPercentage FROM parts p LEFT JOIN stock s ON s.partId = p.id WHERE COALESCE(s.quantity, 0) < CASE WHEN p.minStock > 0 THEN p.minStock ELSE ? END ORDER BY (COALESCE(s.quantity, 0) * 1.0 / NULLIF(CASE WHEN p.minStock > 0 THEN p.minStock ELSE ? END, 0)) ASC").all(threshold, threshold, threshold) as Record<string, unknown>[];
     const outOfStockParts = this.db.prepare("SELECT p.id, p.code, p.name, p.category, p.unit FROM parts p LEFT JOIN stock s ON s.partId = p.id WHERE COALESCE(s.quantity, 0) = 0 ORDER BY p.updatedAt DESC LIMIT 20").all() as Record<string, unknown>[];
     const recentMovements = this.db.prepare("SELECT DATE(m.createdAt) as date, SUM(CASE WHEN m.type = 'IN' THEN m.quantity ELSE 0 END) as totalIn, SUM(CASE WHEN m.type = 'OUT' THEN m.quantity ELSE 0 END) as totalOut, COUNT(*) as movementCount FROM stock_movements m WHERE m.createdAt >= datetime('now', '-7 days') GROUP BY DATE(m.createdAt) ORDER BY date ASC").all() as Record<string, unknown>[];
     const activeParts = this.db.prepare("SELECT p.id, p.code, p.name, p.category, COUNT(m.id) as movementCount, SUM(CASE WHEN m.type = 'IN' THEN m.quantity ELSE 0 END) as totalIn, SUM(CASE WHEN m.type = 'OUT' THEN m.quantity ELSE 0 END) as totalOut FROM parts p JOIN stock_movements m ON m.partId = p.id WHERE m.createdAt >= datetime('now', '-30 days') GROUP BY p.id ORDER BY movementCount DESC LIMIT 10").all() as Record<string, unknown>[];
-    const stats = this.db.prepare("SELECT COUNT(*) as totalParts, SUM(CASE WHEN COALESCE(s.quantity, 0) = 0 THEN 1 ELSE 0 END) as outOfStockCount, SUM(CASE WHEN p.minStock > 0 AND COALESCE(s.quantity, 0) < p.minStock THEN 1 ELSE 0 END) as lowStockCount, SUM(CASE WHEN p.minStock > 0 AND COALESCE(s.quantity, 0) < p.minStock THEN 1 ELSE 0 END) as criticalCount FROM parts p LEFT JOIN stock s ON s.partId = p.id").get() as Record<string, number>;
+    const stats = this.db.prepare("SELECT COUNT(*) as totalParts, SUM(CASE WHEN COALESCE(s.quantity, 0) = 0 THEN 1 ELSE 0 END) as outOfStockCount, SUM(CASE WHEN COALESCE(s.quantity, 0) < CASE WHEN p.minStock > 0 THEN p.minStock ELSE ? END THEN 1 ELSE 0 END) as lowStockCount, SUM(CASE WHEN COALESCE(s.quantity, 0) < CASE WHEN p.minStock > 0 THEN p.minStock ELSE ? END THEN 1 ELSE 0 END) as criticalCount FROM parts p LEFT JOIN stock s ON s.partId = p.id").get(threshold, threshold) as Record<string, number>;
     return { lowStockParts, outOfStockParts, recentMovements, activeParts, stats: { totalParts: stats.totalParts || 0, outOfStockCount: stats.outOfStockCount || 0, lowStockCount: stats.lowStockCount || 0, criticalCount: stats.criticalCount || 0 } };
   }
 
@@ -118,12 +120,23 @@ export class SqliteAdapter implements DatabaseAdapter {
     if (filters.stockMin !== undefined) { where += " AND COALESCE(s.quantity, 0) >= ?"; params.push(filters.stockMin); }
     if (filters.stockMax !== undefined) { where += " AND COALESCE(s.quantity, 0) <= ?"; params.push(filters.stockMax); }
     if (filters.hasStock === true) { where += " AND COALESCE(s.quantity, 0) > 0"; }
-    if (filters.lowStock === true) { where += " AND p.minStock > 0 AND COALESCE(s.quantity, 0) < p.minStock"; }
+    if (filters.lowStock === true) {
+      const threshold = parseInt((await this.getSetting("low_stock_threshold")) || "10", 10);
+      where += " AND COALESCE(s.quantity, 0) < CASE WHEN p.minStock > 0 THEN p.minStock ELSE ? END";
+      params.push(threshold);
+    }
     const total = (this.db.prepare(`SELECT COUNT(*) as total FROM parts p LEFT JOIN stock s ON s.partId = p.id ${where}`).get(...params) as { total: number }).total;
     const page = filters.page || 1;
     const pageSize = filters.pageSize || 20;
     const offset = (page - 1) * pageSize;
-    const rawParts = this.db.prepare(`SELECT p.*, s.quantity as stockQuantity FROM parts p LEFT JOIN stock s ON s.partId = p.id ${where} ORDER BY p.updatedAt DESC LIMIT ? OFFSET ?`).all(...params, pageSize, offset) as Record<string, unknown>[];
+    const sortFieldMap: Record<string, string> = {
+      code: "p.code", name: "p.name", category: "p.category", brand: "p.brand",
+      stock: "COALESCE(s.quantity, 0)", location: "p.location", updatedAt: "p.updatedAt", createdAt: "p.createdAt",
+    };
+    const sortField = filters.sortField && sortFieldMap[filters.sortField] ? filters.sortField : "updatedAt";
+    const sortOrder = filters.sortOrder === "asc" ? "ASC" : "DESC";
+    const orderBy = `${sortFieldMap[sortField]} ${sortOrder}`;
+    const rawParts = this.db.prepare(`SELECT p.*, s.quantity as stockQuantity FROM parts p LEFT JOIN stock s ON s.partId = p.id ${where} ORDER BY ${orderBy} LIMIT ? OFFSET ?`).all(...params, pageSize, offset) as Record<string, unknown>[];
     const parts = rawParts.map(p => ({ ...p, stock: { quantity: (p.stockQuantity as number) ?? 0 } }));
     return { parts: parts as unknown as Part[], total };
   }
