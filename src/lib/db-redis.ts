@@ -3,6 +3,7 @@ import { randomUUID } from "crypto";
 import type {
   DatabaseAdapter, Part, PartDetail, Movement, Bom, BomItem, Warehouse, Category, Log,
   DashboardData, AlertsData, AnalyticsData, PartFilters, MovementFilters, LogFilters, BatchResult,
+  StockInUpsertItem, StockInUpsertResult,
 } from "./db";
 
 export class RedisAdapter implements DatabaseAdapter {
@@ -30,7 +31,9 @@ export class RedisAdapter implements DatabaseAdapter {
 
   async getDashboard(): Promise<DashboardData> {
     const { parts: allParts, stock: allStock, movements: allMovements } = await this.loadCache();
-    const today = new Date().toISOString().split("T")[0];
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const today = todayStart.toISOString();
     const totalParts = allParts.length;
     let lowStockCount = 0;
     for (const p of allParts) { const s = allStock.get(p.id); if (p.minStock > 0 && (s?.quantity ?? 0) < p.minStock) lowStockCount++; }
@@ -119,11 +122,11 @@ export class RedisAdapter implements DatabaseAdapter {
     const movements: Movement[] = [];
     if (partIds.length > 0 || movementIds.length > 0) {
       const pipe = this.redis.pipeline();
-      for (const id of partIds) { pipe.hgetall(`parts:${id}`); pipe.hget(`stock:${id}`, "quantity"); }
-      for (const mid of movementIds) { pipe.hgetall(`movements:${mid}`); }
+      partIds.forEach((id) => { pipe.hgetall(`parts:${id}`); pipe.hget(`stock:${id}`, "quantity"); });
+      movementIds.forEach((mid) => { pipe.hgetall(`movements:${mid}`); });
       const results = await this.safeExec(pipe);
       let idx = 0;
-      for (const id of partIds) {
+      partIds.forEach(() => {
         const partData = results[idx++] as Record<string, unknown> | null;
         const qty = results[idx++] as number | null;
         if (partData && partData.id) {
@@ -131,11 +134,11 @@ export class RedisAdapter implements DatabaseAdapter {
           parts.push(p);
           stock.set(p.id, { quantity: qty ?? 0 });
         }
-      }
-      for (const mid of movementIds) {
+      });
+      movementIds.forEach(() => {
         const mData = results[idx++] as Record<string, unknown> | null;
         if (mData && mData.id) { movements.push({ id: mData.id as string, partId: mData.partId as string, type: mData.type as string, quantity: Number(mData.quantity) || 0, operator: (mData.operator as string) || "", reason: (mData.reason as string) || "", code: (mData.code as string) || "", createdAt: (mData.createdAt as string) || "" }); }
-      }
+      });
     }
     this._cache = { parts, stock, movements };
     this._cacheTime = Date.now();
@@ -167,7 +170,7 @@ export class RedisAdapter implements DatabaseAdapter {
   async getPart(id: string): Promise<PartDetail | null> {
     const partData = await this.redis.hgetall(`parts:${id}`);
     if (!partData || !partData.id) return null;
-    const qty = await this.redis.hget(`stock:${id}`, "quantity") as number ?? 0;
+    const qty = Number(await this.redis.hget(`stock:${id}`, "quantity")) || 0;
     const movementIds = await this.redis.zrange(`movements_by_part:${id}`, 0, 49, { rev: true }) as string[];
     const pipe = this.redis.pipeline();
     for (const mid of movementIds) pipe.hgetall(`movements:${mid}`);
@@ -232,7 +235,13 @@ export class RedisAdapter implements DatabaseAdapter {
     for (const field of ["code", "name", "category", "package", "brand", "model", "unit", "minStock", "location", "note", "image"]) {
       if (data[field] !== undefined) updateData[field] = String(data[field]);
     }
-    await this.redis.hset(`parts:${id}`, updateData);
+    const pipe2 = this.redis.pipeline();
+    pipe2.hset(`parts:${id}`, updateData);
+    if (data.category !== undefined && data.category !== (existing.category as string)) {
+      if (existing.category) pipe2.srem(`parts_by_cat:${existing.category as string}`, id);
+      if (data.category) pipe2.sadd(`parts_by_cat:${data.category as string}`, id);
+    }
+    await this.safeExec(pipe2);
     this.invalidateCache();
     return (await this.getPart(id))!;
   }
@@ -252,10 +261,45 @@ export class RedisAdapter implements DatabaseAdapter {
     const fId = await this.redis.get(`fav_by_part:${id}`) as string | null;
     if (fId) { pipe.del(`favorites:${fId}`); pipe.del(`fav_by_part:${id}`); }
     await this.safeExec(pipe);
-    try { const { deleteImage } = require("./image-store"); deleteImage(id); } catch {}
+    await this.cleanupPartReferences(id);
     this.invalidateCache();
   }
 
+  // 级联删除 BOM 条目与仓库库存中对该器件的引用（等价于 SQLite 的 ON DELETE CASCADE）
+  private async cleanupPartReferences(partId: string): Promise<void> {
+    try {
+      await this.redis.eval(
+        `
+        local partId = KEYS[1]
+        local bomSets = redis.call('KEYS', 'bom_items_by_bom:*')
+        for i = 1, #bomSets do
+          local items = redis.call('SMEMBERS', bomSets[i])
+          for j = 1, #items do
+            if redis.call('HGET', 'bom_items:' .. items[j], 'partId') == partId then
+              redis.call('DEL', 'bom_items:' .. items[j])
+              redis.call('SREM', bomSets[i], items[j])
+            end
+          end
+        end
+        local whSets = redis.call('KEYS', 'stock_wh_by_wh:*')
+        for i = 1, #whSets do
+          local sids = redis.call('SMEMBERS', whSets[i])
+          for j = 1, #sids do
+            if redis.call('HGET', 'stock_wh:' .. sids[j], 'partId') == partId then
+              redis.call('DEL', 'stock_wh:' .. sids[j])
+              redis.call('SREM', whSets[i], sids[j])
+            end
+          end
+        end
+        return 1
+        `,
+        [partId],
+        []
+      );
+    } catch (e) {
+      console.error("Failed to cleanup part references:", e);
+    }
+  }
   // ── Movements ──
 
   async listMovements(filters: MovementFilters) {
@@ -272,21 +316,50 @@ export class RedisAdapter implements DatabaseAdapter {
   }
 
   async createMovement(data: Record<string, unknown>): Promise<{ id: string; newQuantity: number }> {
-    const partData = await this.redis.hgetall(`parts:${data.partId as string}`);
+    const partId = data.partId as string;
+    const partData = await this.redis.hgetall(`parts:${partId}`);
     if (!partData || !partData.id) throw new Error("器件不存在");
-    const currentQty = Number(await this.redis.hget(`stock:${data.partId as string}`, "quantity")) || 0;
-    let newQty: number;
-    if (data.type === "IN") { newQty = currentQty + (data.quantity as number); }
-    else if (data.type === "OUT") { if (currentQty < (data.quantity as number)) throw new Error(`库存不足，当前库存 ${currentQty}，出库数量 ${data.quantity}`); newQty = currentQty - (data.quantity as number); }
-    else { newQty = data.quantity as number; }
-    const movementId = randomUUID();
+
+    const quantity = data.quantity as number;
     const now = new Date().toISOString();
+
+    // 原子扣减/增加库存，防止并发读写竞争
+    const script = `
+      local current = tonumber(redis.call('HGET', KEYS[1], 'quantity') or '0')
+      local qty = tonumber(ARGV[1])
+      local newQty
+      if ARGV[2] == 'IN' then
+        newQty = current + qty
+      elseif ARGV[2] == 'OUT' then
+        if current < qty then return redis.error_reply('INSUFFICIENT_STOCK ' .. tostring(current)) end
+        newQty = current - qty
+      else
+        newQty = qty
+      end
+      redis.call('HSET', KEYS[1], 'quantity', tostring(newQty), 'updatedAt', ARGV[3])
+      return tostring(newQty)
+    `;
+    let newQty: number;
+    try {
+      const result = await this.redis.eval<string[], string>(
+        script,
+        [`stock:${partId}`],
+        [String(quantity), String(data.type), now]
+      );
+      newQty = Number(result);
+    } catch (e) {
+      const msg = (e as Error).message || "";
+      const match = msg.match(/INSUFFICIENT_STOCK (\d+)/);
+      if (match) throw new Error(`库存不足，当前库存 ${match[1]}，出库数量 ${quantity}`);
+      throw e;
+    }
+
+    const movementId = randomUUID();
     const pipe = this.redis.pipeline();
-    pipe.hset(`movements:${movementId}`, { id: movementId, partId: data.partId, type: data.type, quantity: String(data.quantity), operator: data.operator || "", reason: data.reason || "", code: data.code || "", createdAt: now });
+    pipe.hset(`movements:${movementId}`, { id: movementId, partId, type: data.type, quantity: String(quantity), operator: data.operator || "", reason: data.reason || "", code: data.code || "", createdAt: now });
     pipe.zadd("movements_index", { score: this.ts(now), member: movementId });
-    pipe.zadd(`movements_by_part:${data.partId as string}`, { score: this.ts(now), member: movementId });
-    pipe.hset(`stock:${data.partId as string}`, { quantity: String(newQty), updatedAt: now });
-    pipe.hset(`parts:${data.partId as string}`, { updatedAt: now });
+    pipe.zadd(`movements_by_part:${partId}`, { score: this.ts(now), member: movementId });
+    pipe.hset(`parts:${partId}`, { updatedAt: now });
     await this.safeExec(pipe);
     this.invalidateCache();
     return { id: movementId, newQuantity: newQty };
@@ -304,6 +377,13 @@ export class RedisAdapter implements DatabaseAdapter {
     if (updates.minStock !== undefined) updateData.minStock = String(updates.minStock);
     const pipe = this.redis.pipeline();
     for (const id of ids) pipe.hset(`parts:${id}`, updateData);
+    if (updates.category !== undefined) {
+      for (const id of ids) {
+        const oldCat = (await this.redis.hget(`parts:${id}`, "category")) as string | null;
+        if (oldCat && oldCat !== updates.category) pipe.srem(`parts_by_cat:${oldCat}`, id);
+        if (updates.category) pipe.sadd(`parts_by_cat:${updates.category}`, id);
+      }
+    }
     await this.safeExec(pipe);
     this.invalidateCache();
   }
@@ -321,6 +401,23 @@ export class RedisAdapter implements DatabaseAdapter {
 
   async backfillImages(): Promise<BatchResult> {
     return { results: [], successCount: 0, failCount: 0 };
+  }
+
+  async batchStockInUpsert(items: StockInUpsertItem[], operator?: string, reason?: string): Promise<StockInUpsertResult> {
+    const results: StockInUpsertResult["results"] = [];
+    for (const item of items) {
+      try {
+        let part = await this.getPartByCode(item.code);
+        if (!part) {
+          part = await this.createPart({ code: item.code, name: item.name, category: item.category, package: item.package, brand: item.brand, model: item.model, unit: item.unit, location: item.location });
+        }
+        const movement = await this.createMovement({ partId: part.id, type: "IN", quantity: item.quantity, operator, reason });
+        results.push({ code: item.code, partId: part.id, success: true, newQuantity: movement.newQuantity });
+      } catch (e) {
+        results.push({ code: item.code, partId: "", success: false, message: e instanceof Error ? e.message : "入库失败" });
+      }
+    }
+    return { results, successCount: results.filter(r => r.success).length, failCount: results.filter(r => !r.success).length };
   }
 
   // ── Favorites ──

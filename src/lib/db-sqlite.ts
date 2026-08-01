@@ -5,6 +5,7 @@ import { randomUUID } from "crypto";
 import type {
   DatabaseAdapter, Part, PartDetail, Movement, Bom, BomItem, Warehouse, Category, Log,
   DashboardData, AlertsData, AnalyticsData, PartFilters, MovementFilters, LogFilters, BatchResult,
+  StockInUpsertItem, StockInUpsertResult,
 } from "./db";
 
 export class SqliteAdapter implements DatabaseAdapter {
@@ -71,7 +72,9 @@ export class SqliteAdapter implements DatabaseAdapter {
   // ── Dashboard & Analytics ──
 
   async getDashboard(): Promise<DashboardData> {
-    const today = new Date().toISOString().split("T")[0];
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const today = todayStart.toISOString();
     const totalParts = (this.db.prepare("SELECT COUNT(*) as count FROM parts").get() as { count: number }).count;
     const lowStockCount = (this.db.prepare("SELECT COUNT(*) as count FROM stock s JOIN parts p ON s.partId = p.id WHERE p.minStock > 0 AND s.quantity < p.minStock").get() as { count: number }).count;
     const todayInCount = (this.db.prepare("SELECT COUNT(*) as count FROM stock_movements WHERE type = 'IN' AND createdAt >= ?").get(today) as { count: number }).count;
@@ -139,7 +142,7 @@ export class SqliteAdapter implements DatabaseAdapter {
   }
 
   async generateNextCode(): Promise<string> {
-    const row = this.db.prepare("SELECT code FROM parts WHERE code LIKE 'z%' OR code LIKE 'Z%' ORDER BY code DESC LIMIT 1").get() as { code: string } | undefined;
+    const row = this.db.prepare("SELECT code FROM parts WHERE code LIKE 'Z%' ORDER BY CAST(SUBSTR(code, 2) AS INTEGER) DESC LIMIT 1").get() as { code: string } | undefined;
     if (!row) return "Z0001";
     const num = parseInt(row.code.slice(1), 10);
     if (isNaN(num)) return "Z0001";
@@ -196,7 +199,6 @@ export class SqliteAdapter implements DatabaseAdapter {
 
   async deletePart(id: string): Promise<void> {
     this.db.prepare("DELETE FROM parts WHERE id = ?").run(id);
-    try { const { deleteImage } = require("./image-store"); deleteImage(id); } catch {}
   }
 
   // ── Movements ──
@@ -287,6 +289,46 @@ export class SqliteAdapter implements DatabaseAdapter {
 
   async backfillImages(): Promise<BatchResult> {
     return { results: [], successCount: 0, failCount: 0 };
+  }
+
+  async batchStockInUpsert(items: StockInUpsertItem[], operator?: string, reason?: string): Promise<StockInUpsertResult> {
+    const now = new Date().toISOString();
+    const results: StockInUpsertResult["results"] = [];
+    const seen = new Set<string>();
+    this.runInTransaction(() => {
+      for (const item of items) {
+        if (seen.has(item.code)) {
+          results.push({ code: item.code, partId: "", success: false, message: "同批重复编码" });
+          continue;
+        }
+        seen.add(item.code);
+        try {
+          const existing = this.db.prepare("SELECT p.*, s.quantity as stockQuantity FROM parts p LEFT JOIN stock s ON s.partId = p.id WHERE p.code = ?").get(item.code) as Record<string, unknown> | undefined;
+          let partId: string;
+          let currentQty: number;
+          if (existing) {
+            partId = existing.id as string;
+            currentQty = (existing.stockQuantity as number) ?? 0;
+          } else {
+            const id = randomUUID();
+            this.db.prepare("INSERT INTO parts (id, code, name, category, package, brand, model, unit, minStock, location, note, image, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, ?, '', '', ?, ?)").run(
+              id, item.code, item.name, item.category || "", item.package || "", item.brand || "", item.model || "", item.unit || "pcs", item.location || "", now, now
+            );
+            this.db.prepare("INSERT INTO stock (id, partId, quantity) VALUES (?, ?, 0)").run(randomUUID(), id);
+            partId = id;
+            currentQty = 0;
+          }
+          const newQty = currentQty + item.quantity;
+          this.db.prepare("INSERT INTO stock_movements (id, partId, type, quantity, operator, reason, code, createdAt) VALUES (?, ?, 'IN', ?, ?, ?, '', ?)").run(randomUUID(), partId, item.quantity, operator || "", reason || "扫码入库", now);
+          this.db.prepare("UPDATE stock SET quantity = ?, updatedAt = ? WHERE partId = ?").run(newQty, now, partId);
+          this.db.prepare("UPDATE parts SET updatedAt = ? WHERE id = ?").run(now, partId);
+          results.push({ code: item.code, partId, success: true, newQuantity: newQty });
+        } catch (e) {
+          results.push({ code: item.code, partId: "", success: false, message: e instanceof Error ? e.message : "入库失败" });
+        }
+      }
+    });
+    return { results, successCount: results.filter(r => r.success).length, failCount: results.filter(r => !r.success).length };
   }
 
   // ── Favorites ──
@@ -517,5 +559,9 @@ export class SqliteAdapter implements DatabaseAdapter {
       }
     });
     return { imported, skipped, errors: errors.slice(0, 10) };
+  }
+
+  close(): void {
+    this.db.close();
   }
 }

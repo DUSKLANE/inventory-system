@@ -150,6 +150,24 @@ export interface BatchResult {
   failCount: number;
 }
 
+export interface StockInUpsertItem {
+  code: string;
+  name: string;
+  category?: string;
+  package?: string;
+  brand?: string;
+  model?: string;
+  unit?: string;
+  location?: string;
+  quantity: number;
+}
+
+export interface StockInUpsertResult {
+  results: Array<{ code: string; partId: string; success: boolean; message?: string; newQuantity?: number }>;
+  successCount: number;
+  failCount: number;
+}
+
 // ── Database Adapter Interface ──
 
 export interface DatabaseAdapter {
@@ -173,6 +191,7 @@ export interface DatabaseAdapter {
   batchDelete(ids: string[]): Promise<void>;
   batchUpdate(ids: string[], updates: Record<string, unknown>): Promise<void>;
   batchMovement(items: Array<{ partId: string; quantity: number }>, type: "IN" | "OUT", operator?: string, reason?: string): Promise<BatchResult>;
+  batchStockInUpsert(items: StockInUpsertItem[], operator?: string, reason?: string): Promise<StockInUpsertResult>;
   backfillImages(ids: string[]): Promise<BatchResult>;
 
   // Favorites
@@ -229,9 +248,11 @@ export function getDb(): DatabaseAdapter {
   if (!_db) {
     const mode = getStorageMode();
     if (mode === "cloud") {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports -- 懒加载避免启动时加载 Upstash 依赖
       const { RedisAdapter } = require("./db-redis") as typeof import("./db-redis");
       _db = new RedisAdapter();
     } else {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports -- 懒加载避免启动时加载 sqlite 依赖
       const { SqliteAdapter } = require("./db-sqlite") as typeof import("./db-sqlite");
       _db = new SqliteAdapter();
     }
