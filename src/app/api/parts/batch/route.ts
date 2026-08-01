@@ -18,6 +18,7 @@ const stockInUpsertSchema = z.object({
     model: z.string().optional().default(""),
     unit: z.string().optional().default("pcs"),
     location: z.string().optional().default(""),
+    orderCode: z.string().optional().default(""),
     quantity: z.number().int().positive(),
   })).min(1),
   reason: z.string().optional(),

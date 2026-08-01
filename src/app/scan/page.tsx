@@ -282,6 +282,7 @@ export default function ScanPage() {
             model: item.productInfo?.model || item.scanData.pm || "",
             unit: (item.productInfo as { unit?: string } | null)?.unit || "pcs",
             location: item.location,
+            orderCode: item.scanData.on || "",
             quantity: item.quantity,
           })),
         }),

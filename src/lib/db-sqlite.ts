@@ -319,7 +319,7 @@ export class SqliteAdapter implements DatabaseAdapter {
             currentQty = 0;
           }
           const newQty = currentQty + item.quantity;
-          this.db.prepare("INSERT INTO stock_movements (id, partId, type, quantity, operator, reason, code, createdAt) VALUES (?, ?, 'IN', ?, ?, ?, '', ?)").run(randomUUID(), partId, item.quantity, operator || "", reason || "扫码入库", now);
+          this.db.prepare("INSERT INTO stock_movements (id, partId, type, quantity, operator, reason, code, createdAt) VALUES (?, ?, 'IN', ?, ?, ?, ?, ?)").run(randomUUID(), partId, item.quantity, operator || "", reason || "扫码入库", item.orderCode || "", now);
           this.db.prepare("UPDATE stock SET quantity = ?, updatedAt = ? WHERE partId = ?").run(newQty, now, partId);
           this.db.prepare("UPDATE parts SET updatedAt = ? WHERE id = ?").run(now, partId);
           results.push({ code: item.code, partId, success: true, newQuantity: newQty });

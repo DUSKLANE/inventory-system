@@ -160,6 +160,7 @@ export interface StockInUpsertItem {
   unit?: string;
   location?: string;
   quantity: number;
+  orderCode?: string;
 }
 
 export interface StockInUpsertResult {

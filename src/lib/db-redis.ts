@@ -411,7 +411,7 @@ export class RedisAdapter implements DatabaseAdapter {
         if (!part) {
           part = await this.createPart({ code: item.code, name: item.name, category: item.category, package: item.package, brand: item.brand, model: item.model, unit: item.unit, location: item.location });
         }
-        const movement = await this.createMovement({ partId: part.id, type: "IN", quantity: item.quantity, operator, reason });
+        const movement = await this.createMovement({ partId: part.id, type: "IN", quantity: item.quantity, operator, reason, code: item.orderCode || "" });
         results.push({ code: item.code, partId: part.id, success: true, newQuantity: movement.newQuantity });
       } catch (e) {
         results.push({ code: item.code, partId: "", success: false, message: e instanceof Error ? e.message : "入库失败" });
