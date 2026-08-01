@@ -56,12 +56,12 @@ function StockMovementContent({ mode }: { mode: Mode }) {
   const [username, setUsername] = useState("");
 
   useEffect(() => {
+    let cancelled = false;
     fetch("/api/auth/me")
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.username) setUsername(data.username);
-      })
+      .then((res) => (res.ok ? res.json() : Promise.reject()))
+      .then((data) => { if (!cancelled) setUsername(data.username || ""); })
       .catch(() => {});
+    return () => { cancelled = true; };
   }, []);
 
   const lookupPart = useCallback(async (codeToLookup: string) => {
