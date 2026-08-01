@@ -66,6 +66,11 @@ export default function ScanPage() {
     }
   }, [pendingItems, mounted]);
 
+  const pendingItemsRef = useRef<PendingItem[]>([]);
+  useEffect(() => {
+    pendingItemsRef.current = pendingItems;
+  });
+
   const lastScanRef = useRef<{ code: string; time: number }>({ code: "", time: 0 });
 
   const processScanData = useCallback(async (raw: string) => {
@@ -75,13 +80,35 @@ export default function ScanPage() {
     }
 
     const now = Date.now();
-    if (lastScanRef.current.code === scanData.pc && now - lastScanRef.current.time < 1500) {
+    const sameCode = lastScanRef.current.code === scanData.pc;
+    const gap = now - lastScanRef.current.time;
+    lastScanRef.current = { code: scanData.pc, time: now };
+    if (sameCode && gap < 1000) {
       return;
     }
-    lastScanRef.current = { code: scanData.pc, time: now };
 
     const scanQty = parseInt(scanData.qty || "1", 10) || 1;
+
+    if (pendingItemsRef.current.some((item) => item.scanData.pc === scanData.pc)) {
+      setPendingItems((prev) =>
+        prev.map((item) =>
+          item.scanData.pc === scanData.pc
+            ? { ...item, quantity: item.quantity + scanQty }
+            : item
+        )
+      );
+      return;
+    }
+
     const itemId = Date.now().toString() + Math.random().toString(36).slice(2);
+    const newItem: PendingItem = {
+      id: itemId,
+      scanData,
+      productInfo: null,
+      status: "loading",
+      quantity: scanQty,
+      location: "",
+    };
 
     setPendingItems((prev) => {
       const existing = prev.find((item) => item.scanData.pc === scanData.pc);
@@ -92,14 +119,6 @@ export default function ScanPage() {
             : item
         );
       }
-      const newItem: PendingItem = {
-        id: itemId,
-        scanData,
-        productInfo: null,
-        status: "loading",
-        quantity: scanQty,
-        location: "",
-      };
       return [newItem, ...prev];
     });
 
