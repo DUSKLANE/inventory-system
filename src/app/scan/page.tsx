@@ -266,98 +266,49 @@ export default function ScanPage() {
     setIsSubmitting(true);
     setSubmitResult(null);
 
-    let success = 0;
-    let failed = 0;
-    const succeededIds: string[] = [];
-    const failedIds: string[] = [];
-
-    for (const item of readyItems) {
-      try {
-        let partId: string;
-
-        if (item.existingPartId) {
-          // 已有零件，直接使用
-          partId = item.existingPartId;
-        } else {
-          // 查找或创建零件
-          const lookupRes = await fetch(`/api/parts/lookup?code=${item.scanData.pc}`);
-          const lookupData = await lookupRes.json();
-
-          if (lookupRes.ok && lookupData.found) {
-            partId = lookupData.part.id;
-          } else if (lookupRes.ok) {
-            const createRes = await fetch("/api/parts", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                code: item.scanData.pc,
-                name: item.customName || item.productInfo?.name || item.scanData.pm || "",
-                model: item.productInfo?.model || item.scanData.pm || "",
-                brand: item.productInfo?.brand || "",
-                package: item.productInfo?.package || "",
-                category: item.productInfo?.category || "",
-                location: item.location,
-                image: item.productInfo?.image || "",
-              }),
-            });
-
-            if (!createRes.ok) {
-              failed++;
-              failedIds.push(item.id);
-              continue;
-            }
-
-            const createdPart = await createRes.json();
-            partId = createdPart.id;
-          } else {
-            failed++;
-            failedIds.push(item.id);
-            continue;
-          }
-        }
-
-        const stockRes = await fetch("/api/movements", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            partId,
-            type: "IN",
+    try {
+      const res = await fetch("/api/parts/batch", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "stock-in-upsert",
+          reason: "扫码入库",
+          items: readyItems.map((item) => ({
+            code: item.scanData.pc!,
+            name: item.customName || item.productInfo?.name || item.scanData.pm || item.scanData.pc!,
+            category: item.productInfo?.category || "",
+            package: item.productInfo?.package || "",
+            brand: item.productInfo?.brand || "",
+            model: item.productInfo?.model || item.scanData.pm || "",
+            unit: (item.productInfo as { unit?: string } | null)?.unit || "pcs",
+            location: item.location,
             quantity: item.quantity,
-            reason: "扫码入库",
-            code: item.scanData.on || "",
-          }),
-        });
+          })),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "批量入库失败");
 
-        if (stockRes.ok) {
-          success++;
-          succeededIds.push(item.id);
-        } else {
-          failed++;
-          failedIds.push(item.id);
-        }
-      } catch {
-        failed++;
-        failedIds.push(item.id);
-      }
-    }
-
-    setIsSubmitting(false);
-    setSubmitResult({
-      success,
-      failed,
-      message: `入库完成：成功 ${success} 件${failed > 0 ? `，失败 ${failed} 件` : ""}`,
-    });
-
-    if (succeededIds.length > 0) {
-      setPendingItems((prev) =>
-        prev
-          .filter((item) => !succeededIds.includes(item.id))
-          .map((item) =>
-            failedIds.includes(item.id)
-              ? { ...item, status: "error" as const, errorMessage: "入库失败，请重试" }
-              : item
-          )
+      const successCodes = new Set(
+        (data.results ?? []).filter((r: { success: boolean }) => r.success).map((r: { code: string }) => r.code)
       );
+      const okIds = new Set(
+        readyItems.filter((item) => successCodes.has(item.scanData.pc)).map((item) => item.id)
+      );
+
+      setSubmitResult({
+        success: data.successCount,
+        failed: data.failCount,
+        message: `入库完成：成功 ${data.successCount} 件${data.failCount > 0 ? `，失败 ${data.failCount} 件` : ""}`,
+      });
+
+      if (okIds.size > 0) {
+        setPendingItems((prev) => prev.filter((item) => !okIds.has(item.id)));
+      }
+    } catch {
+      setSubmitResult({ success: 0, failed: readyItems.length, message: "批量入库失败，请重试" });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
