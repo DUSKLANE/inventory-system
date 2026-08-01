@@ -33,6 +33,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error("GET /api/parts error:", error);
+    if (error instanceof Error && error.name === "ZodError") return NextResponse.json({ error: "参数校验失败", details: error.message }, { status: 400 });
     return NextResponse.json({ error: "获取器件列表失败" }, { status: 500 });
   }
 }

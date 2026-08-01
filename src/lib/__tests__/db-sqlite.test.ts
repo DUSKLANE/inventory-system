@@ -90,7 +90,7 @@ describe("listParts sorting", () => {
     const r = await db.listParts({ sortField: "id); DROP TABLE parts;--", sortOrder: "desc" });
     expect(r.parts.map(p => p.code).sort()).toEqual(["Z0001", "Z0002"]);
     expect(r.total).toBe(2);
-    expect(db.getPartByCode("Z0001")).toBeDefined();
+    expect(await db.getPartByCode("Z0001")).toBeDefined();
   });
 
   it("排序与分页同时生效", async () => {

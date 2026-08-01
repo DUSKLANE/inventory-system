@@ -12,7 +12,12 @@ const ConfirmContext = createContext<ConfirmFn>(() => Promise.resolve(false));
 export function ConfirmProvider({ children }: { children: ReactNode }) {
   const [pending, setPending] = useState<PendingConfirm | null>(null);
   const confirmDialog = useCallback<ConfirmFn>((options) => {
-    return new Promise<boolean>((resolve) => setPending({ ...options, resolve }));
+    return new Promise<boolean>((resolve) => {
+      setPending((prev) => {
+        if (prev) prev.resolve(false);
+        return { ...options, resolve };
+      });
+    });
   }, []);
 
   const close = (result: boolean) => {

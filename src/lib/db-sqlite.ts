@@ -77,7 +77,7 @@ export class SqliteAdapter implements DatabaseAdapter {
     todayStart.setHours(0, 0, 0, 0);
     const today = todayStart.toISOString();
     const totalParts = (this.db.prepare("SELECT COUNT(*) as count FROM parts").get() as { count: number }).count;
-    const lowStockCount = (this.db.prepare("SELECT COUNT(*) as count FROM stock s JOIN parts p ON s.partId = p.id WHERE COALESCE(s.quantity, 0) < CASE WHEN p.minStock > 0 THEN p.minStock ELSE ? END").get(threshold) as { count: number }).count;
+    const lowStockCount = (this.db.prepare("SELECT COUNT(*) as count FROM parts p LEFT JOIN stock s ON s.partId = p.id WHERE COALESCE(s.quantity, 0) < CASE WHEN p.minStock > 0 THEN p.minStock ELSE ? END").get(threshold) as { count: number }).count;
     const todayInCount = (this.db.prepare("SELECT COUNT(*) as count FROM stock_movements WHERE type = 'IN' AND createdAt >= ?").get(today) as { count: number }).count;
     const todayOutCount = (this.db.prepare("SELECT COUNT(*) as count FROM stock_movements WHERE type = 'OUT' AND createdAt >= ?").get(today) as { count: number }).count;
     const rawMovements = this.db.prepare("SELECT m.*, p.id as partId, p.code as partCode, p.name as partName, p.unit as partUnit FROM stock_movements m JOIN parts p ON p.id = m.partId ORDER BY m.createdAt DESC LIMIT 10").all() as Record<string, unknown>[];

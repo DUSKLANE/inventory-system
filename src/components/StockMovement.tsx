@@ -7,6 +7,7 @@ import QRScanner from "@/components/QRScanner";
 import { Search, ArrowDownToLine, ArrowUpFromLine, Check, AlertTriangle, Loader2, Package, User, FileText, CheckCircle2, XCircle, ScanBarcode } from "lucide-react";
 import Breadcrumb from "@/components/Breadcrumb";
 import NumberInput from "@/components/NumberInput";
+import { extractPartCode } from "@/lib/parse-qr";
 
 interface Part {
   id: string;
@@ -92,19 +93,7 @@ function StockMovementContent({ mode }: { mode: Mode }) {
 
   const handleScan = (scannedCode: string) => {
     setShowScanner(false);
-    // 解析嘉立创二维码，提取 pc 字段
-    let codeToLookup = scannedCode.trim();
-    if (codeToLookup.startsWith("{") && codeToLookup.endsWith("}")) {
-      const inner = codeToLookup.slice(1, -1);
-      const pairs = inner.split(",");
-      for (const pair of pairs) {
-        const [key, ...valueParts] = pair.split(":");
-        if (key?.trim() === "pc" && valueParts.length > 0) {
-          codeToLookup = valueParts.join(":").trim();
-          break;
-        }
-      }
-    }
+    const codeToLookup = extractPartCode(scannedCode);
     setCode(codeToLookup);
     lookupPart(codeToLookup);
   };

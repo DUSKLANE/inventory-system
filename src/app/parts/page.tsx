@@ -121,6 +121,27 @@ function PartsPageContent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedSearch, category, brand, stockMin, stockMax, lowStockOnly, hasStockOnly, page, pageSize, sortField, sortDirection]);
 
+  // Restore filter/sort/pagination state from URL on browser back/forward
+  useEffect(() => {
+    const onPopState = () => {
+      const sp = new URLSearchParams(window.location.search);
+      setSearch(sp.get("q") || "");
+      setDebouncedSearch(sp.get("q") || "");
+      setCategory(sp.get("category") || "");
+      setBrand(sp.get("brand") || "");
+      setStockMin(sp.get("stockMin") || "");
+      setStockMax(sp.get("stockMax") || "");
+      setLowStockOnly(sp.get("lowStock") === "true");
+      setHasStockOnly(sp.get("hasStock") === "true");
+      setPage(Number(sp.get("page")) || 1);
+      setPageSize(Number(sp.get("pageSize")) || 20);
+      setSortField((sp.get("sortField") as SortField) || "name");
+      setSortDirection((sp.get("sortOrder") as SortDirection) || "asc");
+    };
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, []);
+
   // Search debounce
   useEffect(() => {
     if (searchTimeoutRef.current) {
