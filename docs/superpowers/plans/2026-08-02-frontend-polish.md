@@ -994,7 +994,7 @@ git commit -m "style: 出入库页模式 Tab/弹窗输入/勾选框/结果条令
 
 - [ ] **Step 2: movements 筛选 chip**
 
-chip 搜索结果行（173 行区域）：`rounded-xl border hover:border-blue-300 dark:hover:border-blue-500/50 hover:bg-blue-50/50 dark:hover:bg-blue-500/10` → `rounded-lg border hover:border-[var(--accent)] hover:bg-[var(--accent-subtle)] transition-colors`。
+chip 搜索结果行（173 行区域）：`rounded-xl border hover:border-blue-300 dark:hover:border-blue-500/50 hover:bg-blue-50/50 dark:hover:bg-blue-500/10` → `rounded-lg border border-[var(--card-border)] hover:border-[var(--accent)] hover:bg-[var(--accent-subtle)] transition-colors`（**必须显式指定边框色**——Tailwind v4 裸 `border` 默认 currentColor，浅色下为近黑）。
 
 - [ ] **Step 3: logs 灰渐变页头清理**
 
