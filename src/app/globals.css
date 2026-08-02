@@ -303,7 +303,7 @@ mark {
 /* Main content layout */
 .main-content {
   margin-left: 0;
-  padding: 0 12px 56px;
+  padding: 0 12px;
 }
 
 @media (min-width: 768px) {

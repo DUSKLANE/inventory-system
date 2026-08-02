@@ -605,7 +605,7 @@ function PartsPageContent() {
                       type="checkbox"
                       checked={lowStockOnly}
                       onChange={(e) => { setLowStockOnly(e.target.checked); setPage(1); }}
-                      className="w-4 h-4 text-blue-600 border-gray-300 dark:border-[var(--card-border)] rounded focus:ring-blue-500"
+                      className="w-4 h-4 text-blue-600 border-gray-300 dark:border-[var(--card-border)] rounded"
                     />
                     <span className="text-sm text-gray-700 dark:text-[var(--foreground-muted)]">仅低库存</span>
                   </label>
@@ -614,7 +614,7 @@ function PartsPageContent() {
                       type="checkbox"
                       checked={hasStockOnly}
                       onChange={(e) => { setHasStockOnly(e.target.checked); setPage(1); }}
-                      className="w-4 h-4 text-blue-600 border-gray-300 dark:border-[var(--card-border)] rounded focus:ring-blue-500"
+                      className="w-4 h-4 text-blue-600 border-gray-300 dark:border-[var(--card-border)] rounded"
                     />
                     <span className="text-sm text-gray-700 dark:text-[var(--foreground-muted)]">仅有库存</span>
                   </label>

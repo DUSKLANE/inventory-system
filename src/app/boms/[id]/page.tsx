@@ -245,13 +245,13 @@ export default function BomDetailPage() {
                 <input
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-50 dark:bg-[var(--background-subtle)] border border-gray-200 dark:border-[var(--card-border)] rounded-lg text-lg font-semibold text-gray-900 dark:text-[var(--card-foreground)] focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-3 bg-gray-50 dark:bg-[var(--background-subtle)] border border-gray-200 dark:border-[var(--card-border)] rounded-lg text-lg font-semibold text-gray-900 dark:text-[var(--card-foreground)] focus:outline-none"
                   placeholder="BOM名称"
                 />
                 <textarea
                   value={editDescription}
                   onChange={(e) => setEditDescription(e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-50 dark:bg-[var(--background-subtle)] border border-gray-200 dark:border-[var(--card-border)] rounded-lg text-sm text-gray-900 dark:text-[var(--card-foreground)] focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                  className="w-full px-4 py-3 bg-gray-50 dark:bg-[var(--background-subtle)] border border-gray-200 dark:border-[var(--card-border)] rounded-lg text-sm text-gray-900 dark:text-[var(--card-foreground)] focus:outline-none resize-none"
                   rows={2}
                   placeholder="描述（可选）"
                 />
@@ -275,26 +275,25 @@ export default function BomDetailPage() {
           <div className="flex gap-3">
             {editing ? (
               <>
-                <button
+                <Button
+                  variant="outline"
                   onClick={() => setShowAddPart(true)}
-                  className="px-5 py-3 border border-blue-200 dark:border-blue-500/30 text-blue-600 dark:text-blue-400 rounded-lg text-sm font-medium hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-all flex items-center gap-2"
                 >
                   <Plus className="w-4 h-4" /> 添加器件
-                </button>
+                </Button>
                 <button
                   onClick={handleCancelEdit}
                   className="px-5 py-3 border border-gray-200 dark:border-[var(--card-border)] text-gray-700 dark:text-[var(--foreground-muted)] rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-[var(--background-subtle)] transition-all"
                 >
                   取消
                 </button>
-                <button
+                <Button
                   onClick={handleSave}
                   disabled={saving}
-                  className="px-5 py-3 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-all disabled:opacity-50 flex items-center gap-2"
                 >
                   {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                   保存
-                </button>
+                </Button>
               </>
             ) : (
               <>
@@ -310,12 +309,11 @@ export default function BomDetailPage() {
                 >
                   <ArrowUpFromLine className="w-4 h-4" /> 领料出库
                 </button>
-                <button
+                <Button
                   onClick={() => { setEditing(true); setShowAddPart(true); }}
-                  className="px-5 py-3 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-all flex items-center gap-2"
                 >
                   <Plus className="w-4 h-4" /> 添加器件
-                </button>
+                </Button>
               </>
             )}
           </div>
@@ -475,17 +473,16 @@ export default function BomDetailPage() {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                    className="w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-[var(--background-subtle)] border border-gray-200 dark:border-[var(--card-border)] rounded-lg text-sm text-gray-900 dark:text-[var(--card-foreground)] focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-[var(--background-subtle)] border border-gray-200 dark:border-[var(--card-border)] rounded-lg text-sm text-gray-900 dark:text-[var(--card-foreground)] focus:outline-none"
                     placeholder="搜索器件名称或编码"
                   />
                 </div>
-                <button
+                <Button
                   onClick={handleSearch}
                   disabled={searching}
-                  className="px-5 py-3 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
                 >
                   {searching ? <Loader2 className="w-4 h-4 animate-spin" /> : "搜索"}
-                </button>
+                </Button>
               </div>
             </div>
 

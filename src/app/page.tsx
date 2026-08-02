@@ -228,7 +228,7 @@ export default function Home() {
                 router.push(`/parts?q=${encodeURIComponent(searchQuery.trim())}`);
               }
             }}
-            className="w-full pl-16 pr-32 py-5 bg-white dark:bg-[var(--card)] rounded-lg border border-gray-200/80 dark:border-[var(--card-border)] text-base text-gray-900 dark:text-[var(--card-foreground)] placeholder-gray-400 dark:placeholder-[var(--foreground-subtle)] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent hover:border-blue-300 hover:shadow-lg dark:hover:border-blue-700 transition-all duration-300"
+            className="w-full pl-16 pr-32 py-5 bg-white dark:bg-[var(--card)] rounded-lg border border-gray-200/80 dark:border-[var(--card-border)] text-base text-gray-900 dark:text-[var(--card-foreground)] placeholder-gray-400 dark:placeholder-[var(--foreground-subtle)] focus:outline-none focus:border-transparent hover:border-blue-300 hover:shadow-lg dark:hover:border-blue-700 transition-all duration-300"
             placeholder="搜索器件名称、编码、品牌... 按回车搜索"
           />
           {searchQuery && (

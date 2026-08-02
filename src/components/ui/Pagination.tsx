@@ -25,7 +25,7 @@ export function Pagination({
 
   const goToPage = () => {
     const p = parseInt(jump, 10);
-    if (Number.isFinite(p) && p >= 1) onPageChange(Math.min(p, totalPages));
+    if (Number.isFinite(p) && p >= 1) onPageChange(Math.min(p, Math.max(1, totalPages)));
     setJump("");
   };
 
@@ -58,7 +58,7 @@ export function Pagination({
           上一页
         </button>
         <span className="text-sm text-[var(--foreground-subtle)]">
-          第 {page} / {totalPages} 页
+          第 {page} / {Math.max(1, totalPages)} 页
         </span>
         <button
           className={btn}

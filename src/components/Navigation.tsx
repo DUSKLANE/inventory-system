@@ -55,7 +55,7 @@ export default function Navigation() {
   return (
     <>
       {/* Desktop sidebar */}
-      <aside className="hidden md:flex fixed left-0 top-0 h-screen w-60 flex-col bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border-r border-gray-200/80 dark:border-gray-700/80 z-40 shadow-[1px_0_12px_rgba(0,0,0,0.05)]">
+      <aside className="hidden md:flex fixed left-0 top-0 h-screen w-60 flex-col bg-white/90 dark:bg-[var(--background)]/90 backdrop-blur-xl border-r border-gray-200/80 dark:border-gray-700/80 z-40 shadow-[1px_0_12px_rgba(0,0,0,0.05)]">
         {/* Logo area */}
         <div className="px-5 py-6 border-b border-[var(--card-border)]">
           <div className="flex items-center gap-3">
@@ -159,7 +159,7 @@ export default function Navigation() {
       </aside>
 
       {/* Mobile bottom tab bar */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-t border-gray-200/80 dark:border-gray-700/80 z-40 safe-area-pb shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-[var(--background)]/95 backdrop-blur-xl border-t border-gray-200/80 dark:border-gray-700/80 z-40 safe-area-pb shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
         <div className="flex justify-around items-center h-14">
           {mobileLinks.map((link) => {
             const isMore = link.href === "#";
@@ -197,7 +197,7 @@ export default function Navigation() {
         
         {/* More menu popup */}
         {showMoreMenu && (
-          <div className="absolute bottom-full left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 shadow-lg rounded-t-lg p-4 pb-6">
+          <div className="absolute bottom-full left-0 right-0 bg-white dark:bg-[var(--background)] border-t border-gray-200 dark:border-gray-700 shadow-lg rounded-t-lg p-4 pb-6">
             <div className="grid grid-cols-4 gap-3">
               {moreMenuLinks.map((link) => {
                 const Icon = link.icon;
