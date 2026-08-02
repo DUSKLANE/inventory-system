@@ -1069,7 +1069,7 @@ function PartsPageContent() {
                 total={data.total}
                 pageSize={pageSize}
                 onPageChange={(p) => setPage(p)}
-                onPageSizeChange={(s) => setPageSize(s)}
+                onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
               />
             )}
           </>
