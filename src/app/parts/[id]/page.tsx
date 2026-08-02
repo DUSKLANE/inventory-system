@@ -341,6 +341,7 @@ export default function PartDetailPage() {
           <button
             onClick={() => setShowImageModal(false)}
             className="absolute top-4 right-4 p-2 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors"
+            aria-label="关闭"
           >
             <X className="w-6 h-6" />
           </button>

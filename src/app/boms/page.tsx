@@ -106,12 +106,14 @@ export default function BomsPage() {
                   <button
                     onClick={() => router.push(`/boms/${bom.id}`)}
                     className="p-2 text-gray-400 dark:text-[var(--foreground-subtle)] hover:text-[var(--accent)] hover:bg-[var(--accent-subtle)] rounded-lg transition-all"
+                    aria-label="查看"
                   >
                     <Eye className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => handleDelete(bom.id, bom.name)}
                     className="p-2 text-gray-400 dark:text-[var(--foreground-subtle)] hover:text-[var(--error)] hover:bg-[var(--error-subtle)] rounded-lg transition-all"
+                    aria-label="删除"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>

@@ -499,6 +499,7 @@ function PartsPageContent() {
               <button
                 onClick={() => { setSearch(""); setPage(1); }}
                 className="absolute right-4 top-1/2 -translate-y-1/2 p-1.5 text-gray-400 dark:text-[var(--foreground-subtle)] hover:text-gray-600 dark:hover:text-[var(--foreground-muted)] hover:bg-gray-100 dark:hover:bg-[var(--background-muted)] rounded-lg transition-all duration-200"
+                aria-label="清除搜索"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -653,6 +654,7 @@ function PartsPageContent() {
                       <button
                         onClick={() => deleteSavedSearch(i)}
                         className="ml-1 text-gray-400 dark:text-[var(--foreground-subtle)] hover:text-red-500"
+                        aria-label="删除已保存搜索"
                       >
                         <X className="w-3 h-3" />
                       </button>
@@ -671,7 +673,7 @@ function PartsPageContent() {
             {search && (
               <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-[var(--accent-subtle)] text-[var(--accent)] rounded-lg text-xs">
                 搜索: {search}
-                <button onClick={() => setSearch("")} className="hover:text-[var(--accent-hover)]">
+                <button onClick={() => setSearch("")} className="hover:text-[var(--accent-hover)]" aria-label="清除搜索筛选">
                   <X className="w-3 h-3" />
                 </button>
               </span>
@@ -679,7 +681,7 @@ function PartsPageContent() {
             {category && (
               <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-[var(--accent-subtle)] text-[var(--accent)] rounded-lg text-xs">
                 分类: {category}
-                <button onClick={() => setCategory("")} className="hover:text-[var(--accent-hover)]">
+                <button onClick={() => setCategory("")} className="hover:text-[var(--accent-hover)]" aria-label="清除分类筛选">
                   <X className="w-3 h-3" />
                 </button>
               </span>
@@ -687,7 +689,7 @@ function PartsPageContent() {
             {brand && (
               <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-[var(--accent-subtle)] text-[var(--accent)] rounded-lg text-xs">
                 品牌: {brand}
-                <button onClick={() => setBrand("")} className="hover:text-[var(--accent-hover)]">
+                <button onClick={() => setBrand("")} className="hover:text-[var(--accent-hover)]" aria-label="清除品牌筛选">
                   <X className="w-3 h-3" />
                 </button>
               </span>
@@ -695,7 +697,7 @@ function PartsPageContent() {
             {lowStockOnly && (
               <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 rounded-lg text-xs">
                 低库存
-                <button onClick={() => setLowStockOnly(false)} className="hover:text-amber-900 dark:hover:text-amber-300">
+                <button onClick={() => setLowStockOnly(false)} className="hover:text-amber-900 dark:hover:text-amber-300" aria-label="清除低库存筛选">
                   <X className="w-3 h-3" />
                 </button>
               </span>
@@ -703,7 +705,7 @@ function PartsPageContent() {
             {hasStockOnly && (
               <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 rounded-lg text-xs">
                 有库存
-                <button onClick={() => setHasStockOnly(false)} className="hover:text-emerald-900 dark:hover:text-emerald-300">
+                <button onClick={() => setHasStockOnly(false)} className="hover:text-emerald-900 dark:hover:text-emerald-300" aria-label="清除有库存筛选">
                   <X className="w-3 h-3" />
                 </button>
               </span>
@@ -785,6 +787,7 @@ function PartsPageContent() {
                       <button
                         onClick={toggleSelectAll}
                         className="p-1 text-gray-400 dark:text-[var(--foreground-subtle)] hover:text-[var(--accent)] transition-colors"
+                        aria-label="全选"
                       >
                         {selectedIds.size === (data?.parts ?? []).length && (data?.parts ?? []).length > 0 ? (
                           <CheckSquare className="w-5 h-5 text-[var(--accent)]" />
@@ -873,6 +876,7 @@ function PartsPageContent() {
                           <button
                             onClick={(e) => { e.stopPropagation(); toggleSelect(part.id); }}
                             className="p-1 text-gray-400 dark:text-[var(--foreground-subtle)] hover:text-[var(--accent)] transition-colors"
+                            aria-label="选择"
                           >
                             {isSelected ? (
                               <CheckSquare className="w-5 h-5 text-[var(--accent)]" />
@@ -981,6 +985,7 @@ function PartsPageContent() {
                     <button
                       onClick={() => toggleSelect(part.id)}
                       className="p-2 -ml-1 shrink-0 text-gray-400 dark:text-[var(--foreground-subtle)] hover:text-[var(--accent)] transition-colors"
+                      aria-label="选择"
                     >
                       {isSelected ? (
                         <CheckSquare className="w-5 h-5 text-[var(--accent)]" />
@@ -1110,6 +1115,7 @@ function PartsPageContent() {
               <button
                 onClick={() => setShowSaveSearch(false)}
                 className="p-2.5 text-gray-400 dark:text-[var(--foreground-subtle)] hover:text-gray-600 dark:hover:text-[var(--foreground-muted)] hover:bg-gray-100 dark:hover:bg-[var(--background-muted)] rounded-xl transition-all"
+                aria-label="关闭"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1221,6 +1227,7 @@ function BatchMovementModal({
           <button
             onClick={onClose}
             className="p-2.5 text-gray-400 dark:text-[var(--foreground-subtle)] hover:text-gray-600 dark:hover:text-[var(--foreground-muted)] hover:bg-gray-100 dark:hover:bg-[var(--background-muted)] rounded-xl transition-all duration-200"
+            aria-label="关闭"
           >
             <X className="w-5 h-5" />
           </button>
@@ -1328,6 +1335,7 @@ function ImportExportModal({
           <button
             onClick={onClose}
             className="p-2.5 text-gray-400 dark:text-[var(--foreground-subtle)] hover:text-gray-600 dark:hover:text-[var(--foreground-muted)] hover:bg-gray-100 dark:hover:bg-[var(--background-muted)] rounded-xl transition-all duration-200"
+            aria-label="关闭"
           >
             <X className="w-5 h-5" />
           </button>

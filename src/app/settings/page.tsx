@@ -359,6 +359,7 @@ export default function SettingsPage() {
                   <button
                     onClick={() => openEditCategory(cat)}
                     className="p-2 text-gray-400 dark:text-[var(--foreground-subtle)] hover:text-[var(--accent)] rounded-lg hover:bg-[var(--accent-subtle)] transition-colors"
+                    aria-label="编辑分类"
                   >
                     <Pencil className="w-4 h-4" />
                   </button>
@@ -366,6 +367,7 @@ export default function SettingsPage() {
                     onClick={() => handleDeleteCategory(cat.id)}
                     disabled={deletingId === cat.id}
                     className="p-2 text-gray-400 dark:text-[var(--foreground-subtle)] hover:text-red-500 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors disabled:opacity-50"
+                    aria-label="删除分类"
                   >
                     {deletingId === cat.id ? (
                       <Loader2 className="w-4 h-4 animate-spin" />

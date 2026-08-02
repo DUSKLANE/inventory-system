@@ -56,7 +56,8 @@ export default function NumberInput({ value, onChange, min = 1, max, className =
       <button
         type="button"
         onClick={handleDecrement}
-        className="w-11 h-11 flex items-center justify-center bg-gray-50 dark:bg-[var(--background-subtle)] border border-gray-200 dark:border-[var(--card-border)] rounded-xl text-gray-600 dark:text-[var(--foreground-muted)] hover:bg-gray-100 dark:hover:bg-[var(--background-muted)] active:bg-gray-200 dark:active:bg-[var(--background-muted)] transition-colors"
+        aria-label="减少"
+        className="w-11 h-11 flex items-center justify-center bg-[var(--background-subtle)] border border-[var(--border)] rounded-lg text-[var(--foreground-muted)] hover:bg-[var(--background-muted)] active:bg-[var(--border-hover)] transition-colors"
       >
         <Minus className="w-4 h-4" />
       </button>
@@ -67,12 +68,13 @@ export default function NumberInput({ value, onChange, min = 1, max, className =
         value={displayValue}
         onChange={handleChange}
         onBlur={handleBlur}
-        className="flex-1 min-w-0 px-3 py-2.5 bg-gray-50 dark:bg-[var(--background-subtle)] border border-gray-200 dark:border-[var(--card-border)] rounded-xl text-base font-bold text-center text-gray-900 dark:text-[var(--card-foreground)] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white dark:focus:bg-[var(--card)] transition-all duration-200"
+        className="flex-1 min-w-0 px-3 py-2.5 bg-[var(--background-subtle)] border border-[var(--border)] rounded-lg text-base font-bold text-center text-[var(--card-foreground)] focus:outline-none focus:bg-[var(--card)] transition-all duration-200 appearance-none"
       />
       <button
         type="button"
         onClick={handleIncrement}
-        className="w-11 h-11 flex items-center justify-center bg-gray-50 dark:bg-[var(--background-subtle)] border border-gray-200 dark:border-[var(--card-border)] rounded-xl text-gray-600 dark:text-[var(--foreground-muted)] hover:bg-gray-100 dark:hover:bg-[var(--background-muted)] active:bg-gray-200 dark:active:bg-[var(--background-muted)] transition-colors"
+        aria-label="增加"
+        className="w-11 h-11 flex items-center justify-center bg-[var(--background-subtle)] border border-[var(--border)] rounded-lg text-[var(--foreground-muted)] hover:bg-[var(--background-muted)] active:bg-[var(--border-hover)] transition-colors"
       >
         <Plus className="w-4 h-4" />
       </button>

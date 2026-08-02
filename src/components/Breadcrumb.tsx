@@ -10,20 +10,20 @@ interface BreadcrumbItem {
 
 export default function Breadcrumb({ items }: { items: BreadcrumbItem[] }) {
   return (
-    <nav className="flex items-center gap-2 text-sm text-gray-500 mb-6">
-      <Link href="/" className="flex items-center gap-1 hover:text-gray-700 transition-colors">
+    <nav className="flex items-center gap-2 text-sm text-[var(--foreground-subtle)] mb-6">
+      <Link href="/" className="flex items-center gap-1 hover:text-[var(--foreground)] transition-colors">
         <Home className="w-4 h-4" />
         <span>首页</span>
       </Link>
       {items.map((item, index) => (
         <div key={index} className="flex items-center gap-2">
-          <ChevronRight className="w-4 h-4 text-gray-300" />
+          <ChevronRight className="w-4 h-4 text-[var(--foreground-subtle)]" />
           {item.href ? (
-            <Link href={item.href} className="hover:text-gray-700 transition-colors">
+            <Link href={item.href} className="hover:text-[var(--foreground)] transition-colors">
               {item.label}
             </Link>
           ) : (
-            <span className="text-gray-900 font-medium">{item.label}</span>
+            <span className="text-[var(--foreground)] font-medium">{item.label}</span>
           )}
         </div>
       ))}
