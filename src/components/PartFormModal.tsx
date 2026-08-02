@@ -5,6 +5,7 @@ import { X, Tag, Loader2 } from "lucide-react";
 import CategoryInput from "@/components/CategoryInput";
 import PackageInput from "@/components/PackageInput";
 import { useToast } from "@/components/ToastProvider";
+import { Button, inputClass } from "@/components/ui";
 
 export interface PartFormValue {
   id?: string;
@@ -85,7 +86,6 @@ export default function PartFormModal({ part, onClose, onSaved }: PartFormModalP
     }
   };
 
-  const inputClass = "w-full px-5 py-4 bg-gray-50 dark:bg-[var(--background-subtle)] border border-gray-200 dark:border-[var(--card-border)] rounded-xl text-sm text-gray-900 dark:text-[var(--card-foreground)] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white dark:focus:bg-[var(--card)] transition-all duration-200";
   const labelClass = "block text-sm font-semibold text-gray-700 dark:text-[var(--foreground-muted)] mb-3";
 
   return (
@@ -201,17 +201,18 @@ export default function PartFormModal({ part, onClose, onSaved }: PartFormModalP
             />
           </div>
           <div className="flex gap-4 pt-3">
-            <button
+            <Button
               type="button"
+              variant="outline"
               onClick={onClose}
-              className="flex-1 px-5 py-4 border border-gray-200 dark:border-[var(--card-border)] rounded-xl text-sm font-semibold text-gray-700 dark:text-[var(--foreground-muted)] hover:bg-gray-50 dark:hover:bg-[var(--background-subtle)] hover:border-gray-300 dark:hover:border-[var(--card-border)] transition-all duration-200"
+              className="flex-1"
             >
               取消
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
               disabled={saving}
-              className="flex-1 px-5 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl text-sm font-semibold hover:from-blue-700 hover:to-blue-800 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-blue-500/25 dark:shadow-blue-500/10"
+              className="flex-1"
             >
               {saving ? (
                 <>
@@ -221,7 +222,7 @@ export default function PartFormModal({ part, onClose, onSaved }: PartFormModalP
               ) : (
                 isEdit ? "保存修改" : "创建器件"
               )}
-            </button>
+            </Button>
           </div>
         </form>
       </div>

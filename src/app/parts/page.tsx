@@ -545,16 +545,16 @@ function PartsPageContent() {
             
             <button
               onClick={() => setShowAdvancedSearch(!showAdvancedSearch)}
-              className={`px-5 py-4 border rounded-xl text-sm font-medium transition-all duration-200 flex items-center gap-2 ${
+              className={`px-5 py-2.5 border rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-2 ${
                 showAdvancedSearch || hasActiveFilters
-                  ? "bg-blue-50 dark:bg-blue-500/10 border-blue-200 dark:border-blue-500/30 text-blue-700 dark:text-blue-400"
+                  ? "bg-[var(--accent-subtle)] border-[var(--accent-muted)] text-[var(--accent)]"
                   : "bg-gray-50 dark:bg-[var(--background-subtle)] border-gray-200 dark:border-[var(--card-border)] text-gray-600 dark:text-[var(--foreground-muted)] hover:bg-gray-100 dark:hover:bg-[var(--background-muted)]"
               }`}
             >
               <Filter className="w-4 h-4" />
               高级筛选
               {hasActiveFilters && (
-                <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                <span className="w-2 h-2 bg-[var(--accent)] rounded-full"></span>
               )}
             </button>
           </div>
@@ -622,12 +622,9 @@ function PartsPageContent() {
               <div>
                 <label className="block text-xs font-semibold text-gray-500 dark:text-[var(--foreground-subtle)] uppercase mb-2">操作</label>
                 <div className="flex flex-col gap-2">
-                  <button
-                    onClick={saveCurrentSearch}
-                    className="px-4 py-2.5 bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 rounded-lg text-sm font-medium hover:bg-blue-100 dark:hover:bg-blue-500/20 transition-all duration-200"
-                  >
+                  <Button type="button" onClick={saveCurrentSearch} className="w-full justify-center">
                     保存当前搜索
-                  </button>
+                  </Button>
                   <button
                     onClick={clearAllFilters}
                     className="px-4 py-2.5 bg-gray-50 dark:bg-[var(--background-subtle)] text-gray-700 dark:text-[var(--foreground-muted)] rounded-lg text-sm font-medium hover:bg-gray-100 dark:hover:bg-[var(--background-muted)] transition-all duration-200"
@@ -649,7 +646,7 @@ function PartsPageContent() {
                     <div key={i} className="flex items-center gap-1 px-3 py-2 bg-gray-50 dark:bg-[var(--background-subtle)] border border-gray-200 dark:border-[var(--card-border)] rounded-lg">
                       <button
                         onClick={() => loadSavedSearch(saved)}
-                        className="text-sm text-gray-700 dark:text-[var(--foreground-muted)] hover:text-blue-600 dark:hover:text-blue-400"
+                        className="text-sm text-gray-700 dark:text-[var(--foreground-muted)] hover:text-[var(--accent)]"
                       >
                         {saved.name}
                       </button>
@@ -672,25 +669,25 @@ function PartsPageContent() {
           <div className="mt-4 pt-4 border-t border-gray-100 dark:border-[var(--card-border)] flex items-center gap-2 flex-wrap">
             <span className="text-xs font-semibold text-gray-500 dark:text-[var(--foreground-subtle)]">当前筛选:</span>
             {search && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 rounded-lg text-xs">
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-[var(--accent-subtle)] text-[var(--accent)] rounded-lg text-xs">
                 搜索: {search}
-                <button onClick={() => setSearch("")} className="hover:text-blue-900 dark:hover:text-blue-300">
+                <button onClick={() => setSearch("")} className="hover:text-[var(--accent-hover)]">
                   <X className="w-3 h-3" />
                 </button>
               </span>
             )}
             {category && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 rounded-lg text-xs">
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-[var(--accent-subtle)] text-[var(--accent)] rounded-lg text-xs">
                 分类: {category}
-                <button onClick={() => setCategory("")} className="hover:text-blue-900 dark:hover:text-blue-300">
+                <button onClick={() => setCategory("")} className="hover:text-[var(--accent-hover)]">
                   <X className="w-3 h-3" />
                 </button>
               </span>
             )}
             {brand && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 rounded-lg text-xs">
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-[var(--accent-subtle)] text-[var(--accent)] rounded-lg text-xs">
                 品牌: {brand}
-                <button onClick={() => setBrand("")} className="hover:text-blue-900 dark:hover:text-blue-300">
+                <button onClick={() => setBrand("")} className="hover:text-[var(--accent-hover)]">
                   <X className="w-3 h-3" />
                 </button>
               </span>
@@ -723,42 +720,39 @@ function PartsPageContent() {
 
       {/* Batch Operations Toolbar */}
       {selectedIds.size > 0 && (
-        <div className="bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/30 rounded-2xl p-4 section flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-fade-in">
+        <div className="bg-[var(--accent-subtle)] border border-[var(--accent-muted)] rounded-lg p-4 section flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-fade-in">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-500/20 flex items-center justify-center">
-              <CheckSquare className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+            <div className="w-8 h-8 rounded-lg bg-[var(--accent-muted)] flex items-center justify-center">
+              <CheckSquare className="w-4 h-4 text-[var(--accent)]" />
             </div>
-            <span className="text-sm font-medium text-blue-900 dark:text-blue-200">
+            <span className="text-sm font-medium text-[var(--accent)]">
               已选择 <span className="font-bold">{selectedIds.size}</span> 个器件
             </span>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <button
+            <Button
+              variant="success"
               onClick={() => { setBatchMovementType("IN"); setShowBatchMovement(true); }}
-              className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-medium hover:bg-emerald-700 transition-all duration-200 shadow-sm"
             >
               <ArrowDownToLine className="w-4 h-4" /> 批量入库
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="danger"
               onClick={() => { setBatchMovementType("OUT"); setShowBatchMovement(true); }}
-              className="inline-flex items-center gap-2 px-4 py-2.5 bg-amber-600 text-white rounded-xl text-sm font-medium hover:bg-amber-700 transition-all duration-200 shadow-sm"
             >
               <ArrowUpFromLine className="w-4 h-4" /> 批量出库
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="danger"
               onClick={handleBatchDelete}
               disabled={batchProcessing}
-              className="inline-flex items-center gap-2 px-4 py-2.5 bg-red-600 text-white rounded-xl text-sm font-medium hover:bg-red-700 transition-all duration-200 shadow-sm disabled:opacity-50"
             >
               {batchProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
               批量删除
-            </button>
-            <button
-              onClick={clearSelection}
-              className="px-4 py-2.5 text-gray-600 dark:text-[var(--foreground-muted)] hover:text-gray-900 dark:hover:text-[var(--card-foreground)] hover:bg-white dark:hover:bg-[var(--card)] rounded-xl text-sm font-medium transition-all duration-200"
-            >
+            </Button>
+            <Button variant="ghost" onClick={clearSelection}>
               取消选择
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -783,24 +777,24 @@ function PartsPageContent() {
         ) : (
           <>
             {/* Desktop table */}
-            <div className="hidden md:block overflow-x-auto max-h-[calc(100vh-320px)] overflow-y-auto">
+            <div className="hidden md:block overflow-x-auto">
               <table className="w-full">
-                <thead className="sticky top-0 z-10">
+                <thead>
                   <tr className="bg-gray-50/80 dark:bg-[var(--background-subtle)] border-b border-gray-200 dark:border-[var(--card-border)]">
-                    <th className="px-4 py-5 text-left">
+                    <th className="px-4 py-3 text-left">
                       <button
                         onClick={toggleSelectAll}
-                        className="p-1 text-gray-400 dark:text-[var(--foreground-subtle)] hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                        className="p-1 text-gray-400 dark:text-[var(--foreground-subtle)] hover:text-[var(--accent)] transition-colors"
                       >
                         {selectedIds.size === (data?.parts ?? []).length && (data?.parts ?? []).length > 0 ? (
-                          <CheckSquare className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                          <CheckSquare className="w-5 h-5 text-[var(--accent)]" />
                         ) : (
                           <Square className="w-5 h-5" />
                         )}
                       </button>
                     </th>
                     <th 
-                      className="px-8 py-5 text-left text-xs font-semibold text-gray-500 dark:text-[var(--foreground-subtle)] uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-[var(--background-muted)] transition-colors"
+                      className="px-8 py-3 text-left text-xs font-medium text-[var(--foreground-muted)] uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-[var(--background-muted)] transition-colors"
                       onClick={() => handleSort("code")}
                     >
                       <div className="flex items-center">
@@ -811,7 +805,7 @@ function PartsPageContent() {
                       </div>
                     </th>
                     <th 
-                      className="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-[var(--foreground-subtle)] uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-[var(--background-muted)] transition-colors"
+                      className="px-6 py-3 text-left text-xs font-medium text-[var(--foreground-muted)] uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-[var(--background-muted)] transition-colors"
                       onClick={() => handleSort("name")}
                     >
                       <div className="flex items-center">
@@ -822,7 +816,7 @@ function PartsPageContent() {
                       </div>
                     </th>
                     <th 
-                      className="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-[var(--foreground-subtle)] uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-[var(--background-muted)] transition-colors"
+                      className="px-6 py-3 text-left text-xs font-medium text-[var(--foreground-muted)] uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-[var(--background-muted)] transition-colors"
                       onClick={() => handleSort("category")}
                     >
                       <div className="flex items-center">
@@ -833,7 +827,7 @@ function PartsPageContent() {
                       </div>
                     </th>
                     <th 
-                      className="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-[var(--foreground-subtle)] uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-[var(--background-muted)] transition-colors"
+                      className="px-6 py-3 text-left text-xs font-medium text-[var(--foreground-muted)] uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-[var(--background-muted)] transition-colors"
                       onClick={() => handleSort("brand")}
                     >
                       <div className="flex items-center">
@@ -844,7 +838,7 @@ function PartsPageContent() {
                       </div>
                     </th>
                     <th 
-                      className="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-[var(--foreground-subtle)] uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-[var(--background-muted)] transition-colors"
+                      className="px-6 py-3 text-left text-xs font-medium text-[var(--foreground-muted)] uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-[var(--background-muted)] transition-colors"
                       onClick={() => handleSort("stock")}
                     >
                       <div className="flex items-center">
@@ -855,7 +849,7 @@ function PartsPageContent() {
                       </div>
                     </th>
                     <th 
-                      className="px-8 py-5 text-left text-xs font-semibold text-gray-500 dark:text-[var(--foreground-subtle)] uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-[var(--background-muted)] transition-colors"
+                      className="px-8 py-3 text-left text-xs font-medium text-[var(--foreground-muted)] uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-[var(--background-muted)] transition-colors"
                       onClick={() => handleSort("location")}
                     >
                       <div className="flex items-center">
@@ -865,7 +859,7 @@ function PartsPageContent() {
                         )}
                       </div>
                     </th>
-                    <th className="px-8 py-5 text-right text-xs font-semibold text-gray-500 dark:text-[var(--foreground-subtle)] uppercase tracking-wider">操作</th>
+                    <th className="px-8 py-3 text-right text-xs font-medium text-[var(--foreground-muted)] uppercase tracking-wider">操作</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100 dark:divide-[var(--card-border)]">
@@ -874,14 +868,14 @@ function PartsPageContent() {
                     const lowStock = part.minStock > 0 && qty < part.minStock;
                     const isSelected = selectedIds.has(part.id);
                     return (
-                      <tr key={part.id} className={`hover:bg-gray-50/80 dark:hover:bg-[var(--background-subtle)] transition-colors duration-150 ${isSelected ? 'bg-blue-50/50 dark:bg-blue-500/10' : ''}`}>
+                      <tr key={part.id} className={`hover:bg-gray-50/80 dark:hover:bg-[var(--background-subtle)] transition-colors duration-150 ${isSelected ? 'bg-[var(--accent-subtle)]' : ''}`}>
                         <td className="px-4 py-5">
                           <button
                             onClick={(e) => { e.stopPropagation(); toggleSelect(part.id); }}
-                            className="p-1 text-gray-400 dark:text-[var(--foreground-subtle)] hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                            className="p-1 text-gray-400 dark:text-[var(--foreground-subtle)] hover:text-[var(--accent)] transition-colors"
                           >
                             {isSelected ? (
-                              <CheckSquare className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                              <CheckSquare className="w-5 h-5 text-[var(--accent)]" />
                             ) : (
                               <Square className="w-5 h-5" />
                             )}
@@ -894,7 +888,7 @@ function PartsPageContent() {
                             </Link>
                             <button
                               onClick={() => copyText(part.code, "编码")}
-                              className="p-1 text-gray-300 dark:text-[var(--foreground-subtle)] hover:text-gray-500 dark:hover:text-[var(--foreground-muted)] hover:bg-gray-100 dark:hover:bg-[var(--background-muted)] rounded transition-colors"
+                              className="p-1 text-[var(--foreground-subtle)] hover:text-[var(--foreground)] hover:bg-gray-100 dark:hover:bg-[var(--background-muted)] rounded transition-colors"
                               title="复制编码"
                             >
                               <Copy className="w-3.5 h-3.5" />
@@ -903,12 +897,12 @@ function PartsPageContent() {
                         </td>
                         <td className="px-8 py-5">
                           <div className="flex items-center gap-1.5">
-                            <Link href={`/parts/${part.id}`} className="text-sm font-semibold text-gray-900 dark:text-[var(--card-foreground)] hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200">
+                            <Link href={`/parts/${part.id}`} className="text-sm font-semibold text-gray-900 dark:text-[var(--card-foreground)] hover:text-[var(--accent)] transition-colors duration-200">
                               {part.name}
                             </Link>
                             <button
                               onClick={() => copyText(part.name, "名称")}
-                              className="p-1 text-gray-300 dark:text-[var(--foreground-subtle)] hover:text-gray-500 dark:hover:text-[var(--foreground-muted)] hover:bg-gray-100 dark:hover:bg-[var(--background-muted)] rounded transition-colors"
+                              className="p-1 text-[var(--foreground-subtle)] hover:text-[var(--foreground)] hover:bg-gray-100 dark:hover:bg-[var(--background-muted)] rounded transition-colors"
                               title="复制名称"
                             >
                               <Copy className="w-3.5 h-3.5" />
@@ -917,7 +911,7 @@ function PartsPageContent() {
                         </td>
                         <td className="px-8 py-5">
                           {part.category && (
-                            <span className="inline-flex items-center px-3 py-1 rounded-lg text-xs font-medium bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400">
+                            <span className="inline-flex items-center px-3 py-1 rounded-lg text-xs font-medium bg-[var(--accent-subtle)] text-[var(--accent)]">
                               {part.category}
                             </span>
                           )}
@@ -955,7 +949,7 @@ function PartsPageContent() {
                             </Link>
                             <button
                               onClick={() => { setEditPart(part); setShowAdd(true); }}
-                              className="p-2.5 text-gray-400 dark:text-[var(--foreground-subtle)] hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 rounded-lg transition-all duration-200"
+                              className="p-2.5 text-gray-400 dark:text-[var(--foreground-subtle)] hover:text-[var(--accent)] hover:bg-[var(--accent-subtle)] rounded-lg transition-all duration-200"
                               title="编辑"
                             >
                               <Edit className="w-4 h-4" />
@@ -983,13 +977,13 @@ function PartsPageContent() {
                 const lowStock = part.minStock > 0 && qty < part.minStock;
                 const isSelected = selectedIds.has(part.id);
                 return (
-                  <div key={part.id} className={`p-6 flex items-start gap-3 transition-colors duration-150 ${isSelected ? "bg-blue-50/50 dark:bg-blue-500/10" : ""}`}>
+                  <div key={part.id} className={`p-6 flex items-start gap-3 transition-colors duration-150 ${isSelected ? "bg-[var(--accent-subtle)]" : ""}`}>
                     <button
                       onClick={() => toggleSelect(part.id)}
-                      className="p-2 -ml-1 shrink-0 text-gray-400 dark:text-[var(--foreground-subtle)] hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                      className="p-2 -ml-1 shrink-0 text-gray-400 dark:text-[var(--foreground-subtle)] hover:text-[var(--accent)] transition-colors"
                     >
                       {isSelected ? (
-                        <CheckSquare className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                        <CheckSquare className="w-5 h-5 text-[var(--accent)]" />
                       ) : (
                         <Square className="w-5 h-5" />
                       )}
@@ -1001,7 +995,7 @@ function PartsPageContent() {
                             <p className="text-sm font-semibold text-gray-900 dark:text-[var(--card-foreground)] truncate">{part.name}</p>
                             <button
                               onClick={(e) => { e.preventDefault(); e.stopPropagation(); copyText(part.name, "名称"); }}
-                              className="p-0.5 text-gray-300 dark:text-[var(--foreground-subtle)] hover:text-gray-500 dark:hover:text-[var(--foreground-muted)] rounded shrink-0"
+                              className="p-0.5 text-[var(--foreground-subtle)] hover:text-[var(--foreground)] rounded shrink-0"
                               title="复制名称"
                             >
                               <Copy className="w-3 h-3" />
@@ -1011,7 +1005,7 @@ function PartsPageContent() {
                             <p className="text-xs text-gray-500 dark:text-[var(--foreground-subtle)] font-mono">{part.code}</p>
                             <button
                               onClick={(e) => { e.preventDefault(); e.stopPropagation(); copyText(part.code, "编码"); }}
-                              className="p-0.5 text-gray-300 dark:text-[var(--foreground-subtle)] hover:text-gray-500 dark:hover:text-[var(--foreground-muted)] rounded shrink-0"
+                              className="p-0.5 text-[var(--foreground-subtle)] hover:text-[var(--foreground)] rounded shrink-0"
                               title="复制编码"
                             >
                               <Copy className="w-3 h-3" />
@@ -1019,7 +1013,7 @@ function PartsPageContent() {
                           </div>
                           <div className="flex items-center gap-2 mt-3 flex-wrap">
                             {part.category && (
-                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-medium bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400">
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-medium bg-[var(--accent-subtle)] text-[var(--accent)]">
                                 {part.category}
                               </span>
                             )}
@@ -1052,7 +1046,7 @@ function PartsPageContent() {
                   className="w-full flex items-center justify-center gap-2 px-6 py-4 text-sm font-medium text-gray-600 dark:text-[var(--foreground-muted)] hover:bg-gray-50 dark:hover:bg-[var(--background-subtle)] transition-colors duration-150"
                 >
                   {selectedIds.size === (data?.parts ?? []).length ? (
-                    <CheckSquare className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                    <CheckSquare className="w-5 h-5 text-[var(--accent)]" />
                   ) : (
                     <Square className="w-5 h-5 text-gray-400 dark:text-[var(--foreground-subtle)]" />
                   )}
@@ -1133,20 +1127,21 @@ function PartsPageContent() {
                 />
               </div>
               <div className="flex gap-4 pt-3">
-                <button
+                <Button
                   type="button"
+                  variant="outline"
                   onClick={() => { setShowSaveSearch(false); setSaveSearchName(""); }}
-                  className="flex-1 px-5 py-4 border border-gray-200 dark:border-[var(--card-border)] rounded-xl text-sm font-semibold text-gray-700 dark:text-[var(--foreground-muted)] hover:bg-gray-50 dark:hover:bg-[var(--background-subtle)] transition-all"
+                  className="flex-1"
                 >
                   取消
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
                   onClick={confirmSaveSearch}
-                  className="flex-1 px-5 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl text-sm font-semibold hover:from-blue-700 hover:to-blue-800 transition-all shadow-lg shadow-blue-500/25"
+                  className="flex-1"
                 >
                   保存
-                </button>
+                </Button>
               </div>
             </div>
           </div>
@@ -1255,21 +1250,19 @@ function BatchMovementModal({
             })}
           </div>
           <div className="flex gap-4">
-            <button
+            <Button
               type="button"
+              variant="outline"
               onClick={onClose}
-              className="flex-1 px-5 py-4 border border-gray-200 dark:border-[var(--card-border)] rounded-xl text-sm font-semibold text-gray-700 dark:text-[var(--foreground-muted)] hover:bg-gray-50 dark:hover:bg-[var(--background-subtle)] hover:border-gray-300 transition-all duration-200"
+              className="flex-1"
             >
               取消
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
+              variant={type === "IN" ? "success" : "danger"}
               disabled={processing}
-              className={`flex-1 px-5 py-4 text-white rounded-xl text-sm font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg ${
-                type === "IN"
-                  ? "bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 shadow-emerald-500/25"
-                  : "bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 shadow-amber-500/25"
-              }`}
+              className="flex-1"
             >
               {processing ? (
                 <>
@@ -1279,7 +1272,7 @@ function BatchMovementModal({
               ) : (
                 `确认批量${type === "IN" ? "入库" : "出库"}`
               )}
-            </button>
+            </Button>
           </div>
         </form>
       </div>
@@ -1347,7 +1340,7 @@ function ImportExportModal({
             <div className="flex gap-3">
               <button
                 onClick={() => onExport("csv")}
-                className="flex-1 px-4 py-3 bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 rounded-xl text-sm font-medium hover:bg-blue-100 dark:hover:bg-blue-500/20 transition-all duration-200 flex items-center justify-center gap-2"
+                className="flex-1 px-4 py-3 bg-[var(--accent-subtle)] text-[var(--accent)] rounded-lg text-sm font-medium hover:bg-[var(--accent-muted)] transition-all duration-200 flex items-center justify-center gap-2"
               >
                 <Package className="w-4 h-4" />
                 导出 CSV
@@ -1368,7 +1361,7 @@ function ImportExportModal({
             <div
               className={`border-2 border-dashed rounded-xl p-8 text-center transition-all duration-200 ${
                 dragOver
-                  ? "border-blue-400 bg-blue-50 dark:bg-blue-500/10"
+                  ? "border-[var(--accent)] bg-[var(--accent-subtle)]"
                   : "border-gray-200 dark:border-[var(--card-border)] hover:border-gray-300"
               }`}
               onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
