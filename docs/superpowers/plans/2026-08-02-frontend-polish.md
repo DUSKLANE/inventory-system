@@ -642,17 +642,18 @@ export function Pagination({
         <span className="text-sm text-[var(--foreground-subtle)]">共 {total} 条</span>
         <div className="flex items-center gap-2">
           <span className="text-sm text-[var(--foreground-subtle)]">每页</span>
-          <SelectField
-            value={pageSize}
-            onChange={(e) => onPageSizeChange(Number(e.target.value))}
-            className="w-20 py-1.5 text-sm"
-          >
-            {[10, 20, 50, 100].map((n) => (
-              <option key={n} value={n}>
-                {n}
-              </option>
-            ))}
-          </SelectField>
+          <div className="w-20">
+            <SelectField
+              value={pageSize}
+              onChange={(e) => onPageSizeChange(Number(e.target.value))}
+            >
+              {[10, 20, 50, 100].map((n) => (
+                <option key={n} value={n}>
+                  {n}
+                </option>
+              ))}
+            </SelectField>
+          </div>
         </div>
       </div>
       <div className="flex items-center gap-2">
