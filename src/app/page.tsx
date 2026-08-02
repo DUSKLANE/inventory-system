@@ -167,45 +167,29 @@ export default function Home() {
       label: "器件总数", 
       value: data.totalParts, 
       href: "/parts",
-      icon: Boxes, 
-      gradient: "from-blue-500 to-blue-600",
-      bgColor: "bg-blue-50 dark:bg-blue-500/10",
-      textColor: "text-blue-600 dark:text-blue-400",
-      iconColor: "text-blue-500",
-      shadowColor: "shadow-blue-500/25"
+      icon: Boxes,
+      valueClass: "text-[var(--foreground)]"
     },
     { 
       label: "低库存预警", 
       value: data.lowStockCount, 
       href: "/parts?lowStock=true",
-      icon: AlertTriangle, 
-      gradient: "from-amber-500 to-orange-500",
-      bgColor: "bg-amber-50 dark:bg-amber-500/10",
-      textColor: "text-amber-600 dark:text-amber-400",
-      iconColor: "text-amber-500",
-      shadowColor: "shadow-amber-500/25"
+      icon: AlertTriangle,
+      valueClass: "text-[var(--foreground)]"
     },
     { 
       label: "今日入库", 
       value: data.todayInCount, 
       href: "/movements?type=IN",
-      icon: ArrowDown, 
-      gradient: "from-emerald-500 to-green-500",
-      bgColor: "bg-emerald-50 dark:bg-emerald-500/10",
-      textColor: "text-emerald-600 dark:text-emerald-400",
-      iconColor: "text-emerald-500",
-      shadowColor: "shadow-emerald-500/25"
+      icon: ArrowDown,
+      valueClass: "text-[var(--success)]"
     },
     { 
       label: "今日出库", 
       value: data.todayOutCount, 
       href: "/movements?type=OUT",
-      icon: ArrowUp, 
-      gradient: "from-purple-500 to-violet-500",
-      bgColor: "bg-purple-50 dark:bg-purple-500/10",
-      textColor: "text-purple-600 dark:text-purple-400",
-      iconColor: "text-purple-500",
-      shadowColor: "shadow-purple-500/25"
+      icon: ArrowUp,
+      valueClass: "text-[var(--error)]"
     },
   ];
 
@@ -276,21 +260,17 @@ export default function Home() {
             <Link 
               key={s.label} 
               href={s.href}
-              className="block relative overflow-hidden bg-white dark:bg-[var(--card)] rounded-xl sm:rounded-2xl border border-gray-200/80 dark:border-[var(--card-border)] p-4 sm:p-7 hover:shadow-xl hover:shadow-gray-200/50 dark:hover:shadow-black/20 transition-all duration-300 group"
+              className="block bg-white dark:bg-[var(--card)] rounded-xl border border-gray-200/80 dark:border-[var(--card-border)] p-4 sm:p-7 hover:shadow-lg transition-shadow group"
             >
-              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br opacity-5 group-hover:opacity-10 transition-opacity duration-300 rounded-bl-[100%]" 
-                   style={{background: `linear-gradient(135deg, var(--tw-gradient-stops))`}} />
-              <div className="relative">
-                <div className="flex items-center justify-between mb-3 sm:mb-6">
-                  <div className={`w-10 h-10 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-gradient-to-br ${s.gradient} flex items-center justify-center shadow-lg ${s.shadowColor} dark:shadow-none group-hover:scale-110 transition-transform duration-300`}>
-                    <Icon className="w-5 h-5 sm:w-7 sm:h-7 text-white" />
-                  </div>
+              <div className="flex items-center justify-between mb-3 sm:mb-6">
+                <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-xl bg-[var(--accent-subtle)] shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                  <Icon className="w-5 h-5 sm:w-7 sm:h-7 text-[var(--accent)]" />
                 </div>
-                <p className="text-xs sm:text-sm text-gray-500 dark:text-[var(--foreground-subtle)] mb-1 sm:mb-2 font-medium">{s.label}</p>
-                <p className={`text-2xl sm:text-4xl font-bold ${s.textColor} tracking-tight`}>
-                  {s.value}
-                </p>
               </div>
+              <p className="text-xs sm:text-sm text-gray-500 dark:text-[var(--foreground-subtle)] mb-1 sm:mb-2 font-medium">{s.label}</p>
+              <p className={`text-3xl font-bold ${s.valueClass} tracking-tight`}>
+                {s.value}
+              </p>
             </Link>
           );
         })}
@@ -298,11 +278,11 @@ export default function Home() {
 
       {/* Alerts Section */}
       {alerts && alerts.lowStockParts.length > 0 && (
-        <div className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-500/10 dark:to-orange-500/10 border border-amber-200 dark:border-amber-500/30 rounded-2xl p-6 section">
+        <div className="bg-[var(--warning-subtle)] border border-[var(--warning)]/20 rounded-lg p-6 section">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-500/20 flex items-center justify-center">
-                <Bell className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+              <div className="w-10 h-10 rounded-lg bg-[var(--warning-subtle)] flex items-center justify-center">
+                <Bell className="w-5 h-5 text-[var(--warning)]" />
               </div>
               <div>
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-[var(--card-foreground)]">库存预警</h2>
@@ -311,7 +291,7 @@ export default function Home() {
             </div>
             <button
               onClick={() => setShowAlerts(!showAlerts)}
-              className="text-sm text-amber-700 dark:text-amber-400 hover:text-amber-800 dark:hover:text-amber-300 font-medium flex items-center gap-1"
+              className="text-sm text-[var(--warning)] hover:opacity-80 font-medium flex items-center gap-1"
             >
               {showAlerts ? "收起" : "展开"}
               <ChevronRight className={`w-4 h-4 transition-transform ${showAlerts ? "rotate-90" : ""}`} />
@@ -322,7 +302,7 @@ export default function Home() {
             {alerts.lowStockParts.slice(0, showAlerts ? undefined : 3).map((part) => (
               <div
                 key={part.id}
-                className="flex items-center gap-1 p-2 bg-white/80 dark:bg-[var(--card)]/80 rounded-xl hover:bg-white dark:hover:bg-[var(--card)] transition-colors"
+                className="flex items-center gap-1 p-2 bg-white dark:bg-[var(--card)] rounded-lg hover:bg-[var(--background-subtle)] transition-colors"
               >
                 <Link
                   href={`/stock?mode=IN&code=${encodeURIComponent(part.code)}`}
@@ -334,12 +314,12 @@ export default function Home() {
                     <p className="text-xs text-gray-500 dark:text-[var(--foreground-subtle)] font-mono">{part.code}</p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-sm font-bold text-red-600 dark:text-red-400">{part.currentStock}</p>
+                    <p className="text-sm font-bold text-[var(--error)]">{part.currentStock}</p>
                     <p className="text-xs text-gray-500 dark:text-[var(--foreground-subtle)]">/ {part.minStock}</p>
                   </div>
                   <div className="w-16 h-2 bg-gray-200 dark:bg-[var(--background-muted)] rounded-full overflow-hidden shrink-0">
                     <div
-                      className={`h-full rounded-full ${part.stockPercentage < 50 ? "bg-red-500" : "bg-amber-500"}`}
+                      className={`h-full rounded-full ${part.stockPercentage < 50 ? "bg-[var(--error)]" : "bg-[var(--warning)]"}`}
                       style={{ width: `${Math.min(100, part.stockPercentage)}%` }}
                     />
                   </div>
@@ -356,7 +336,7 @@ export default function Home() {
           </div>
           
           {!showAlerts && alerts.lowStockParts.length > 3 && (
-            <p className="text-center text-sm text-amber-600 dark:text-amber-400 mt-3">
+            <p className="text-center text-sm text-[var(--warning)] mt-3">
               还有 {alerts.lowStockParts.length - 3} 个器件库存不足
             </p>
           )}
@@ -390,12 +370,12 @@ export default function Home() {
                 <div key={i} className="flex-1 flex flex-col items-center gap-1">
                   <div className="w-full flex items-end justify-center gap-1 h-32">
                     <div 
-                      className="flex-1 bg-emerald-200 dark:bg-emerald-500/40 rounded-t-md transition-all duration-500"
+                      className="flex-1 bg-[var(--success)]/20 dark:bg-[var(--success)]/40 rounded-t-md transition-all duration-500"
                       style={{ height: `${inHeight}%`, minHeight: day.totalIn > 0 ? "4px" : "0" }}
                       title={`入库: ${day.totalIn}`}
                     />
                     <div 
-                      className="flex-1 bg-red-200 dark:bg-red-500/40 rounded-t-md transition-all duration-500"
+                      className="flex-1 bg-[var(--error)]/20 dark:bg-[var(--error)]/40 rounded-t-md transition-all duration-500"
                       style={{ height: `${outHeight}%`, minHeight: day.totalOut > 0 ? "4px" : "0" }}
                       title={`出库: ${day.totalOut}`}
                     />
@@ -408,11 +388,11 @@ export default function Home() {
           
           <div className="flex items-center justify-center gap-6 mt-4 pt-4 border-t border-gray-100 dark:border-[var(--card-border)]">
             <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-emerald-200 dark:bg-emerald-500/40 rounded-sm" />
+              <div className="w-3 h-3 bg-[var(--success)]/20 dark:bg-[var(--success)]/40 rounded-sm" />
               <span className="text-sm text-gray-600 dark:text-[var(--foreground-muted)]">入库</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-red-200 dark:bg-red-500/40 rounded-sm" />
+              <div className="w-3 h-3 bg-[var(--error)]/20 dark:bg-[var(--error)]/40 rounded-sm" />
               <span className="text-sm text-gray-600 dark:text-[var(--foreground-muted)]">出库</span>
             </div>
           </div>

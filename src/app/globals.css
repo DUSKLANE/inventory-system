@@ -497,19 +497,6 @@ th, td {
   background-color: #21262d !important;
 }
 
-[data-theme="dark"] .bg-gradient-to-r.from-amber-50.to-orange-50 {
-  background: linear-gradient(to right, #2d1f0e, #2d150e) !important;
-}
-
-[data-theme="dark"] .bg-gradient-to-r.from-amber-50.to-orange-50 .bg-white\/80 {
-  background-color: rgba(33, 38, 45, 0.9) !important;
-}
-
-[data-theme="dark"] .bg-gradient-to-r.from-amber-50.to-orange-50 .bg-white\/80:hover,
-[data-theme="dark"] .bg-gradient-to-r.from-amber-50.to-orange-50 .hover\:bg-white:hover {
-  background-color: rgba(48, 54, 61, 0.9) !important;
-}
-
 [data-theme="dark"] .bg-amber-100 {
   background-color: #3d2e0f !important;
 }
