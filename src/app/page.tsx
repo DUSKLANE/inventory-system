@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { AlertTriangle, ArrowDownToLine, ArrowUpFromLine, ArrowRight, Clock, TrendingDown, TrendingUp, Search, Activity, Boxes, ArrowDown, ArrowUp, X, Package, Zap, Bell, ChevronRight, Star } from "lucide-react";
+import { AlertTriangle, ArrowDownToLine, ArrowUpFromLine, ArrowRight, Clock, TrendingDown, TrendingUp, Search, Activity, Boxes, ArrowDown, ArrowUp, X, Package, Zap, Bell, ChevronRight, Star, RefreshCw, Eye } from "lucide-react";
 
 interface RecentPart {
   id: string;
@@ -81,7 +81,7 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showAlerts, setShowAlerts] = useState(false);
 
-  useEffect(() => {
+  const loadData = useCallback(async () => {
     const fetchJson = async (url: string) => {
       const res = await fetch(url);
       if (!res.ok) throw new Error(`${url}: ${res.status}`);
@@ -99,6 +99,13 @@ export default function Home() {
       }
     }).finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    loadData();
+    const onFocus = () => { loadData(); };
+    window.addEventListener("focus", onFocus);
+    return () => window.removeEventListener("focus", onFocus);
+  }, [loadData]);
 
   const toggleFavorite = async (partId: string) => {
     try {
@@ -159,6 +166,7 @@ export default function Home() {
     { 
       label: "器件总数", 
       value: data.totalParts, 
+      href: "/parts",
       icon: Boxes, 
       gradient: "from-blue-500 to-blue-600",
       bgColor: "bg-blue-50 dark:bg-blue-500/10",
@@ -169,6 +177,7 @@ export default function Home() {
     { 
       label: "低库存预警", 
       value: data.lowStockCount, 
+      href: "/parts?lowStock=true",
       icon: AlertTriangle, 
       gradient: "from-amber-500 to-orange-500",
       bgColor: "bg-amber-50 dark:bg-amber-500/10",
@@ -179,6 +188,7 @@ export default function Home() {
     { 
       label: "今日入库", 
       value: data.todayInCount, 
+      href: "/movements?type=IN",
       icon: ArrowDown, 
       gradient: "from-emerald-500 to-green-500",
       bgColor: "bg-emerald-50 dark:bg-emerald-500/10",
@@ -189,6 +199,7 @@ export default function Home() {
     { 
       label: "今日出库", 
       value: data.todayOutCount, 
+      href: "/movements?type=OUT",
       icon: ArrowUp, 
       gradient: "from-purple-500 to-violet-500",
       bgColor: "bg-purple-50 dark:bg-purple-500/10",
@@ -210,6 +221,13 @@ export default function Home() {
             <h1 className="text-3xl font-bold text-gray-900 dark:text-[var(--card-foreground)] tracking-tight">仪表盘</h1>
             <p className="text-gray-500 dark:text-[var(--foreground-subtle)] mt-1">元器件库存概览</p>
           </div>
+          <button
+            onClick={loadData}
+            disabled={loading}
+            className="ml-auto flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-600 dark:text-[var(--foreground-muted)] bg-white dark:bg-[var(--card)] border border-gray-200 dark:border-[var(--card-border)] rounded-xl hover:bg-gray-50 dark:hover:bg-[var(--background-subtle)] transition-colors disabled:opacity-50"
+          >
+            <RefreshCw className="w-4 h-4" /> 刷新
+          </button>
         </div>
       </div>
 
@@ -255,9 +273,10 @@ export default function Home() {
         {stats.map((s) => {
           const Icon = s.icon;
           return (
-            <div 
+            <Link 
               key={s.label} 
-              className="relative overflow-hidden bg-white dark:bg-[var(--card)] rounded-xl sm:rounded-2xl border border-gray-200/80 dark:border-[var(--card-border)] p-4 sm:p-7 hover:shadow-xl hover:shadow-gray-200/50 dark:hover:shadow-black/20 transition-all duration-300 group"
+              href={s.href}
+              className="block relative overflow-hidden bg-white dark:bg-[var(--card)] rounded-xl sm:rounded-2xl border border-gray-200/80 dark:border-[var(--card-border)] p-4 sm:p-7 hover:shadow-xl hover:shadow-gray-200/50 dark:hover:shadow-black/20 transition-all duration-300 group"
             >
               <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br opacity-5 group-hover:opacity-10 transition-opacity duration-300 rounded-bl-[100%]" 
                    style={{background: `linear-gradient(135deg, var(--tw-gradient-stops))`}} />
@@ -272,7 +291,7 @@ export default function Home() {
                   {s.value}
                 </p>
               </div>
-            </div>
+            </Link>
           );
         })}
       </div>
@@ -301,28 +320,38 @@ export default function Home() {
           
           <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 ${showAlerts ? "" : "max-h-[120px] overflow-hidden"}`}>
             {alerts.lowStockParts.slice(0, showAlerts ? undefined : 3).map((part) => (
-              <Link
+              <div
                 key={part.id}
-                href={`/parts/${part.id}`}
-                className="flex items-center gap-3 p-3 bg-white/80 dark:bg-[var(--card)]/80 rounded-xl hover:bg-white dark:hover:bg-[var(--card)] transition-colors"
+                className="flex items-center gap-1 p-2 bg-white/80 dark:bg-[var(--card)]/80 rounded-xl hover:bg-white dark:hover:bg-[var(--card)] transition-colors"
               >
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 dark:text-[var(--card-foreground)] truncate">{part.name}</p>
-                  <p className="text-xs text-gray-500 dark:text-[var(--foreground-subtle)] font-mono">{part.code}</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm font-bold text-red-600 dark:text-red-400">{part.currentStock}</p>
-                  <p className="text-xs text-gray-500 dark:text-[var(--foreground-subtle)]">/ {part.minStock}</p>
-                </div>
-                <div className="w-16 h-2 bg-gray-200 dark:bg-[var(--background-muted)] rounded-full overflow-hidden">
-                  <div 
-                    className={`h-full rounded-full ${
-                      part.stockPercentage < 50 ? "bg-red-500" : "bg-amber-500"
-                    }`}
-                    style={{ width: `${Math.min(100, part.stockPercentage)}%` }}
-                  />
-                </div>
-              </Link>
+                <Link
+                  href={`/stock?mode=IN&code=${encodeURIComponent(part.code)}`}
+                  className="flex items-center gap-3 p-1 flex-1 min-w-0"
+                  title="直达入库"
+                >
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-900 dark:text-[var(--card-foreground)] truncate">{part.name}</p>
+                    <p className="text-xs text-gray-500 dark:text-[var(--foreground-subtle)] font-mono">{part.code}</p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className="text-sm font-bold text-red-600 dark:text-red-400">{part.currentStock}</p>
+                    <p className="text-xs text-gray-500 dark:text-[var(--foreground-subtle)]">/ {part.minStock}</p>
+                  </div>
+                  <div className="w-16 h-2 bg-gray-200 dark:bg-[var(--background-muted)] rounded-full overflow-hidden shrink-0">
+                    <div
+                      className={`h-full rounded-full ${part.stockPercentage < 50 ? "bg-red-500" : "bg-amber-500"}`}
+                      style={{ width: `${Math.min(100, part.stockPercentage)}%` }}
+                    />
+                  </div>
+                </Link>
+                <Link
+                  href={`/parts/${part.id}`}
+                  className="p-2 text-gray-400 dark:text-[var(--foreground-subtle)] hover:text-blue-600 dark:hover:text-blue-400 rounded-lg transition-colors shrink-0"
+                  title="查看详情"
+                >
+                  <Eye className="w-4 h-4" />
+                </Link>
+              </div>
             ))}
           </div>
           
@@ -529,7 +558,7 @@ export default function Home() {
             </div>
             <h2 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-[var(--card-foreground)]">最近操作记录</h2>
           </div>
-          <Link href="/parts" className="text-xs sm:text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium flex items-center gap-1 sm:gap-2 group">
+          <Link href="/movements" className="text-xs sm:text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium flex items-center gap-1 sm:gap-2 group">
             查看全部 
             <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 group-hover:translate-x-0.5 transition-transform duration-200" />
           </Link>
