@@ -274,7 +274,7 @@ git commit -m "style: 设计令牌重写（紫强调/深灰暗色/系统字体�
   - `Button({ variant?: "primary"|"outline"|"ghost"|"danger"|"success", size?: "sm"|"md", className?, ...ButtonHTMLAttributes })`
   - `Card({ className?, ...HTMLAttributes<HTMLDivElement> })` → `bg-white dark:bg-[var(--card)] border border-[var(--card-border)] rounded-lg`
   - `Badge({ variant?: "in"|"out"|"warning"|"neutral"|"category", className?, ...HTMLAttributes<HTMLSpanElement> })`
-  - `Modal({ open: boolean, onClose: () => void, title: ReactNode, children: ReactNode, footer?: ReactNode, width?: string, initialFocusRef?: RefObject<HTMLElement|null> })`
+  - `Modal({ open: boolean, onClose: () => void, title: ReactNode, children: ReactNode, footer?: ReactNode, width?: string })`
   - `PageHeader({ breadcrumb?: ReactNode, title: string, subtitle?: string, actions?: ReactNode })`
   - `EmptyState({ icon: ReactNode, title: string, description?: string, action?: ReactNode })`
   - `Spinner({ size?: "sm"|"md", className? })`
@@ -382,7 +382,7 @@ export const Badge = ({ variant = "neutral", className, ...rest }: BadgeProps) =
 ```tsx
 "use client";
 
-import { useEffect, useRef, type ReactNode, type RefObject } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import { X } from "lucide-react";
 
 interface ModalProps {
@@ -392,24 +392,17 @@ interface ModalProps {
   children: ReactNode;
   footer?: ReactNode;
   width?: string;
-  initialFocusRef?: RefObject<HTMLElement | null>;
 }
 
-export function Modal({
-  open,
-  onClose,
-  title,
-  children,
-  footer,
-  width = "max-w-md",
-  initialFocusRef,
-}: ModalProps) {
-  const firstFocusRef = useRef<HTMLElement | null>(null);
+export function Modal({ open, onClose, title, children, footer, width = "max-w-md" }: ModalProps) {
+  const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!open) return;
     document.body.style.overflow = "hidden";
-    const el = initialFocusRef?.current ?? firstFocusRef.current;
+    const el = panelRef.current?.querySelector<HTMLElement>(
+      "input, select, textarea, button, [tabindex]:not([tabindex='-1'])"
+    );
     el?.focus();
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -419,7 +412,7 @@ export function Modal({
       document.body.style.overflow = "";
       document.removeEventListener("keydown", onKey);
     };
-  }, [open, onClose, initialFocusRef]);
+  }, [open, onClose]);
 
   if (!open) return null;
 
@@ -427,6 +420,7 @@ export function Modal({
     <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
       <div className="modal-backdrop absolute inset-0" onClick={onClose} aria-hidden="true" />
       <div
+        ref={panelRef}
         role="dialog"
         aria-modal="true"
         className={`relative w-full ${width} bg-white dark:bg-[var(--card)] border border-[var(--card-border)] rounded-lg shadow-xl animate-fade-in`}
@@ -448,7 +442,6 @@ export function Modal({
           </div>
         )}
       </div>
-      <span ref={firstFocusRef as never} hidden />
     </div>
   );
 }
@@ -1249,7 +1242,7 @@ rg -n "!important" src/app/globals.css
 rg -n "from-blue-600|to-blue-600|indigo-500|from-indigo|to-indigo|shadow-blue|shadow-indigo|shadow-amber|tw-gradient-stops" src/app src/components
 rg -n "rounded-2xl|rounded-xl" src/app src/components
 ```
-Expected：三组全部为 0（rounded-2xl/xl 允许残留于**未纳入本波范围**的 QRScanner 等文件时，先补圆角 8px 或 4px 后归零；若某处需保留大圆角则用 `rounded-lg` 替代，本波不允许 xl/2xl 新增）。
+Expected：三组全部为 0。**例外**：`rounded-2xl/rounded-xl` 允许残留在本波范围外文件（QRScanner.tsx、Combobox.tsx 等未列入本计划文件清单的组件）；若任务 4-11 改造过某文件后其中仍有 xl/2xl，则必须替换为 `rounded-lg`/`rounded` 后归零。
 
 - [ ] **Step 5: 全量回归**
 
