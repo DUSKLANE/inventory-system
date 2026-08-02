@@ -12,9 +12,11 @@ interface CategoryInputProps {
   onChange: (value: string) => void;
   placeholder?: string;
   inputClassName?: string;
+  /** 只允许从下拉列表选择，禁止手输 */
+  selectOnly?: boolean;
 }
 
-export default function CategoryInput({ value, onChange, placeholder = "选择或输入分类", inputClassName }: CategoryInputProps) {
+export default function CategoryInput({ value, onChange, placeholder = "选择或输入分类", inputClassName, selectOnly = false }: CategoryInputProps) {
   const [options, setOptions] = useState<string[]>(FALLBACK_OPTIONS);
 
   useEffect(() => {
@@ -28,5 +30,5 @@ export default function CategoryInput({ value, onChange, placeholder = "选择�
       .catch(() => {});
   }, []);
 
-  return <Combobox value={value} onChange={onChange} options={options} placeholder={placeholder} inputClassName={inputClassName} />;
+  return <Combobox value={value} onChange={onChange} options={options} placeholder={placeholder} inputClassName={inputClassName} selectOnly={selectOnly} />;
 }

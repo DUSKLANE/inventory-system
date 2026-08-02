@@ -41,6 +41,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.d.ts
 
+# workbuddy session memory
+.workbuddy/
+
 # database
 data/*.db
 data/*.db-shm
