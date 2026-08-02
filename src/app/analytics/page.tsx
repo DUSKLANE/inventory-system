@@ -122,8 +122,8 @@ export default function AnalyticsPage() {
                 onClick={() => setPeriod(p)}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                   period === p
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-100 dark:bg-[var(--background-muted)] text-gray-600 dark:text-[var(--foreground-muted)] hover:bg-gray-200 dark:hover:bg-[var(--background-subtle)]"
+                    ? "bg-[var(--accent)] text-white"
+                    : "text-[var(--foreground-muted)] hover:bg-[var(--background-subtle)]"
                 }`}
               >
                 {p} 天
@@ -135,9 +135,9 @@ export default function AnalyticsPage() {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 section">
-        <div className="bg-white dark:bg-[var(--card)] rounded-2xl border border-gray-200/80 dark:border-[var(--card-border)] p-6">
+        <div className="bg-white dark:bg-[var(--card)] rounded-lg border border-gray-200/80 dark:border-[var(--card-border)] p-6 shadow-sm dark:shadow-black/20">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-500/10 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-lg bg-emerald-100 dark:bg-emerald-500/10 flex items-center justify-center">
               <ArrowDownToLine className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
             </div>
             <span className="text-sm text-gray-500 dark:text-[var(--foreground-subtle)]">总入库</span>
@@ -145,9 +145,9 @@ export default function AnalyticsPage() {
           <p className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">{totalIn}</p>
           <p className="text-sm text-gray-500 dark:text-[var(--foreground-subtle)] mt-1">日均 {data.dailyAverages.avgIn}</p>
         </div>
-        <div className="bg-white dark:bg-[var(--card)] rounded-2xl border border-gray-200/80 dark:border-[var(--card-border)] p-6">
+        <div className="bg-white dark:bg-[var(--card)] rounded-lg border border-gray-200/80 dark:border-[var(--card-border)] p-6 shadow-sm dark:shadow-black/20">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-xl bg-red-100 dark:bg-red-500/10 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-lg bg-red-100 dark:bg-red-500/10 flex items-center justify-center">
               <ArrowUpFromLine className="w-5 h-5 text-red-600 dark:text-red-400" />
             </div>
             <span className="text-sm text-gray-500 dark:text-[var(--foreground-subtle)]">总出库</span>
@@ -155,19 +155,19 @@ export default function AnalyticsPage() {
           <p className="text-3xl font-bold text-red-600 dark:text-red-400">{totalOut}</p>
           <p className="text-sm text-gray-500 dark:text-[var(--foreground-subtle)] mt-1">日均 {data.dailyAverages.avgOut}</p>
         </div>
-        <div className="bg-white dark:bg-[var(--card)] rounded-2xl border border-gray-200/80 dark:border-[var(--card-border)] p-6">
+        <div className="bg-white dark:bg-[var(--card)] rounded-lg border border-gray-200/80 dark:border-[var(--card-border)] p-6 shadow-sm dark:shadow-black/20">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-500/10 flex items-center justify-center">
-              <Activity className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+            <div className="w-10 h-10 rounded-lg bg-[var(--accent-subtle)] flex items-center justify-center">
+              <Activity className="w-5 h-5 text-[var(--accent)]" />
             </div>
             <span className="text-sm text-gray-500 dark:text-[var(--foreground-subtle)]">操作次数</span>
           </div>
-          <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">{totalIn + totalOut}</p>
+          <p className="text-3xl font-bold text-[var(--accent)]">{totalIn + totalOut}</p>
           <p className="text-sm text-gray-500 dark:text-[var(--foreground-subtle)] mt-1">日均 {data.dailyAverages.avgCount}</p>
         </div>
-        <div className="bg-white dark:bg-[var(--card)] rounded-2xl border border-gray-200/80 dark:border-[var(--card-border)] p-6">
+        <div className="bg-white dark:bg-[var(--card)] rounded-lg border border-gray-200/80 dark:border-[var(--card-border)] p-6 shadow-sm dark:shadow-black/20">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-xl bg-purple-100 dark:bg-purple-500/10 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-500/10 flex items-center justify-center">
               <Boxes className="w-5 h-5 text-purple-600 dark:text-purple-400" />
             </div>
             <span className="text-sm text-gray-500 dark:text-[var(--foreground-subtle)]">器件分类</span>
@@ -178,9 +178,9 @@ export default function AnalyticsPage() {
       </div>
 
       {/* Movement Trends Chart */}
-      <div className="bg-white dark:bg-[var(--card)] rounded-2xl border border-gray-200/80 dark:border-[var(--card-border)] p-6 section">
+      <div className="bg-white dark:bg-[var(--card)] rounded-lg border border-gray-200/80 dark:border-[var(--card-border)] p-6 section">
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-500/10 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-lg bg-indigo-100 dark:bg-indigo-500/10 flex items-center justify-center">
             <Activity className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
           </div>
           <div>
@@ -189,44 +189,42 @@ export default function AnalyticsPage() {
           </div>
         </div>
         
-        <div className="flex items-end gap-1 h-48">
-          {data.movementTrends.map((day, i) => {
-            const maxVal = Math.max(
-              ...data.movementTrends.map(d => Math.max(d.totalIn, d.totalOut))
-            );
-            const inHeight = maxVal > 0 ? (day.totalIn / maxVal) * 100 : 0;
-            const outHeight = maxVal > 0 ? (day.totalOut / maxVal) * 100 : 0;
-            const date = new Date(day.date);
-            const dayName = date.toLocaleDateString("zh-CN", { month: "numeric", day: "numeric" });
-            
-            return (
-              <div key={i} className="flex-1 flex flex-col items-center gap-1 group">
-                <div className="w-full flex items-end justify-center gap-0.5 h-40 relative">
-                  <div 
-                    className="flex-1 bg-emerald-400 rounded-t-md transition-all duration-300 group-hover:bg-emerald-500"
-                    style={{ height: `${inHeight}%`, minHeight: day.totalIn > 0 ? "4px" : "0" }}
-                  />
-                  <div 
-                    className="flex-1 bg-red-400 rounded-t-md transition-all duration-300 group-hover:bg-red-500"
-                    style={{ height: `${outHeight}%`, minHeight: day.totalOut > 0 ? "4px" : "0" }}
-                  />
-                  <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-900 dark:bg-[var(--card)] text-white dark:text-[var(--card-foreground)] text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                    入{day.totalIn} / 出{day.totalOut}
+        <div className="overflow-x-auto">
+          <div className={`flex items-end gap-1 h-48 ${data.movementTrends.length > 45 ? "min-w-[1080px]" : "min-w-[720px]"}`}>
+            {data.movementTrends.map((day, i) => {
+              const maxVal = Math.max(
+                ...data.movementTrends.map(d => Math.max(d.totalIn, d.totalOut))
+              );
+              const inHeight = maxVal > 0 ? (day.totalIn / maxVal) * 100 : 0;
+              const outHeight = maxVal > 0 ? (day.totalOut / maxVal) * 100 : 0;
+              const dateLabel = day.date.slice(5, 10);
+              
+              return (
+                <div key={i} className="flex-1 flex flex-col items-center gap-1 group" title={`${day.date} 入${day.totalIn} / 出${day.totalOut}`}>
+                  <div className="w-full flex items-end justify-center gap-0.5 h-40">
+                    <div 
+                      className="flex-1 bg-emerald-400 rounded-t-md transition-all duration-300 group-hover:bg-emerald-500"
+                      style={{ height: `${inHeight}%`, minHeight: day.totalIn > 0 ? "4px" : "0" }}
+                    />
+                    <div 
+                      className="flex-1 bg-red-400 rounded-t-md transition-all duration-300 group-hover:bg-red-500"
+                      style={{ height: `${outHeight}%`, minHeight: day.totalOut > 0 ? "4px" : "0" }}
+                    />
                   </div>
+                  <span className="text-[10px] text-[var(--foreground-subtle)] rotate-0">{i % 7 === 0 ? dateLabel : ""}</span>
                 </div>
-                <span className="text-[10px] text-gray-400 dark:text-[var(--foreground-subtle)] transform -rotate-45 origin-top-left">{dayName}</span>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
         
         <div className="flex items-center justify-center gap-6 mt-6 pt-4 border-t border-gray-100 dark:border-[var(--card-border)]">
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-emerald-400 rounded-sm" />
+            <div className="w-3 h-3 bg-[var(--success)] rounded-sm" />
             <span className="text-sm text-gray-600 dark:text-[var(--foreground-muted)]">入库</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-red-400 rounded-sm" />
+            <div className="w-3 h-3 bg-[var(--error)] rounded-sm" />
             <span className="text-sm text-gray-600 dark:text-[var(--foreground-muted)]">出库</span>
           </div>
         </div>
@@ -236,7 +234,7 @@ export default function AnalyticsPage() {
         {/* Category Stats */}
         <div className="bg-white dark:bg-[var(--card)] rounded-2xl border border-gray-200/80 dark:border-[var(--card-border)] p-6">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-xl bg-violet-100 dark:bg-violet-500/10 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-lg bg-violet-100 dark:bg-violet-500/10 flex items-center justify-center">
               <Package className="w-5 h-5 text-violet-600 dark:text-violet-400" />
             </div>
             <div>
@@ -274,7 +272,7 @@ export default function AnalyticsPage() {
         {/* Stock Distribution */}
         <div className="bg-white dark:bg-[var(--card)] rounded-2xl border border-gray-200/80 dark:border-[var(--card-border)] p-6">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-500/10 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-lg bg-amber-100 dark:bg-amber-500/10 flex items-center justify-center">
               <Boxes className="w-5 h-5 text-amber-600 dark:text-amber-400" />
             </div>
             <div>
@@ -316,7 +314,7 @@ export default function AnalyticsPage() {
       <div className="bg-white dark:bg-[var(--card)] rounded-2xl border border-gray-200/80 dark:border-[var(--card-border)] overflow-hidden section">
         <div className="px-6 py-5 border-b border-gray-100 dark:border-[var(--card-border)] flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-500/10 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-lg bg-emerald-100 dark:bg-emerald-500/10 flex items-center justify-center">
               <TrendingUp className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
             </div>
             <div>
