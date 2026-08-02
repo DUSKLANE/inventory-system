@@ -3,11 +3,11 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Plus, Package, Trash2, Edit, Eye, FileText, ChevronRight, Loader2, X, Search } from "lucide-react";
+import { Plus, Package, Trash2, Edit, Eye, FileText, ChevronRight, Loader2, Search } from "lucide-react";
 import Breadcrumb from "@/components/Breadcrumb";
 import { useToast } from "@/components/ToastProvider";
 import { useConfirm } from "@/components/ConfirmProvider";
-import { PageHeader, Button, EmptyState, cardClass } from "@/components/ui";
+import { PageHeader, Button, EmptyState, Modal, inputClass, textareaClass, cardClass } from "@/components/ui";
 
 interface Bom {
   id: string;
@@ -96,7 +96,7 @@ export default function BomsPage() {
           {boms.map((bom) => (
             <div
               key={bom.id}
-              className="bg-white dark:bg-[var(--card)] rounded-2xl border border-gray-200/80 dark:border-[var(--card-border)] p-6 hover:shadow-lg hover:border-gray-300 dark:hover:border-[var(--card-border)] transition-all duration-200 group"
+              className="bg-white dark:bg-[var(--card)] rounded-lg border border-gray-200/80 dark:border-[var(--card-border)] p-6 hover:shadow-md hover:border-[var(--border-hover)] transition-all group"
             >
               <div className="flex items-start justify-between mb-4">
                 <div className="w-10 h-10 rounded-xl bg-orange-100 dark:bg-orange-500/10 flex items-center justify-center">
@@ -105,13 +105,13 @@ export default function BomsPage() {
                 <div className="flex items-center gap-1">
                   <button
                     onClick={() => router.push(`/boms/${bom.id}`)}
-                    className="p-2 text-gray-400 dark:text-[var(--foreground-subtle)] hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 rounded-lg transition-all"
+                    className="p-2 text-gray-400 dark:text-[var(--foreground-subtle)] hover:text-[var(--accent)] hover:bg-[var(--accent-subtle)] rounded-lg transition-all"
                   >
                     <Eye className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => handleDelete(bom.id, bom.name)}
-                    className="p-2 text-gray-400 dark:text-[var(--foreground-subtle)] hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-all"
+                    className="p-2 text-gray-400 dark:text-[var(--foreground-subtle)] hover:text-[var(--error)] hover:bg-[var(--error-subtle)] rounded-lg transition-all"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -183,53 +183,35 @@ function AddBomModal({ onClose, onSaved }: { onClose: () => void; onSaved: () =>
   };
 
   return (
-    <div className="fixed inset-0 modal-backdrop z-50 flex items-center justify-center p-4 animate-fade-in">
-      <div className="bg-white dark:bg-[var(--card)] rounded-2xl w-full max-w-lg shadow-2xl border border-gray-200/80 dark:border-[var(--card-border)]">
-        <div className="px-8 py-6 border-b border-gray-100 dark:border-[var(--card-border)] flex items-center justify-between rounded-t-2xl">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-[var(--card-foreground)]">新建BOM</h2>
-          <button onClick={onClose} className="p-2.5 text-gray-400 dark:text-[var(--foreground-subtle)] hover:text-gray-600 dark:hover:text-[var(--foreground-muted)] hover:bg-gray-100 dark:hover:bg-[var(--background-muted)] rounded-xl transition-all">
-            <X className="w-5 h-5" />
-          </button>
+    <Modal open onClose={onClose} title="新建BOM" width="max-w-md">
+      <form onSubmit={handleSubmit} className="space-y-5">
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 dark:text-[var(--foreground-muted)] mb-2">名称 *</label>
+          <input
+            required
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className={inputClass}
+            placeholder="如：智能小车项目"
+          />
         </div>
-        <form onSubmit={handleSubmit} className="p-8 space-y-5">
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 dark:text-[var(--foreground-muted)] mb-2">名称 *</label>
-            <input
-              required
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full px-5 py-4 bg-gray-50 dark:bg-[var(--background-subtle)] border border-gray-200 dark:border-[var(--card-border)] rounded-xl text-sm text-gray-900 dark:text-[var(--card-foreground)] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-[var(--card)] transition-all"
-              placeholder="如：智能小车项目"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 dark:text-[var(--foreground-muted)] mb-2">描述</label>
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="w-full px-5 py-4 bg-gray-50 dark:bg-[var(--background-subtle)] border border-gray-200 dark:border-[var(--card-border)] rounded-xl text-sm text-gray-900 dark:text-[var(--card-foreground)] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-[var(--card)] transition-all resize-none"
-              rows={3}
-              placeholder="BOM描述（可选）"
-            />
-          </div>
-          <div className="flex gap-4 pt-3">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 px-5 py-4 border border-gray-200 dark:border-[var(--card-border)] rounded-xl text-sm font-semibold text-gray-700 dark:text-[var(--foreground-muted)] hover:bg-gray-50 dark:hover:bg-[var(--background-subtle)] transition-all"
-            >
-              取消
-            </button>
-            <button
-              type="submit"
-              disabled={saving}
-              className="flex-1 px-5 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl text-sm font-semibold hover:from-blue-700 hover:to-blue-800 transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-blue-500/25"
-            >
-              {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> 创建中...</> : "创建"}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 dark:text-[var(--foreground-muted)] mb-2">描述</label>
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            className={textareaClass}
+            rows={3}
+            placeholder="BOM描述（可选）"
+          />
+        </div>
+        <div className="flex gap-3 pt-3">
+          <Button type="button" variant="outline" onClick={onClose} className="flex-1">取消</Button>
+          <Button type="submit" variant="primary" disabled={saving} className="flex-1">
+            {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> 创建中...</> : "创建"}
+          </Button>
+        </div>
+      </form>
+    </Modal>
   );
 }

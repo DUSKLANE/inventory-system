@@ -8,6 +8,7 @@ import Breadcrumb from "@/components/Breadcrumb";
 import NumberInput from "@/components/NumberInput";
 import { useToast } from "@/components/ToastProvider";
 import { useConfirm } from "@/components/ConfirmProvider";
+import { Button } from "@/components/ui";
 
 interface BomItem {
   id: string;
@@ -236,7 +237,7 @@ export default function BomDetailPage() {
       ]} />
 
       {/* Header */}
-      <div className="bg-white dark:bg-[var(--card)] rounded-2xl border border-gray-200/80 dark:border-[var(--card-border)] p-8 section shadow-sm">
+      <div className="bg-white dark:bg-[var(--card)] rounded-lg border border-[var(--card-border)] p-8 section shadow-sm">
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-6">
           <div className="flex-1">
             {editing ? (
@@ -257,15 +258,17 @@ export default function BomDetailPage() {
               </div>
             ) : (
               <>
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-12 h-12 rounded-xl bg-orange-100 dark:bg-orange-500/10 flex items-center justify-center">
+                <div className="flex items-start gap-3 mb-3">
+                  <div className="w-12 h-12 rounded-xl bg-orange-100 dark:bg-orange-500/10 flex items-center justify-center shrink-0">
                     <FileText className="w-6 h-6 text-orange-600 dark:text-orange-400" />
                   </div>
-                  <h1 className="text-2xl font-bold text-gray-900 dark:text-[var(--card-foreground)]">{bom.name}</h1>
+                  <div className="min-w-0">
+                    <h1 className="text-2xl font-bold text-gray-900 dark:text-[var(--card-foreground)]">{bom.name}</h1>
+                    {bom.description && (
+                      <p className="text-gray-500 dark:text-[var(--foreground-subtle)] mt-1.5">{bom.description}</p>
+                    )}
+                  </div>
                 </div>
-                {bom.description && (
-                  <p className="text-gray-500 dark:text-[var(--foreground-subtle)] ml-15">{bom.description}</p>
-                )}
               </>
             )}
           </div>
@@ -320,7 +323,7 @@ export default function BomDetailPage() {
       </div>
 
       {/* BOM Items */}
-      <div className="bg-white dark:bg-[var(--card)] rounded-2xl border border-gray-200/80 dark:border-[var(--card-border)] overflow-hidden section shadow-sm">
+      <div className="bg-white dark:bg-[var(--card)] rounded-lg border border-[var(--card-border)] overflow-hidden section shadow-sm">
         <div className="px-8 py-5 border-b border-gray-100 dark:border-[var(--card-border)] flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Package className="w-5 h-5 text-gray-500 dark:text-[var(--foreground-subtle)]" />
@@ -394,14 +397,14 @@ export default function BomDetailPage() {
       {/* Checkout Modal */}
       {showCheckout && bom && (
         <div className="fixed inset-0 modal-backdrop z-50 flex items-center justify-center p-4 animate-fade-in">
-          <div className="bg-white dark:bg-[var(--card)] rounded-2xl w-full max-w-md shadow-2xl border border-gray-200/80 dark:border-[var(--card-border)] max-h-[80vh] overflow-hidden flex flex-col">
-            <div className="px-8 py-6 border-b border-gray-100 dark:border-[var(--card-border)] flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-[var(--card-foreground)]">领料出库</h2>
+          <div className="bg-white dark:bg-[var(--card)] rounded-lg w-full max-w-md shadow-xl border border-[var(--card-border)] max-h-[80vh] overflow-hidden flex flex-col">
+            <div className="px-6 py-4 border-b border-[var(--card-border)] flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-[var(--card-foreground)]">领料出库</h2>
               <button
                 onClick={() => setShowCheckout(false)}
-                className="p-2.5 text-gray-400 dark:text-[var(--foreground-subtle)] hover:text-gray-600 dark:hover:text-[var(--foreground-muted)] hover:bg-gray-100 dark:hover:bg-[var(--background-muted)] rounded-xl transition-all"
+                className="p-1.5 rounded text-[var(--foreground-subtle)] hover:bg-[var(--background-subtle)] hover:text-[var(--foreground)]"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" />
               </button>
             </div>
 
@@ -416,7 +419,7 @@ export default function BomDetailPage() {
                         type="checkbox"
                         checked={!!checkoutItems[item.partId]}
                         onChange={(e) => setCheckoutItems(prev => ({ ...prev, [item.partId]: e.target.checked }))}
-                        className="w-4 h-4 accent-blue-600 shrink-0"
+                        className="w-4 h-4 accent-[var(--accent)] shrink-0"
                       />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold text-gray-900 dark:text-[var(--card-foreground)]">{item.name}</p>
@@ -438,21 +441,12 @@ export default function BomDetailPage() {
               </div>
             </div>
 
-            <div className="px-8 py-5 border-t border-gray-100 dark:border-[var(--card-border)] flex justify-end gap-3">
-              <button
-                onClick={() => setShowCheckout(false)}
-                className="px-5 py-3 border border-gray-200 dark:border-[var(--card-border)] text-gray-700 dark:text-[var(--foreground-muted)] rounded-xl text-sm font-medium hover:bg-gray-50 dark:hover:bg-[var(--background-subtle)] transition-all"
-              >
-                取消
-              </button>
-              <button
-                onClick={handleCheckout}
-                disabled={checkoutSubmitting}
-                className="px-5 py-3 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 transition-all disabled:opacity-50 flex items-center gap-2"
-              >
+            <div className="px-6 py-4 border-t border-[var(--card-border)] flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setShowCheckout(false)}>取消</Button>
+              <Button variant="danger" onClick={handleCheckout} disabled={checkoutSubmitting}>
                 {checkoutSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <ArrowUpFromLine className="w-4 h-4" />}
                 确认领料
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -461,18 +455,18 @@ export default function BomDetailPage() {
       {/* Add Part Modal */}
       {showAddPart && (
         <div className="fixed inset-0 modal-backdrop z-50 flex items-center justify-center p-4 animate-fade-in">
-          <div className="bg-white dark:bg-[var(--card)] rounded-2xl w-full max-w-lg shadow-2xl border border-gray-200/80 dark:border-[var(--card-border)] max-h-[80vh] overflow-hidden flex flex-col">
-            <div className="px-8 py-6 border-b border-gray-100 dark:border-[var(--card-border)] flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-[var(--card-foreground)]">添加器件到BOM</h2>
+          <div className="bg-white dark:bg-[var(--card)] rounded-lg w-full max-w-lg shadow-xl border border-[var(--card-border)] max-h-[80vh] overflow-hidden flex flex-col">
+            <div className="px-6 py-4 border-b border-[var(--card-border)] flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-[var(--card-foreground)]">添加器件到BOM</h2>
               <button
                 onClick={() => { setShowAddPart(false); setSearchQuery(""); setSearchResults([]); }}
-                className="p-2.5 text-gray-400 dark:text-[var(--foreground-subtle)] hover:text-gray-600 dark:hover:text-[var(--foreground-muted)] hover:bg-gray-100 dark:hover:bg-[var(--background-muted)] rounded-xl transition-all"
+                className="p-1.5 rounded text-[var(--foreground-subtle)] hover:bg-[var(--background-subtle)] hover:text-[var(--foreground)]"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="p-6 border-b border-gray-100 dark:border-[var(--card-border)]">
+            <div className="p-6 border-b border-[var(--card-border)]">
               <div className="flex gap-3">
                 <div className="flex-1 relative">
                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-[var(--foreground-subtle)]" />
