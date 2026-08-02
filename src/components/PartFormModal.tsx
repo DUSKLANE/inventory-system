@@ -90,10 +90,10 @@ export default function PartFormModal({ part, onClose, onSaved }: PartFormModalP
 
   return (
     <div className="fixed inset-0 modal-backdrop z-50 flex items-center justify-center p-4 animate-fade-in">
-      <div className="bg-white dark:bg-[var(--card)] rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl dark:shadow-black/40 border border-gray-200/80 dark:border-[var(--card-border)]">
-        <div className="px-8 py-6 border-b border-gray-100 dark:border-[var(--card-border)] flex items-center justify-between sticky top-0 bg-white dark:bg-[var(--card)] z-10 rounded-t-2xl">
+      <div className="bg-white dark:bg-[var(--card)] rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl dark:shadow-black/40 border border-gray-200/80 dark:border-[var(--card-border)]">
+        <div className="px-8 py-6 border-b border-gray-100 dark:border-[var(--card-border)] flex items-center justify-between sticky top-0 bg-white dark:bg-[var(--card)] z-10 rounded-t-lg">
           <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-lg bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center">
               <Tag className="w-5 h-5 text-blue-600 dark:text-blue-400" />
             </div>
             <h2 className="text-xl font-semibold text-gray-900 dark:text-[var(--card-foreground)]">
@@ -102,7 +102,7 @@ export default function PartFormModal({ part, onClose, onSaved }: PartFormModalP
           </div>
           <button
             onClick={onClose}
-            className="p-2.5 text-gray-400 dark:text-[var(--foreground-subtle)] hover:text-gray-600 dark:hover:text-[var(--foreground-muted)] hover:bg-gray-100 dark:hover:bg-[var(--background-muted)] rounded-xl transition-all duration-200"
+            className="p-2.5 text-gray-400 dark:text-[var(--foreground-subtle)] hover:text-gray-600 dark:hover:text-[var(--foreground-muted)] hover:bg-gray-100 dark:hover:bg-[var(--background-muted)] rounded-lg transition-all duration-200"
           >
             <X className="w-5 h-5" />
           </button>
@@ -115,7 +115,7 @@ export default function PartFormModal({ part, onClose, onSaved }: PartFormModalP
                 required
                 value={form.code}
                 readOnly
-                className="w-full px-5 py-4 bg-gray-100 dark:bg-[var(--background-muted)] border border-gray-200 dark:border-[var(--card-border)] rounded-xl text-sm text-gray-600 dark:text-[var(--foreground-muted)] cursor-not-allowed"
+                className="w-full px-5 py-4 bg-gray-100 dark:bg-[var(--background-muted)] border border-gray-200 dark:border-[var(--card-border)] rounded-lg text-sm text-gray-600 dark:text-[var(--foreground-muted)] cursor-not-allowed"
                 placeholder={isEdit ? undefined : "自动生成中..."}
               />
             </div>

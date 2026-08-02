@@ -362,7 +362,7 @@ function StockPageContent() {
       <div className="flex items-center gap-2 flex-wrap section">
         <button
           onClick={() => setShowScanner(true)}
-          className="flex items-center gap-1 px-3 py-2 text-sm bg-indigo-500 text-white rounded-lg font-medium hover:bg-indigo-600 transition-colors"
+          className="flex items-center gap-1 px-3 py-2 text-sm bg-[var(--accent)] text-white rounded-lg font-medium hover:bg-[var(--accent-hover)] transition-colors"
         >
           <ScanBarcode className="w-4 h-4" /> 扫码
         </button>
@@ -491,7 +491,7 @@ function StockPageContent() {
               <button onClick={() => { setShowManualInput(false); setManualCode(""); }} className="px-4 py-2 text-gray-700 dark:text-[var(--foreground-muted)] hover:bg-gray-100 dark:hover:bg-[var(--background-subtle)] rounded-lg transition-colors">
                 取消
               </button>
-              <button onClick={handleManualSubmit} disabled={!manualCode.trim()} className="px-4 py-2 bg-indigo-500 text-white rounded-lg font-medium hover:bg-indigo-600 transition-colors disabled:opacity-50">
+              <button onClick={handleManualSubmit} disabled={!manualCode.trim()} className="px-4 py-2 bg-[var(--accent)] text-white rounded-lg font-medium hover:bg-[var(--accent-hover)] transition-colors disabled:opacity-50">
                 确认
               </button>
             </div>

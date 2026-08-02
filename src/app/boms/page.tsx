@@ -99,7 +99,7 @@ export default function BomsPage() {
               className="bg-white dark:bg-[var(--card)] rounded-lg border border-gray-200/80 dark:border-[var(--card-border)] p-6 hover:shadow-md hover:border-[var(--border-hover)] transition-all group"
             >
               <div className="flex items-start justify-between mb-4">
-                <div className="w-10 h-10 rounded-xl bg-orange-100 dark:bg-orange-500/10 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-lg bg-orange-100 dark:bg-orange-500/10 flex items-center justify-center">
                   <FileText className="w-5 h-5 text-orange-600 dark:text-orange-400" />
                 </div>
                 <div className="flex items-center gap-1">

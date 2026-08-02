@@ -52,7 +52,7 @@ export default function StockItemCard({
                   已有库存
                 </span>
               )}
-              {item.status === "loading" && <Loader2 className="w-4 h-4 text-gray-400 animate-spin" />}
+              {item.status === "loading" && <Loader2 className="w-4 h-4 text-gray-400 dark:text-[var(--foreground-subtle)] animate-spin" />}
               {item.status === "ready" && (
                 <span className="flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-300">
                   <Check className="w-3 h-3" /> 就绪

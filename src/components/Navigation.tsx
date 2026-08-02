@@ -59,7 +59,7 @@ export default function Navigation() {
         {/* Logo area */}
         <div className="px-5 py-6 border-b border-[var(--card-border)]">
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-lg bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/30 hover:shadow-blue-500/40 transition-shadow duration-300">
+            <div className="w-11 h-11 rounded-lg bg-gradient-to-br from-[var(--accent)] to-[var(--accent-hover)] flex items-center justify-center shadow-lg shadow-black/10 hover:shadow-black/20 transition-shadow duration-300">
               <Cpu className="w-5 h-5 text-white" />
             </div>
             <div>
@@ -139,7 +139,7 @@ export default function Navigation() {
           {/* User info */}
           <div className="mt-4 px-3.5 py-3.5 bg-gradient-to-r from-[var(--background-subtle)] to-[var(--background-muted)] rounded-lg border border-[var(--card-border)] hover:border-[var(--border-hover)] transition-all duration-300">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-500 flex items-center justify-center text-white text-xs font-bold shadow-lg shadow-indigo-500/25">
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[var(--accent)] to-[var(--accent-hover)] flex items-center justify-center text-white text-xs font-bold shadow-lg shadow-black/10">
                 {username.charAt(0).toUpperCase()}
               </div>
               <div className="flex-1 min-w-0">
@@ -148,7 +148,7 @@ export default function Navigation() {
               </div>
               <button
                 onClick={handleLogout}
-                className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all duration-200"
+                className="p-2 text-gray-400 dark:text-[var(--foreground-subtle)] hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all duration-200"
                 title="退出登录"
               >
                 <LogOut className="w-4 h-4" />

@@ -180,8 +180,8 @@ export default function AnalyticsPage() {
       {/* Movement Trends Chart */}
       <div className="bg-white dark:bg-[var(--card)] rounded-lg border border-gray-200/80 dark:border-[var(--card-border)] p-6 section">
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-lg bg-indigo-100 dark:bg-indigo-500/10 flex items-center justify-center">
-            <Activity className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+          <div className="w-10 h-10 rounded-lg bg-[var(--accent-muted)] dark:bg-[var(--accent-subtle)] flex items-center justify-center">
+            <Activity className="w-5 h-5 text-[var(--accent)] dark:text-[var(--accent-hover)]" />
           </div>
           <div>
             <h2 className="text-lg font-semibold text-gray-900 dark:text-[var(--card-foreground)]">出入库趋势</h2>

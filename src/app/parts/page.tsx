@@ -477,7 +477,7 @@ function PartsPageContent() {
       />
 
       {/* Search & Filter */}
-      <div className="bg-white dark:bg-[var(--card)] rounded-2xl border border-gray-200/80 dark:border-[var(--card-border)] p-6 section shadow-sm dark:shadow-none">
+      <div className="bg-white dark:bg-[var(--card)] rounded-lg border border-gray-200/80 dark:border-[var(--card-border)] p-6 section shadow-sm dark:shadow-none">
         <div className="flex flex-col sm:flex-row gap-5">
           <div className="flex-1 relative">
             <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-[var(--foreground-subtle)]" />
@@ -507,7 +507,7 @@ function PartsPageContent() {
             
             {/* Search History Dropdown */}
             {showSearchHistory && searchHistory.length > 0 && !search && (
-              <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-[var(--card)] border border-gray-200 dark:border-[var(--card-border)] rounded-xl shadow-lg dark:shadow-black/20 z-20 overflow-hidden">
+              <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-[var(--card)] border border-gray-200 dark:border-[var(--card-border)] rounded-lg shadow-lg dark:shadow-black/20 z-20 overflow-hidden">
                 <div className="px-4 py-2 bg-gray-50 dark:bg-[var(--background-subtle)] border-b border-gray-100 dark:border-[var(--card-border)] flex items-center justify-between">
                   <span className="text-xs font-semibold text-gray-500 dark:text-[var(--foreground-subtle)] uppercase">搜索历史</span>
                   <button
@@ -760,7 +760,7 @@ function PartsPageContent() {
       )}
 
       {/* Parts list */}
-      <div className="bg-white dark:bg-[var(--card)] rounded-2xl border border-gray-200/80 dark:border-[var(--card-border)] overflow-hidden shadow-sm dark:shadow-none">
+      <div className="bg-white dark:bg-[var(--card)] rounded-lg border border-gray-200/80 dark:border-[var(--card-border)] overflow-hidden shadow-sm dark:shadow-none">
         {loading ? (
           <div className="flex justify-center py-16">
             <Spinner />
@@ -1109,12 +1109,12 @@ function PartsPageContent() {
       {/* Save Search Modal */}
       {showSaveSearch && (
         <div className="fixed inset-0 modal-backdrop z-50 flex items-center justify-center p-4 animate-fade-in">
-          <div className="bg-white dark:bg-[var(--card)] rounded-2xl w-full max-w-lg shadow-2xl border border-gray-200/80 dark:border-[var(--card-border)]">
-            <div className="px-8 py-6 border-b border-gray-100 dark:border-[var(--card-border)] flex items-center justify-between rounded-t-2xl">
+          <div className="bg-white dark:bg-[var(--card)] rounded-lg w-full max-w-lg shadow-2xl border border-gray-200/80 dark:border-[var(--card-border)]">
+            <div className="px-8 py-6 border-b border-gray-100 dark:border-[var(--card-border)] flex items-center justify-between rounded-t-lg">
               <h2 className="text-xl font-semibold text-gray-900 dark:text-[var(--card-foreground)]">保存当前搜索</h2>
               <button
                 onClick={() => setShowSaveSearch(false)}
-                className="p-2.5 text-gray-400 dark:text-[var(--foreground-subtle)] hover:text-gray-600 dark:hover:text-[var(--foreground-muted)] hover:bg-gray-100 dark:hover:bg-[var(--background-muted)] rounded-xl transition-all"
+                className="p-2.5 text-gray-400 dark:text-[var(--foreground-subtle)] hover:text-gray-600 dark:hover:text-[var(--foreground-muted)] hover:bg-gray-100 dark:hover:bg-[var(--background-muted)] rounded-lg transition-all"
                 aria-label="关闭"
               >
                 <X className="w-5 h-5" />
@@ -1210,10 +1210,10 @@ function BatchMovementModal({
 
   return (
     <div className="fixed inset-0 modal-backdrop z-50 flex items-center justify-center p-4 animate-fade-in">
-      <div className="bg-white dark:bg-[var(--card)] rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-200/80 dark:border-[var(--card-border)]">
-        <div className="px-8 py-6 border-b border-gray-100 dark:border-[var(--card-border)] flex items-center justify-between sticky top-0 bg-white dark:bg-[var(--card)] z-10 rounded-t-2xl">
+      <div className="bg-white dark:bg-[var(--card)] rounded-lg w-full max-w-3xl max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-200/80 dark:border-[var(--card-border)]">
+        <div className="px-8 py-6 border-b border-gray-100 dark:border-[var(--card-border)] flex items-center justify-between sticky top-0 bg-white dark:bg-[var(--card)] z-10 rounded-t-lg">
           <div className="flex items-center gap-4">
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${type === "IN" ? "bg-emerald-50 dark:bg-emerald-500/10" : "bg-amber-50 dark:bg-amber-500/10"}`}>
+            <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${type === "IN" ? "bg-emerald-50 dark:bg-emerald-500/10" : "bg-amber-50 dark:bg-amber-500/10"}`}>
               {type === "IN" ? (
                 <ArrowDownToLine className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
               ) : (
@@ -1226,7 +1226,7 @@ function BatchMovementModal({
           </div>
           <button
             onClick={onClose}
-            className="p-2.5 text-gray-400 dark:text-[var(--foreground-subtle)] hover:text-gray-600 dark:hover:text-[var(--foreground-muted)] hover:bg-gray-100 dark:hover:bg-[var(--background-muted)] rounded-xl transition-all duration-200"
+            className="p-2.5 text-gray-400 dark:text-[var(--foreground-subtle)] hover:text-gray-600 dark:hover:text-[var(--foreground-muted)] hover:bg-gray-100 dark:hover:bg-[var(--background-muted)] rounded-lg transition-all duration-200"
             aria-label="关闭"
           >
             <X className="w-5 h-5" />
@@ -1237,7 +1237,7 @@ function BatchMovementModal({
             {parts.map((part) => {
               const qty = part.stock?.quantity ?? 0;
               return (
-                <div key={part.id} className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-[var(--background-subtle)] rounded-xl">
+                <div key={part.id} className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-[var(--background-subtle)] rounded-lg">
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold text-gray-900 dark:text-[var(--card-foreground)] truncate">{part.name}</p>
                     <p className="text-xs text-gray-500 dark:text-[var(--foreground-subtle)] font-mono">{part.code}</p>
@@ -1324,17 +1324,17 @@ function ImportExportModal({
 
   return (
     <div className="fixed inset-0 modal-backdrop z-50 flex items-center justify-center p-4 animate-fade-in">
-      <div className="bg-white dark:bg-[var(--card)] rounded-2xl w-full max-w-lg shadow-2xl border border-gray-200/80 dark:border-[var(--card-border)]">
-        <div className="px-8 py-6 border-b border-gray-100 dark:border-[var(--card-border)] flex items-center justify-between rounded-t-2xl">
+      <div className="bg-white dark:bg-[var(--card)] rounded-lg w-full max-w-lg shadow-2xl border border-gray-200/80 dark:border-[var(--card-border)]">
+        <div className="px-8 py-6 border-b border-gray-100 dark:border-[var(--card-border)] flex items-center justify-between rounded-t-lg">
           <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-xl bg-green-50 dark:bg-emerald-500/10 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-lg bg-green-50 dark:bg-emerald-500/10 flex items-center justify-center">
               <ArrowDownToLine className="w-5 h-5 text-green-600 dark:text-emerald-400" />
             </div>
             <h2 className="text-xl font-semibold text-gray-900 dark:text-[var(--card-foreground)]">导入/导出</h2>
           </div>
           <button
             onClick={onClose}
-            className="p-2.5 text-gray-400 dark:text-[var(--foreground-subtle)] hover:text-gray-600 dark:hover:text-[var(--foreground-muted)] hover:bg-gray-100 dark:hover:bg-[var(--background-muted)] rounded-xl transition-all duration-200"
+            className="p-2.5 text-gray-400 dark:text-[var(--foreground-subtle)] hover:text-gray-600 dark:hover:text-[var(--foreground-muted)] hover:bg-gray-100 dark:hover:bg-[var(--background-muted)] rounded-lg transition-all duration-200"
             aria-label="关闭"
           >
             <X className="w-5 h-5" />
@@ -1355,7 +1355,7 @@ function ImportExportModal({
               </button>
               <button
                 onClick={() => onExport("json")}
-                className="flex-1 px-4 py-3 bg-purple-50 dark:bg-purple-500/10 text-purple-700 dark:text-purple-400 rounded-xl text-sm font-medium hover:bg-purple-100 dark:hover:bg-purple-500/20 transition-all duration-200 flex items-center justify-center gap-2"
+                className="flex-1 px-4 py-3 bg-purple-50 dark:bg-purple-500/10 text-purple-700 dark:text-purple-400 rounded-lg text-sm font-medium hover:bg-purple-100 dark:hover:bg-purple-500/20 transition-all duration-200 flex items-center justify-center gap-2"
               >
                 <Package className="w-4 h-4" />
                 导出 JSON
@@ -1367,7 +1367,7 @@ function ImportExportModal({
           <div>
             <h3 className="text-sm font-semibold text-gray-700 dark:text-[var(--foreground-muted)] mb-3">导入数据</h3>
             <div
-              className={`border-2 border-dashed rounded-xl p-8 text-center transition-all duration-200 ${
+              className={`border-2 border-dashed rounded-lg p-8 text-center transition-all duration-200 ${
                 dragOver
                   ? "border-[var(--accent)] bg-[var(--accent-subtle)]"
                   : "border-gray-200 dark:border-[var(--card-border)] hover:border-gray-300"
@@ -1401,7 +1401,7 @@ function ImportExportModal({
 
           {/* Import Result */}
           {importResult && (
-            <div className={`p-4 rounded-xl ${
+            <div className={`p-4 rounded-lg ${
               importResult.success ? "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400" : "bg-red-50 dark:bg-red-500/10 text-red-700 dark:text-red-400"
             }`}>
               <p className="text-sm font-medium">{importResult.message}</p>

@@ -186,8 +186,8 @@ export default function QRScanner({ onScan, onClose, continuous = false, embedde
       {showManualInput ? (
         <div className="absolute inset-0 z-30 flex items-center justify-center p-6 bg-black/80">
           <div className="w-full max-w-sm">
-            <div className="w-16 h-16 rounded-full bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center mx-auto mb-4">
-              <Keyboard className="w-8 h-8 text-indigo-500" />
+            <div className="w-16 h-16 rounded-full bg-[var(--accent-muted)] dark:bg-[var(--accent-subtle)] flex items-center justify-center mx-auto mb-4">
+              <Keyboard className="w-8 h-8 text-[var(--accent)]" />
             </div>
             <p className="text-white text-center font-medium mb-2">手动输入</p>
             <p className="text-white/70 text-sm text-center mb-4">
@@ -198,7 +198,7 @@ export default function QRScanner({ onScan, onClose, continuous = false, embedde
                 value={manualCode}
                 onChange={(e) => setManualCode(e.target.value)}
                 placeholder="C2907002 或 {on:...,pc:C2907002,...}"
-                className="w-full h-24 px-4 py-3 border border-gray-300 dark:border-[var(--card-border)] rounded-xl bg-white dark:bg-[var(--background-subtle)] text-gray-900 dark:text-gray-100 resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full h-24 px-4 py-3 border border-gray-300 dark:border-[var(--card-border)] rounded-xl bg-white dark:bg-[var(--background-subtle)] text-gray-900 dark:text-gray-100 resize-none focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
                 autoFocus
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && !e.shiftKey) {
@@ -219,7 +219,7 @@ export default function QRScanner({ onScan, onClose, continuous = false, embedde
                 <button
                   onClick={handleManualSubmit}
                   disabled={!manualCode.trim()}
-                  className="flex-1 px-4 py-2.5 bg-indigo-500 text-white rounded-xl font-medium transition-colors hover:bg-indigo-600 disabled:opacity-50"
+                  className="flex-1 px-4 py-2.5 bg-[var(--accent)] text-white rounded-xl font-medium transition-colors hover:bg-[var(--accent-hover)] disabled:opacity-50"
                 >
                   确认
                 </button>
@@ -244,7 +244,7 @@ export default function QRScanner({ onScan, onClose, continuous = false, embedde
               </button>
               <button
                 onClick={() => setShowManualInput(true)}
-                className="flex-1 px-4 py-2 bg-indigo-500 text-white rounded-xl font-medium hover:bg-indigo-600 transition-colors"
+                className="flex-1 px-4 py-2 bg-[var(--accent)] text-white rounded-xl font-medium hover:bg-[var(--accent-hover)] transition-colors"
               >
                 手动输入
               </button>
@@ -264,7 +264,7 @@ export default function QRScanner({ onScan, onClose, continuous = false, embedde
           <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-black/50 backdrop-blur-sm rounded-full">
             {scanning ? (
               <>
-                <div className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse" />
+                <div className="w-2 h-2 rounded-full bg-[var(--accent)] animate-pulse" />
                 <p className="text-white/90 text-sm">正在扫描...</p>
               </>
             ) : (
@@ -307,7 +307,7 @@ export default function QRScanner({ onScan, onClose, continuous = false, embedde
              {continuous && (
               <button
                 onClick={handleClose}
-                className="px-5 py-1.5 bg-indigo-500 text-white text-sm rounded-full font-medium hover:bg-indigo-600 transition-colors"
+                className="px-5 py-1.5 bg-[var(--accent)] text-white text-sm rounded-full font-medium hover:bg-[var(--accent-hover)] transition-colors"
               >
                 完成扫描
               </button>

@@ -146,14 +146,14 @@ export default function Home() {
     return (
       <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
         <div className="text-center">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-red-50 dark:bg-red-500/10 flex items-center justify-center">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-lg bg-red-50 dark:bg-red-500/10 flex items-center justify-center">
             <AlertTriangle className="w-8 h-8 text-red-500" />
           </div>
           <p className="text-gray-600 dark:text-[var(--foreground-muted)] font-medium">加载失败</p>
           <p className="text-gray-400 dark:text-[var(--foreground-subtle)] text-sm mt-1">请检查网络连接后重试</p>
           <button 
             onClick={() => window.location.reload()} 
-            className="mt-4 px-5 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 transition-all duration-200 shadow-sm shadow-blue-500/25 dark:shadow-none"
+            className="mt-4 px-5 py-2.5 bg-[var(--accent)] text-white rounded-lg text-sm font-medium hover:bg-[var(--accent-hover)] transition-all duration-200 shadow-sm dark:shadow-none"
           >
             重试
           </button>
@@ -198,7 +198,7 @@ export default function Home() {
       {/* Header */}
       <div className="section">
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/25 dark:shadow-none">
+          <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-[var(--accent)] to-[var(--accent-hover)] flex items-center justify-center shadow-lg dark:shadow-none">
             <Activity className="w-6 h-6 text-white" />
           </div>
           <div>
@@ -208,7 +208,7 @@ export default function Home() {
           <button
             onClick={loadData}
             disabled={loading}
-            className="ml-auto flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-600 dark:text-[var(--foreground-muted)] bg-white dark:bg-[var(--card)] border border-gray-200 dark:border-[var(--card-border)] rounded-xl hover:bg-gray-50 dark:hover:bg-[var(--background-subtle)] transition-colors disabled:opacity-50"
+            className="ml-auto flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-600 dark:text-[var(--foreground-muted)] bg-white dark:bg-[var(--card)] border border-gray-200 dark:border-[var(--card-border)] rounded-lg hover:bg-gray-50 dark:hover:bg-[var(--background-subtle)] transition-colors disabled:opacity-50"
           >
             <RefreshCw className="w-4 h-4" /> 刷新
           </button>
@@ -228,7 +228,7 @@ export default function Home() {
                 router.push(`/parts?q=${encodeURIComponent(searchQuery.trim())}`);
               }
             }}
-            className="w-full pl-16 pr-32 py-5 bg-white dark:bg-[var(--card)] rounded-2xl border border-gray-200/80 dark:border-[var(--card-border)] text-base text-gray-900 dark:text-[var(--card-foreground)] placeholder-gray-400 dark:placeholder-[var(--foreground-subtle)] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent hover:border-blue-300 hover:shadow-lg hover:shadow-blue-500/10 dark:hover:border-blue-700 transition-all duration-300"
+            className="w-full pl-16 pr-32 py-5 bg-white dark:bg-[var(--card)] rounded-lg border border-gray-200/80 dark:border-[var(--card-border)] text-base text-gray-900 dark:text-[var(--card-foreground)] placeholder-gray-400 dark:placeholder-[var(--foreground-subtle)] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent hover:border-blue-300 hover:shadow-lg dark:hover:border-blue-700 transition-all duration-300"
             placeholder="搜索器件名称、编码、品牌... 按回车搜索"
           />
           {searchQuery && (
@@ -245,7 +245,7 @@ export default function Home() {
                 router.push(`/parts?q=${encodeURIComponent(searchQuery.trim())}`);
               }
             }}
-            className="absolute right-2 top-1/2 -translate-y-1/2 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl text-sm font-medium hover:from-blue-700 hover:to-blue-800 transition-all duration-200 flex items-center gap-2 shadow-md shadow-blue-500/20 dark:shadow-none"
+            className="absolute right-2 top-1/2 -translate-y-1/2 px-5 py-2.5 bg-[var(--accent)] text-white rounded-lg text-sm font-medium hover:bg-[var(--accent-hover)] transition-all duration-200 flex items-center gap-2 shadow-md dark:shadow-none"
           >
             <Search className="w-4 h-4" /> 搜索
           </button>
@@ -260,10 +260,10 @@ export default function Home() {
             <Link 
               key={s.label} 
               href={s.href}
-              className="block bg-white dark:bg-[var(--card)] rounded-xl border border-gray-200/80 dark:border-[var(--card-border)] p-4 sm:p-7 hover:shadow-lg transition-shadow group"
+              className="block bg-white dark:bg-[var(--card)] rounded-lg border border-gray-200/80 dark:border-[var(--card-border)] p-4 sm:p-7 hover:shadow-lg transition-shadow group"
             >
               <div className="flex items-center justify-between mb-3 sm:mb-6">
-                <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-xl bg-[var(--accent-subtle)] shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-lg bg-[var(--accent-subtle)] shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                   <Icon className="w-5 h-5 sm:w-7 sm:h-7 text-[var(--accent)]" />
                 </div>
               </div>
@@ -345,9 +345,9 @@ export default function Home() {
 
       {/* Inventory Trend Chart */}
       {alerts && alerts.recentMovements.length > 0 && (
-        <div className="bg-white dark:bg-[var(--card)] rounded-2xl border border-gray-200/80 dark:border-[var(--card-border)] p-6 section">
+        <div className="bg-white dark:bg-[var(--card)] rounded-lg border border-gray-200/80 dark:border-[var(--card-border)] p-6 section">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-500/20 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-500/20 flex items-center justify-center">
               <Activity className="w-5 h-5 text-blue-600 dark:text-blue-400" />
             </div>
             <div>
@@ -403,7 +403,7 @@ export default function Home() {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 section">
         <Link
           href="/stock?mode=IN"
-          className="group relative flex items-center justify-center gap-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-2xl py-7 text-base font-semibold hover:from-blue-700 hover:to-blue-800 transition-all duration-300 shadow-lg shadow-blue-500/25 dark:shadow-none hover:shadow-xl hover:shadow-blue-500/30 overflow-hidden"
+          className="group relative flex items-center justify-center gap-4 bg-gradient-to-r from-[var(--accent)] to-[var(--accent-hover)] text-white rounded-lg py-7 text-base font-semibold transition-all duration-300 shadow-lg dark:shadow-none hover:shadow-xl overflow-hidden"
         >
           <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
           <ArrowDownToLine className="w-6 h-6 relative z-10" />
@@ -411,7 +411,7 @@ export default function Home() {
         </Link>
         <Link
           href="/stock?mode=OUT"
-          className="group relative flex items-center justify-center gap-4 bg-white dark:bg-[var(--card)] border border-gray-200/80 dark:border-[var(--card-border)] text-gray-700 dark:text-[var(--foreground-muted)] rounded-2xl py-7 text-base font-semibold hover:bg-gray-50 dark:hover:bg-[var(--background-subtle)] hover:border-gray-300 dark:hover:border-[var(--card-border)] transition-all duration-300 shadow-sm dark:shadow-none hover:shadow-md overflow-hidden"
+          className="group relative flex items-center justify-center gap-4 bg-white dark:bg-[var(--card)] border border-gray-200/80 dark:border-[var(--card-border)] text-gray-700 dark:text-[var(--foreground-muted)] rounded-lg py-7 text-base font-semibold hover:bg-gray-50 dark:hover:bg-[var(--background-subtle)] hover:border-gray-300 dark:hover:border-[var(--card-border)] transition-all duration-300 shadow-sm dark:shadow-none hover:shadow-md overflow-hidden"
         >
           <ArrowUpFromLine className="w-6 h-6" />
           <span>快速出库</span>
@@ -435,7 +435,7 @@ export default function Home() {
               <div
                 key={part.id}
                 onClick={() => router.push(`/parts/${part.id}`)}
-                className="bg-white dark:bg-[var(--card)] rounded-xl border border-gray-200/80 dark:border-[var(--card-border)] p-3 sm:p-5 hover:shadow-md hover:border-blue-300 dark:hover:border-blue-700 transition-all duration-200 group cursor-pointer"
+                className="bg-white dark:bg-[var(--card)] rounded-lg border border-gray-200/80 dark:border-[var(--card-border)] p-3 sm:p-5 hover:shadow-md hover:border-blue-300 dark:hover:border-blue-700 transition-all duration-200 group cursor-pointer"
               >
                 <div className="flex items-center justify-between mb-2 sm:mb-4">
                   <Package className="w-5 h-5 text-gray-400 dark:text-[var(--foreground-subtle)] group-hover:text-blue-500 transition-colors" />
@@ -490,7 +490,7 @@ export default function Home() {
               <div
                 key={part.id}
                 onClick={() => router.push(`/parts/${part.id}`)}
-                className="bg-white dark:bg-[var(--card)] rounded-xl border border-amber-200/80 dark:border-amber-500/30 p-7 hover:shadow-md hover:border-amber-300 dark:hover:border-amber-500/50 transition-all duration-200 group cursor-pointer"
+                className="bg-white dark:bg-[var(--card)] rounded-lg border border-amber-200/80 dark:border-amber-500/30 p-7 hover:shadow-md hover:border-amber-300 dark:hover:border-amber-500/50 transition-all duration-200 group cursor-pointer"
               >
                 <div className="flex items-center justify-between mb-5">
                   <Package className="w-6 h-6 text-amber-400 group-hover:text-amber-500 transition-colors" />
@@ -530,10 +530,10 @@ export default function Home() {
       )}
 
       {/* Recent movements */}
-      <div className="bg-white dark:bg-[var(--card)] rounded-2xl border border-gray-200/80 dark:border-[var(--card-border)] overflow-hidden shadow-sm dark:shadow-none">
+      <div className="bg-white dark:bg-[var(--card)] rounded-lg border border-gray-200/80 dark:border-[var(--card-border)] overflow-hidden shadow-sm dark:shadow-none">
         <div className="px-4 sm:px-10 py-4 sm:py-8 border-b border-gray-100 dark:border-[var(--card-border)] flex items-center justify-between">
           <div className="flex items-center gap-2 sm:gap-4">
-            <div className="w-8 h-8 sm:w-11 sm:h-11 rounded-lg sm:rounded-xl bg-gray-100 dark:bg-[var(--background-muted)] flex items-center justify-center">
+            <div className="w-8 h-8 sm:w-11 sm:h-11 rounded-lg bg-gray-100 dark:bg-[var(--background-muted)] flex items-center justify-center">
               <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500 dark:text-[var(--foreground-subtle)]" />
             </div>
             <h2 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-[var(--card-foreground)]">最近操作记录</h2>
@@ -546,7 +546,7 @@ export default function Home() {
         <div className="divide-y divide-gray-100 dark:divide-[var(--card-border)]">
           {data.recentMovements.length === 0 ? (
             <div className="p-10 sm:p-20 text-center">
-              <div className="w-14 h-14 sm:w-20 sm:h-20 mx-auto mb-3 sm:mb-5 rounded-xl sm:rounded-2xl bg-gray-100 dark:bg-[var(--background-muted)] flex items-center justify-center">
+              <div className="w-14 h-14 sm:w-20 sm:h-20 mx-auto mb-3 sm:mb-5 rounded-lg bg-gray-100 dark:bg-[var(--background-muted)] flex items-center justify-center">
                 <Clock className="w-7 h-7 sm:w-10 sm:h-10 text-gray-400 dark:text-[var(--foreground-subtle)]" />
               </div>
               <p className="text-gray-500 dark:text-[var(--foreground-subtle)] font-medium text-base sm:text-lg">暂无操作记录</p>
@@ -562,7 +562,7 @@ export default function Home() {
               >
                 <div className="flex items-center gap-3 sm:gap-6">
                   <div
-                    className={`w-9 h-9 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl flex items-center justify-center ${
+                    className={`w-9 h-9 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center ${
                       m.type === "IN" 
                         ? "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" 
                         : "bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400"
