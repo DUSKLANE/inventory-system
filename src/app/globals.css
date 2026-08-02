@@ -418,6 +418,18 @@ mark {
   }
 }
 
+.page-container-narrow {
+  max-width: 1024px;
+  margin: 0 auto;
+  padding: 16px 0;
+}
+
+@media (min-width: 768px) {
+  .page-container-narrow {
+    padding: 32px 0;
+  }
+}
+
 /* Sticky table header */
 thead.sticky th {
   background: var(--card);

@@ -7,6 +7,7 @@ import QRScanner from "@/components/QRScanner";
 import Breadcrumb from "@/components/Breadcrumb";
 import { useConfirm } from "@/components/ConfirmProvider";
 import { useToast } from "@/components/ToastProvider";
+import { PageHeader } from "@/components/ui";
 import StockItemCard from "@/components/StockItemCard";
 import { fetchProductInfo } from "@/lib/api/lceda";
 import { parseScanData, extractPartCode } from "@/lib/parse-qr";
@@ -327,18 +328,12 @@ function StockPageContent() {
 
   return (
     <div className="page-container max-w-3xl">
-      <Breadcrumb items={[{ label: "出入库" }]} />
-
       <div className="section">
-        <div className="flex items-center gap-4 mb-5">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center shadow-lg shadow-indigo-500/25">
-            <ArrowDownToLine className="w-6 h-6 text-white" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-[var(--card-foreground)]">出入库</h1>
-            <p className="text-sm text-gray-500 dark:text-[var(--foreground-subtle)]">扫码 / 手动输入，支持批量操作</p>
-          </div>
-        </div>
+        <PageHeader
+          breadcrumb={<Breadcrumb items={[{ label: "出入库" }]} />}
+          title="出入库"
+          subtitle="扫码 / 手动输入，支持批量操作"
+        />
 
         <div className="grid grid-cols-2 gap-1 p-1 bg-gray-100 dark:bg-[var(--background-muted)] rounded-2xl">
           <button

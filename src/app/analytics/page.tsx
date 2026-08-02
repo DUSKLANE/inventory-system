@@ -2,8 +2,9 @@
 
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
-import { Activity, ArrowDownToLine, ArrowUpFromLine, BarChart3, Package, TrendingDown, TrendingUp, Boxes, Clock, ChevronRight } from "lucide-react";
+import { Activity, ArrowDownToLine, ArrowUpFromLine, Package, TrendingDown, TrendingUp, Boxes, Clock, ChevronRight } from "lucide-react";
 import Breadcrumb from "@/components/Breadcrumb";
+import { PageHeader } from "@/components/ui";
 
 interface AnalyticsData {
   categoryStats: Array<{
@@ -109,32 +110,28 @@ export default function AnalyticsPage() {
       <Breadcrumb items={[{ label: "数据分析" }]} />
 
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5 section">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/25">
-            <BarChart3 className="w-6 h-6 text-white" />
+      <PageHeader
+        breadcrumb={<Breadcrumb items={[{ label: "数据分析" }]} />}
+        title="数据分析"
+        subtitle="库存统计与趋势分析"
+        actions={
+          <div className="flex items-center gap-2">
+            {["7", "30", "90"].map((p) => (
+              <button
+                key={p}
+                onClick={() => setPeriod(p)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                  period === p
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-100 dark:bg-[var(--background-muted)] text-gray-600 dark:text-[var(--foreground-muted)] hover:bg-gray-200 dark:hover:bg-[var(--background-subtle)]"
+                }`}
+              >
+                {p} 天
+              </button>
+            ))}
           </div>
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-[var(--card-foreground)] tracking-tight">数据分析</h1>
-            <p className="text-gray-500 dark:text-[var(--foreground-subtle)] mt-1">库存统计与趋势分析</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          {["7", "30", "90"].map((p) => (
-            <button
-              key={p}
-              onClick={() => setPeriod(p)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                period === p
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-100 dark:bg-[var(--background-muted)] text-gray-600 dark:text-[var(--foreground-muted)] hover:bg-gray-200 dark:hover:bg-[var(--background-subtle)]"
-              }`}
-            >
-              {p} 天
-            </button>
-          ))}
-        </div>
-      </div>
+        }
+      />
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 section">

@@ -7,6 +7,7 @@ import { Plus, Package, Trash2, Edit, Eye, FileText, ChevronRight, Loader2, X, S
 import Breadcrumb from "@/components/Breadcrumb";
 import { useToast } from "@/components/ToastProvider";
 import { useConfirm } from "@/components/ConfirmProvider";
+import { PageHeader, Button, EmptyState, cardClass } from "@/components/ui";
 
 interface Bom {
   id: string;
@@ -69,35 +70,26 @@ export default function BomsPage() {
 
   return (
     <div className="page-container">
-      <Breadcrumb items={[{ label: "BOM清单" }]} />
-
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5 section">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center shadow-lg shadow-orange-500/25">
-            <FileText className="w-6 h-6 text-white" />
-          </div>
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-[var(--card-foreground)] tracking-tight">BOM清单</h1>
-            <p className="text-gray-500 dark:text-[var(--foreground-subtle)] mt-1">项目物料清单管理</p>
-          </div>
-        </div>
-        <button
-          onClick={() => setShowAdd(true)}
-          className="inline-flex items-center gap-2 px-7 py-3.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl text-sm font-semibold hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30"
-        >
-          <Plus className="w-5 h-5" /> 新建BOM
-        </button>
-      </div>
+      <PageHeader
+        breadcrumb={<Breadcrumb items={[{ label: "BOM清单" }]} />}
+        title="BOM清单"
+        subtitle="项目物料清单管理"
+        actions={
+          <Button onClick={() => setShowAdd(true)}>
+            <Plus className="w-4 h-4" />新建BOM
+          </Button>
+        }
+      />
 
       {/* BOM List */}
       {boms.length === 0 ? (
-        <div className="bg-white dark:bg-[var(--card)] rounded-2xl border border-gray-200/80 dark:border-[var(--card-border)] p-16 text-center section">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gray-100 dark:bg-[var(--background-muted)] flex items-center justify-center">
-            <FileText className="w-8 h-8 text-gray-400 dark:text-[var(--foreground-subtle)]" />
-          </div>
-          <p className="text-gray-500 dark:text-[var(--foreground-subtle)] font-medium">暂无BOM清单</p>
-          <p className="text-gray-400 dark:text-[var(--foreground-subtle)] text-sm mt-1">点击上方按钮创建第一个BOM</p>
+        <div className={`${cardClass} section`}>
+          <EmptyState
+            icon={<FileText className="w-7 h-7 text-[var(--foreground-subtle)]" />}
+            title="暂无BOM清单"
+            description="点击上方按钮创建第一个BOM"
+          />
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 section">

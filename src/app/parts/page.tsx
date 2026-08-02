@@ -3,12 +3,14 @@
 import { useEffect, useState, useCallback, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Plus, Search, Edit, Trash2, MapPin, X, Loader2, Package, ChevronLeft, ChevronRight, Eye, Boxes, Filter, CheckSquare, Square, ArrowDownToLine, ArrowUpFromLine, Copy } from "lucide-react";
+import { Plus, Search, Edit, Trash2, MapPin, X, Loader2, Eye, Boxes, Filter, CheckSquare, Square, ArrowDownToLine, ArrowUpFromLine, Copy, Package } from "lucide-react";
 import CategoryInput from "@/components/CategoryInput";
 import NumberInput from "@/components/NumberInput";
 import PartFormModal from "@/components/PartFormModal";
 import { useToast } from "@/components/ToastProvider";
 import { useConfirm } from "@/components/ConfirmProvider";
+import Breadcrumb from "@/components/Breadcrumb";
+import { PageHeader, Button, EmptyState, Spinner, Pagination, inputClass } from "@/components/ui";
 
 interface Part {
   id: string;
@@ -48,7 +50,6 @@ function PartsPageContent() {
   const [sortField, setSortField] = useState<SortField>((searchParams.get("sortField") as SortField) || "name");
   const [sortDirection, setSortDirection] = useState<SortDirection>((searchParams.get("sortOrder") as SortDirection) || "asc");
   const [pageSize, setPageSize] = useState(Number(searchParams.get("pageSize")) || 20);
-  const [jumpPage, setJumpPage] = useState("");
   const [settingsLoaded, setSettingsLoaded] = useState(false);
   const searchTimeoutRef = useRef<NodeJS.Timeout>(undefined);
   const { toast } = useToast();
@@ -94,14 +95,6 @@ function PartsPageContent() {
     } catch {
       toast("复制失败", "error");
     }
-  };
-
-  const goToPage = () => {
-    const p = parseInt(jumpPage, 10);
-    if (data && Number.isFinite(p) && p >= 1) {
-      setPage(Math.min(p, data.totalPages));
-    }
-    setJumpPage("");
   };
 
   // Load preferences from settings
@@ -467,31 +460,21 @@ function PartsPageContent() {
   return (
     <div className="page-container">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5 section">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-lg shadow-violet-500/25">
-            <Boxes className="w-6 h-6 text-white" />
-          </div>
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-[var(--card-foreground)] tracking-tight">器件列表</h1>
-            <p className="text-gray-500 dark:text-[var(--foreground-subtle)] mt-1">共 {data?.total ?? 0} 个器件</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setShowImportExport(true)}
-            className="inline-flex items-center gap-2 px-5 py-3.5 border border-gray-200 dark:border-[var(--card-border)] text-gray-700 dark:text-[var(--foreground-muted)] rounded-xl text-sm font-medium hover:bg-gray-50 dark:hover:bg-[var(--background-subtle)] hover:border-gray-300 transition-all duration-200"
-          >
-            <ArrowDownToLine className="w-4 h-4" /> 导入/导出
-          </button>
-          <button
-            onClick={() => { setEditPart(null); setShowAdd(true); }}
-            className="inline-flex items-center gap-2 px-7 py-3.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl text-sm font-semibold hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30"
-          >
-            <Plus className="w-5 h-5" /> 新增器件
-          </button>
-        </div>
-      </div>
+      <PageHeader
+        breadcrumb={<Breadcrumb items={[{ label: "器件列表" }]} />}
+        title="器件列表"
+        subtitle="管理库存器件，支持高级搜索与批量出入库"
+        actions={
+          <>
+            <Button variant="outline" onClick={() => setShowImportExport(true)}>
+              <ArrowDownToLine className="w-4 h-4" />导入/导出
+            </Button>
+            <Button onClick={() => { setEditPart(null); setShowAdd(true); }}>
+              <Plus className="w-4 h-4" />新增器件
+            </Button>
+          </>
+        }
+      />
 
       {/* Search & Filter */}
       <div className="bg-white dark:bg-[var(--card)] rounded-2xl border border-gray-200/80 dark:border-[var(--card-border)] p-6 section shadow-sm dark:shadow-none">
@@ -510,7 +493,7 @@ function PartsPageContent() {
                   addToSearchHistory(search);
                 }
               }}
-              className="w-full pl-14 pr-14 py-4 bg-gray-50 dark:bg-[var(--background-subtle)] border border-gray-200 dark:border-[var(--card-border)] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white dark:focus:bg-[var(--card)] transition-all duration-200"
+              className={`${inputClass} pl-14 pr-10`}
             />
             {search && (
               <button
@@ -588,7 +571,7 @@ function PartsPageContent() {
                   placeholder="筛选品牌"
                   value={brand}
                   onChange={(e) => { setBrand(e.target.value); setPage(1); }}
-                  className="w-full px-4 py-3 bg-gray-50 dark:bg-[var(--background-subtle)] border border-gray-200 dark:border-[var(--card-border)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-[var(--card)] transition-all duration-200"
+                  className={inputClass}
                 />
               </div>
               <div>
@@ -600,7 +583,7 @@ function PartsPageContent() {
                     min="0"
                     value={stockMin}
                     onChange={(e) => { setStockMin(e.target.value); setPage(1); }}
-                    className="w-full px-3 py-3 bg-gray-50 dark:bg-[var(--background-subtle)] border border-gray-200 dark:border-[var(--card-border)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-[var(--card)] transition-all duration-200"
+                    className={inputClass}
                   />
                   <span className="text-gray-400 dark:text-[var(--foreground-subtle)]">-</span>
                   <input
@@ -609,7 +592,7 @@ function PartsPageContent() {
                     min="0"
                     value={stockMax}
                     onChange={(e) => { setStockMax(e.target.value); setPage(1); }}
-                    className="w-full px-3 py-3 bg-gray-50 dark:bg-[var(--background-subtle)] border border-gray-200 dark:border-[var(--card-border)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-[var(--card)] transition-all duration-200"
+                    className={inputClass}
                   />
                 </div>
               </div>
@@ -783,27 +766,20 @@ function PartsPageContent() {
       {/* Parts list */}
       <div className="bg-white dark:bg-[var(--card)] rounded-2xl border border-gray-200/80 dark:border-[var(--card-border)] overflow-hidden shadow-sm dark:shadow-none">
         {loading ? (
-          <div className="p-16 text-center">
-            <div className="relative mx-auto w-12 h-12 mb-4">
-              <div className="w-12 h-12 border-4 border-blue-200 rounded-full animate-spin" />
-              <div className="absolute top-0 left-0 w-12 h-12 border-4 border-transparent border-t-blue-600 rounded-full animate-spin" />
-            </div>
-            <p className="text-gray-500 dark:text-[var(--foreground-subtle)] text-sm font-medium">加载中...</p>
+          <div className="flex justify-center py-16">
+            <Spinner />
           </div>
         ) : data?.parts.length === 0 ? (
-          <div className="p-16 text-center">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gray-100 dark:bg-[var(--background-muted)] flex items-center justify-center">
-              <Package className="w-8 h-8 text-gray-400 dark:text-[var(--foreground-subtle)]" />
-            </div>
-            <p className="text-gray-500 dark:text-[var(--foreground-subtle)] font-medium">暂无器件</p>
-            <p className="text-gray-400 dark:text-[var(--foreground-subtle)] text-sm mt-1">点击下方按钮添加第一个器件</p>
-            <button
-              onClick={() => { setEditPart(null); setShowAdd(true); }}
-              className="mt-4 inline-flex items-center gap-2 px-5 py-3 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-500/10 rounded-xl text-sm font-medium transition-all duration-200"
-            >
-              <Plus className="w-4 h-4" /> 添加器件
-            </button>
-          </div>
+          <EmptyState
+            icon={<Boxes className="w-7 h-7 text-[var(--foreground-subtle)]" />}
+            title="未找到器件"
+            description="调整搜索条件或新增器件"
+            action={
+              <Button onClick={() => setShowAdd(true)} size="sm">
+                <Plus className="w-4 h-4" />新增器件
+              </Button>
+            }
+          />
         ) : (
           <>
             {/* Desktop table */}
@@ -1086,58 +1062,15 @@ function PartsPageContent() {
             </div>
 
             {/* Pagination */}
-            {data && data.totalPages > 1 && (
-              <div className="px-8 py-5 border-t border-gray-100 dark:border-[var(--card-border)] flex flex-wrap items-center justify-between gap-3 bg-gray-50/50 dark:bg-[var(--background-subtle)]">
-                <div className="flex items-center gap-2">
-                  <select
-                    value={pageSize}
-                    onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
-                    className="px-2.5 py-2 text-sm border border-gray-200 dark:border-[var(--card-border)] rounded-xl bg-white dark:bg-[var(--card)] text-gray-700 dark:text-[var(--foreground-muted)] focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    {[10, 20, 50, 100].map((n) => (
-                      <option key={n} value={n}>{n} 条/页</option>
-                    ))}
-                  </select>
-                  <span className="text-sm text-gray-500 dark:text-[var(--foreground-subtle)]">共 {data.total} 条</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setPage(Math.max(1, page - 1))}
-                    disabled={page === 1}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-gray-600 dark:text-[var(--foreground-muted)] bg-white dark:bg-[var(--card)] border border-gray-200 dark:border-[var(--card-border)] rounded-xl disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-[var(--background-subtle)] hover:border-gray-300 transition-all duration-200"
-                  >
-                    <ChevronLeft className="w-4 h-4" /> 上一页
-                  </button>
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-sm text-gray-500 dark:text-[var(--foreground-subtle)] font-medium">
-                      第 {page} / {data.totalPages} 页
-                    </span>
-                    <input
-                      type="number"
-                      min={1}
-                      max={data.totalPages}
-                      value={jumpPage}
-                      onChange={(e) => setJumpPage(e.target.value)}
-                      onKeyDown={(e) => { if (e.key === "Enter") goToPage(); }}
-                      className="w-16 px-2 py-1.5 text-sm text-center border border-gray-200 dark:border-[var(--card-border)] rounded-lg bg-white dark:bg-[var(--card)] text-gray-700 dark:text-[var(--foreground-muted)] focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="页"
-                    />
-                    <button
-                      onClick={goToPage}
-                      className="px-3 py-1.5 text-sm font-medium text-gray-600 dark:text-[var(--foreground-muted)] bg-white dark:bg-[var(--card)] border border-gray-200 dark:border-[var(--card-border)] rounded-lg hover:bg-gray-50 dark:hover:bg-[var(--background-subtle)] transition-colors"
-                    >
-                      跳转
-                    </button>
-                  </div>
-                  <button
-                    onClick={() => setPage(Math.min(data.totalPages, page + 1))}
-                    disabled={page === data.totalPages}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-gray-600 dark:text-[var(--foreground-muted)] bg-white dark:bg-[var(--card)] border border-gray-200 dark:border-[var(--card-border)] rounded-xl disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-[var(--background-subtle)] hover:border-gray-300 transition-all duration-200"
-                  >
-                    下一页 <ChevronRight className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
+            {data && (
+              <Pagination
+                page={page}
+                totalPages={data.totalPages}
+                total={data.total}
+                pageSize={pageSize}
+                onPageChange={(p) => setPage(p)}
+                onPageSizeChange={(s) => setPageSize(s)}
+              />
             )}
           </>
         )}
@@ -1195,7 +1128,7 @@ function PartsPageContent() {
                   value={saveSearchName}
                   onChange={(e) => setSaveSearchName(e.target.value)}
                   onKeyDown={(e) => { if (e.key === "Enter") confirmSaveSearch(); }}
-                  className="w-full px-5 py-4 bg-gray-50 dark:bg-[var(--background-subtle)] border border-gray-200 dark:border-[var(--card-border)] rounded-xl text-sm text-gray-900 dark:text-[var(--card-foreground)] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-[var(--card)] transition-all"
+                  className={inputClass}
                   placeholder="如：常用电阻"
                 />
               </div>

@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import {
-  HelpCircle,
   Zap,
   BookOpen,
   Keyboard,
@@ -20,6 +19,8 @@ import {
   ImageIcon,
   ScanBarcode,
 } from "lucide-react";
+import Breadcrumb from "@/components/Breadcrumb";
+import { PageHeader } from "@/components/ui";
 
 const sections = [
   { id: "quickstart", label: "快速入门", icon: Zap },
@@ -55,11 +56,12 @@ export default function HelpPage() {
   const [activeSection, setActiveSection] = useState("quickstart");
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <div className="flex items-center gap-3 mb-6">
-        <HelpCircle className="w-7 h-7 text-indigo-500" />
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-[var(--card-foreground)]">帮助中心</h1>
-      </div>
+    <div className="page-container-narrow">
+      <PageHeader
+        breadcrumb={<Breadcrumb items={[{ label: "帮助中心" }]} />}
+        title="帮助中心"
+        subtitle="操作指引与快捷键说明"
+      />
 
       <div className="flex flex-col md:flex-row gap-6">
         {/* 侧边导航 */}

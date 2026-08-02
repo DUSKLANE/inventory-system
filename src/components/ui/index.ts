@@ -6,4 +6,5 @@ export * from "./PageHeader";
 export * from "./EmptyState";
 export * from "./Spinner";
 export * from "./SelectField";
+export * from "./Pagination";
 export * from "./constants";

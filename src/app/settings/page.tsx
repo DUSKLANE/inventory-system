@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useTheme } from "@/components/ThemeProvider";
 import {
-  Settings,
   Palette,
   Package,
   List,
@@ -16,6 +15,8 @@ import {
   Check,
   Loader2,
 } from "lucide-react";
+import Breadcrumb from "@/components/Breadcrumb";
+import { PageHeader } from "@/components/ui";
 
 interface Category {
   id: string;
@@ -169,11 +170,12 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
-      <div className="flex items-center gap-3 mb-6">
-        <Settings className="w-7 h-7 text-indigo-500" />
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-[var(--card-foreground)]">设置</h1>
-      </div>
+    <div className="page-container-narrow space-y-6">
+      <PageHeader
+        breadcrumb={<Breadcrumb items={[{ label: "设置" }]} />}
+        title="设置"
+        subtitle="偏好与系统配置"
+      />
 
       {message && (
         <div

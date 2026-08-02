@@ -3,8 +3,9 @@
 import { useEffect, useState, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowDown, ArrowUp, ChevronLeft, ChevronRight, Search, X, Clock, Inbox } from "lucide-react";
+import { ArrowDown, ArrowUp, Search, X, Clock, Inbox } from "lucide-react";
 import Breadcrumb from "@/components/Breadcrumb";
+import { PageHeader, EmptyState, Pagination, inputClass } from "@/components/ui";
 
 interface Movement {
   id: string;
@@ -33,6 +34,7 @@ function MovementsContent() {
     return t === "IN" || t === "OUT" ? t : "";
   });
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
   const [partQuery, setPartQuery] = useState("");
   const [partOptions, setPartOptions] = useState<PartOption[]>([]);
   const [partId, setPartId] = useState("");
@@ -51,7 +53,7 @@ function MovementsContent() {
     if (type) params.set("type", type);
     if (partId) params.set("partId", partId);
     params.set("page", String(page));
-    params.set("pageSize", "50");
+    params.set("pageSize", String(pageSize));
     fetch(`/api/movements?${params}`)
       .then((res) => (res.ok ? res.json() : Promise.reject()))
       .then((json) => {
@@ -61,13 +63,13 @@ function MovementsContent() {
           movements: json.movements ?? [],
           total,
           page: json.page ?? 1,
-          totalPages: Math.max(1, Math.ceil(total / 50)),
+          totalPages: Math.max(1, Math.ceil(total / pageSize)),
         });
       })
       .catch(() => {})
       .finally(() => { if (seq === requestSeq.current) setLoading(false); });
     return () => { requestSeq.current += 1; };
-  }, [type, partId, page]);
+  }, [type, partId, page, pageSize]);
 
   const searchParts = async () => {
     if (!partQuery.trim()) return;
@@ -94,20 +96,12 @@ function MovementsContent() {
   ];
 
   return (
-    <div className="page-container max-w-4xl">
-      <Breadcrumb items={[{ label: "流水记录" }]} />
-
-      <div className="section">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/25">
-            <Clock className="w-6 h-6 text-white" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-[var(--card-foreground)]">流水记录</h1>
-            <p className="text-sm text-gray-500 dark:text-[var(--foreground-subtle)]">全部出入库明细</p>
-          </div>
-        </div>
-      </div>
+    <div className="page-container-narrow">
+      <PageHeader
+        breadcrumb={<Breadcrumb items={[{ label: "流水记录" }]} />}
+        title="流水记录"
+        subtitle="全部出入库明细"
+      />
 
       <div className="flex flex-col sm:flex-row sm:items-center gap-3 section">
         <div className="flex items-center gap-1 p-1 bg-gray-100 dark:bg-[var(--background-muted)] rounded-xl">
@@ -144,7 +138,7 @@ function MovementsContent() {
                   onChange={(e) => setPartQuery(e.target.value)}
                   onKeyDown={(e) => { if (e.key === "Enter") searchParts(); }}
                   placeholder="按器件搜索流水"
-                  className="w-full pl-9 pr-3 py-2 bg-white dark:bg-[var(--card)] border border-gray-200 dark:border-[var(--card-border)] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className={`${inputClass} pl-9`}
                 />
               </div>
               <button
@@ -183,13 +177,11 @@ function MovementsContent() {
         {loading && data === null ? (
           <div className="p-16 text-center text-sm text-gray-400 dark:text-[var(--foreground-subtle)]">加载中...</div>
         ) : !data || data.movements.length === 0 ? (
-          <div className="p-16 text-center">
-            <div className="w-14 h-14 mx-auto mb-3 rounded-2xl bg-gray-100 dark:bg-[var(--background-muted)] flex items-center justify-center">
-              <Inbox className="w-7 h-7 text-gray-400 dark:text-[var(--foreground-subtle)]" />
-            </div>
-            <p className="text-gray-500 dark:text-[var(--foreground-subtle)] font-medium">暂无流水记录</p>
-            <p className="text-sm text-gray-400 dark:text-[var(--foreground-subtle)] mt-1">完成入库或出库操作后，记录将显示在这里</p>
-          </div>
+          <EmptyState
+            icon={<Inbox className="w-7 h-7 text-[var(--foreground-subtle)]" />}
+            title="暂无流水记录"
+            description="完成入库或出库操作后，记录将显示在这里"
+          />
         ) : (
           <>
             <div className="divide-y divide-gray-100 dark:divide-[var(--card-border)]">
@@ -230,27 +222,15 @@ function MovementsContent() {
               })}
             </div>
 
-            {data.totalPages > 1 && (
-              <div className="px-8 py-4 border-t border-gray-100 dark:border-[var(--card-border)] flex items-center justify-between">
-                <span className="text-sm text-gray-500 dark:text-[var(--foreground-subtle)]">共 {data.total} 条</span>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setPage(Math.max(1, page - 1))}
-                    disabled={page === 1}
-                    className="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-600 dark:text-[var(--foreground-muted)] border border-gray-200 dark:border-[var(--card-border)] rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-[var(--background-subtle)] transition-colors"
-                  >
-                    <ChevronLeft className="w-4 h-4" /> 上一页
-                  </button>
-                  <span className="text-sm text-gray-500 dark:text-[var(--foreground-subtle)]">第 {page} / {data.totalPages} 页</span>
-                  <button
-                    onClick={() => setPage(Math.min(data.totalPages, page + 1))}
-                    disabled={page === data.totalPages}
-                    className="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-600 dark:text-[var(--foreground-muted)] border border-gray-200 dark:border-[var(--card-border)] rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-[var(--background-subtle)] transition-colors"
-                  >
-                    下一页 <ChevronRight className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
+            {data && (
+              <Pagination
+                page={page}
+                totalPages={data.totalPages}
+                total={data.total}
+                pageSize={pageSize}
+                onPageChange={(p) => setPage(p)}
+                onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
+              />
             )}
           </>
         )}
