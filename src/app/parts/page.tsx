@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Plus, Search, Edit, Trash2, MapPin, X, Loader2, Package, ChevronLeft, ChevronRight, Eye, Boxes, Filter, CheckSquare, Square, ArrowDownToLine, ArrowUpFromLine } from "lucide-react";
+import { Plus, Search, Edit, Trash2, MapPin, X, Loader2, Package, ChevronLeft, ChevronRight, Eye, Boxes, Filter, CheckSquare, Square, ArrowDownToLine, ArrowUpFromLine, Copy } from "lucide-react";
 import CategoryInput from "@/components/CategoryInput";
 import NumberInput from "@/components/NumberInput";
 import PartFormModal from "@/components/PartFormModal";
@@ -48,6 +48,7 @@ function PartsPageContent() {
   const [sortField, setSortField] = useState<SortField>((searchParams.get("sortField") as SortField) || "name");
   const [sortDirection, setSortDirection] = useState<SortDirection>((searchParams.get("sortOrder") as SortDirection) || "asc");
   const [pageSize, setPageSize] = useState(Number(searchParams.get("pageSize")) || 20);
+  const [jumpPage, setJumpPage] = useState("");
   const [settingsLoaded, setSettingsLoaded] = useState(false);
   const searchTimeoutRef = useRef<NodeJS.Timeout>(undefined);
   const { toast } = useToast();
@@ -84,6 +85,23 @@ function PartsPageContent() {
       setSortField(field);
       setSortDirection("asc");
     }
+  };
+
+  const copyText = async (text: string, label: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast(`已复制${label}`, "success");
+    } catch {
+      toast("复制失败", "error");
+    }
+  };
+
+  const goToPage = () => {
+    const p = parseInt(jumpPage, 10);
+    if (data && Number.isFinite(p) && p >= 1) {
+      setPage(Math.min(p, data.totalPages));
+    }
+    setJumpPage("");
   };
 
   // Load preferences from settings
@@ -894,14 +912,32 @@ function PartsPageContent() {
                           </button>
                         </td>
                         <td className="px-8 py-5">
-                          <Link href={`/parts/${part.id}`} className="font-mono text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:underline font-medium">
-                            {part.code}
-                          </Link>
+                          <div className="flex items-center gap-1.5">
+                            <Link href={`/parts/${part.id}`} className="font-mono text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:underline font-medium">
+                              {part.code}
+                            </Link>
+                            <button
+                              onClick={() => copyText(part.code, "编码")}
+                              className="p-1 text-gray-300 dark:text-[var(--foreground-subtle)] hover:text-gray-500 dark:hover:text-[var(--foreground-muted)] hover:bg-gray-100 dark:hover:bg-[var(--background-muted)] rounded transition-colors"
+                              title="复制编码"
+                            >
+                              <Copy className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
                         </td>
                         <td className="px-8 py-5">
-                          <Link href={`/parts/${part.id}`} className="text-sm font-semibold text-gray-900 dark:text-[var(--card-foreground)] hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200">
-                            {part.name}
-                          </Link>
+                          <div className="flex items-center gap-1.5">
+                            <Link href={`/parts/${part.id}`} className="text-sm font-semibold text-gray-900 dark:text-[var(--card-foreground)] hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200">
+                              {part.name}
+                            </Link>
+                            <button
+                              onClick={() => copyText(part.name, "名称")}
+                              className="p-1 text-gray-300 dark:text-[var(--foreground-subtle)] hover:text-gray-500 dark:hover:text-[var(--foreground-muted)] hover:bg-gray-100 dark:hover:bg-[var(--background-muted)] rounded transition-colors"
+                              title="复制名称"
+                            >
+                              <Copy className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
                         </td>
                         <td className="px-8 py-5">
                           {part.category && (
@@ -985,8 +1021,26 @@ function PartsPageContent() {
                     <Link href={`/parts/${part.id}`} className="flex-1 min-w-0 block hover:bg-gray-50/80 dark:hover:bg-[var(--background-subtle)] transition-colors duration-150">
                       <div className="flex items-start justify-between">
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-gray-900 dark:text-[var(--card-foreground)] truncate">{part.name}</p>
-                          <p className="text-xs text-gray-500 dark:text-[var(--foreground-subtle)] font-mono mt-1">{part.code}</p>
+                          <div className="flex items-center gap-1">
+                            <p className="text-sm font-semibold text-gray-900 dark:text-[var(--card-foreground)] truncate">{part.name}</p>
+                            <button
+                              onClick={(e) => { e.preventDefault(); e.stopPropagation(); copyText(part.name, "名称"); }}
+                              className="p-0.5 text-gray-300 dark:text-[var(--foreground-subtle)] hover:text-gray-500 dark:hover:text-[var(--foreground-muted)] rounded shrink-0"
+                              title="复制名称"
+                            >
+                              <Copy className="w-3 h-3" />
+                            </button>
+                          </div>
+                          <div className="flex items-center gap-1 mt-1">
+                            <p className="text-xs text-gray-500 dark:text-[var(--foreground-subtle)] font-mono">{part.code}</p>
+                            <button
+                              onClick={(e) => { e.preventDefault(); e.stopPropagation(); copyText(part.code, "编码"); }}
+                              className="p-0.5 text-gray-300 dark:text-[var(--foreground-subtle)] hover:text-gray-500 dark:hover:text-[var(--foreground-muted)] rounded shrink-0"
+                              title="复制编码"
+                            >
+                              <Copy className="w-3 h-3" />
+                            </button>
+                          </div>
                           <div className="flex items-center gap-2 mt-3 flex-wrap">
                             {part.category && (
                               <span className="inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-medium bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400">
@@ -1033,24 +1087,56 @@ function PartsPageContent() {
 
             {/* Pagination */}
             {data && data.totalPages > 1 && (
-              <div className="px-8 py-5 border-t border-gray-100 dark:border-[var(--card-border)] flex items-center justify-between bg-gray-50/50 dark:bg-[var(--background-subtle)]">
-                <button
-                  onClick={() => setPage(Math.max(1, page - 1))}
-                  disabled={page === 1}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-gray-600 dark:text-[var(--foreground-muted)] bg-white dark:bg-[var(--card)] border border-gray-200 dark:border-[var(--card-border)] rounded-xl disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-[var(--background-subtle)] hover:border-gray-300 transition-all duration-200"
-                >
-                  <ChevronLeft className="w-4 h-4" /> 上一页
-                </button>
-                <span className="text-sm text-gray-500 dark:text-[var(--foreground-subtle)] font-medium">
-                  第 {page} / {data.totalPages} 页
-                </span>
-                <button
-                  onClick={() => setPage(Math.min(data.totalPages, page + 1))}
-                  disabled={page === data.totalPages}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-gray-600 dark:text-[var(--foreground-muted)] bg-white dark:bg-[var(--card)] border border-gray-200 dark:border-[var(--card-border)] rounded-xl disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-[var(--background-subtle)] hover:border-gray-300 transition-all duration-200"
-                >
-                  下一页 <ChevronRight className="w-4 h-4" />
-                </button>
+              <div className="px-8 py-5 border-t border-gray-100 dark:border-[var(--card-border)] flex flex-wrap items-center justify-between gap-3 bg-gray-50/50 dark:bg-[var(--background-subtle)]">
+                <div className="flex items-center gap-2">
+                  <select
+                    value={pageSize}
+                    onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
+                    className="px-2.5 py-2 text-sm border border-gray-200 dark:border-[var(--card-border)] rounded-xl bg-white dark:bg-[var(--card)] text-gray-700 dark:text-[var(--foreground-muted)] focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    {[10, 20, 50, 100].map((n) => (
+                      <option key={n} value={n}>{n} 条/页</option>
+                    ))}
+                  </select>
+                  <span className="text-sm text-gray-500 dark:text-[var(--foreground-subtle)]">共 {data.total} 条</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setPage(Math.max(1, page - 1))}
+                    disabled={page === 1}
+                    className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-gray-600 dark:text-[var(--foreground-muted)] bg-white dark:bg-[var(--card)] border border-gray-200 dark:border-[var(--card-border)] rounded-xl disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-[var(--background-subtle)] hover:border-gray-300 transition-all duration-200"
+                  >
+                    <ChevronLeft className="w-4 h-4" /> 上一页
+                  </button>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-sm text-gray-500 dark:text-[var(--foreground-subtle)] font-medium">
+                      第 {page} / {data.totalPages} 页
+                    </span>
+                    <input
+                      type="number"
+                      min={1}
+                      max={data.totalPages}
+                      value={jumpPage}
+                      onChange={(e) => setJumpPage(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === "Enter") goToPage(); }}
+                      className="w-16 px-2 py-1.5 text-sm text-center border border-gray-200 dark:border-[var(--card-border)] rounded-lg bg-white dark:bg-[var(--card)] text-gray-700 dark:text-[var(--foreground-muted)] focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="页"
+                    />
+                    <button
+                      onClick={goToPage}
+                      className="px-3 py-1.5 text-sm font-medium text-gray-600 dark:text-[var(--foreground-muted)] bg-white dark:bg-[var(--card)] border border-gray-200 dark:border-[var(--card-border)] rounded-lg hover:bg-gray-50 dark:hover:bg-[var(--background-subtle)] transition-colors"
+                    >
+                      跳转
+                    </button>
+                  </div>
+                  <button
+                    onClick={() => setPage(Math.min(data.totalPages, page + 1))}
+                    disabled={page === data.totalPages}
+                    className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-gray-600 dark:text-[var(--foreground-muted)] bg-white dark:bg-[var(--card)] border border-gray-200 dark:border-[var(--card-border)] rounded-xl disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-[var(--background-subtle)] hover:border-gray-300 transition-all duration-200"
+                  >
+                    下一页 <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
             )}
           </>
