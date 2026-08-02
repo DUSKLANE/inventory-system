@@ -28,6 +28,10 @@ const bottomLinks = [
   { href: "/help", label: "帮助", icon: HelpCircle },
 ];
 
+// Mobile "更多" menu shows main links not already on the bottom tab bar
+const mobileHrefs = new Set(mobileLinks.map((link) => link.href));
+const moreMenuLinks = mainLinks.filter((link) => !mobileHrefs.has(link.href));
+
 export default function Navigation() {
   const router = useRouter();
   const pathname = usePathname();
@@ -194,7 +198,7 @@ export default function Navigation() {
         {showMoreMenu && (
           <div className="absolute bottom-full left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 shadow-lg rounded-t-2xl p-4 pb-6">
             <div className="grid grid-cols-4 gap-3">
-              {mainLinks.slice(4).map((link) => {
+              {moreMenuLinks.map((link) => {
                 const Icon = link.icon;
                 const active = link.href === "/" ? pathname === "/" : pathname.startsWith(link.href);
                 return (
