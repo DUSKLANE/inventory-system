@@ -27,7 +27,7 @@
 
 ### §1 简单修复（两处）
 
-1. **删重复面包屑**：`src/app/analytics/page.tsx:110` 删除独立 `<Breadcrumb items={[{label:"数据分析"}]} />`；保留 PageHeader `breadcrumb` prop 中的。同文件确认无其他重复（grep `<Breadcrumb` 计数=1 处 JSX 使用）。
+1. **删重复面包屑**：`src/app/analytics/page.tsx:110` 删除独立 `<Breadcrumb items={[{label:"数据分析"}]} />`；保留 PageHeader `breadcrumb` prop 中的（`:114`）。删除后全文件 `<Breadcrumb` 仅剩 PageHeader prop 内 1 处。
 
 2. **搜索框图标居中**：`src/app/parts/page.tsx:483` 图标类改 `absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4`（中心 24px）；`:496` 输入框 `pl-14` 改 `pl-12`（48px，中心 24px）。图标右缘 32px ≤ 文字起点 48px，无重叠且居中。
 
@@ -50,7 +50,7 @@
 - `src/components/Combobox.tsx`：
   - 输入框类改 `inputClass`（`@/components/ui/constants` 导入；保留 Combobox 无需的差异：下拉面板 `rounded-lg` 替换 `rounded-xl`、`border-[var(--card-border)]`、`max-h-52` 保留）
   - 过滤逻辑不变（`options.filter(opt => opt.toLowerCase().includes(value.toLowerCase()))`）
-- `src/app/parts/page.tsx:539` 分类框：Filter 图标改 `left-3.5 w-4 h-4`（14px 中心 22px）或直接复用 §1 对齐规则——**统一约定**：分类框图标 `left-4 w-4 h-4` + Combobox 输入框在 inputClass 基础上加 `pl-10`（40px 中心 24px）→ 与搜索框图标中心一致（24px）
+- `src/app/parts/page.tsx:539` 分类框：Filter 图标改 `left-4 w-4 h-4`（16px 起点，中心 24px）+ Combobox 输入框在 inputClass 基础上加 `pl-12`（48px，中心 24px）→ 与搜索框图标中心（24px）完全一致，消除 12px 文字/图标重叠
 
 **2.3 测试**
 
