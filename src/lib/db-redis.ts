@@ -153,7 +153,7 @@ export class RedisAdapter implements DatabaseAdapter {
     const { parts, stock } = await this.loadCache();
     let filtered = [...parts];
     if (filters.q) { const q = filters.q.toLowerCase(); filtered = filtered.filter(p => p.name.toLowerCase().includes(q) || p.code.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q) || p.model.toLowerCase().includes(q) || p.location.toLowerCase().includes(q)); }
-    if (filters.category) filtered = filtered.filter(p => p.category === filters.category);
+    if (filters.category) filtered = filtered.filter(p => p.category.includes(filters.category as string));
     if (filters.package) filtered = filtered.filter(p => p.package === filters.package);
     if (filters.location) { const l = filters.location.toLowerCase(); filtered = filtered.filter(p => p.location.toLowerCase().includes(l)); }
     if (filters.brand) { const b = filters.brand.toLowerCase(); filtered = filtered.filter(p => p.brand.toLowerCase().includes(b)); }
@@ -182,6 +182,15 @@ export class RedisAdapter implements DatabaseAdapter {
     const pageSize = filters.pageSize || 20;
     const start = (page - 1) * pageSize;
     return { parts: filtered.slice(start, start + pageSize), total };
+  }
+
+  async listPartCategories(): Promise<string[]> {
+    const { parts } = await this.loadCache();
+    const catNames = (await this.listCategories()).map(c => c.name);
+    const set = new Set<string>();
+    for (const p of parts) if (p.category) set.add(p.category);
+    for (const n of catNames) set.add(n);
+    return [...set];
   }
 
   async getPart(id: string): Promise<PartDetail | null> {

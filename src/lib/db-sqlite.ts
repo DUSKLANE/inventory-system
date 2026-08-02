@@ -113,7 +113,7 @@ export class SqliteAdapter implements DatabaseAdapter {
     let where = "WHERE 1=1";
     const params: (string | number)[] = [];
     if (filters.q) { where += " AND (p.name LIKE ? OR p.code LIKE ? OR p.brand LIKE ? OR p.model LIKE ? OR p.location LIKE ?)"; const q = `%${filters.q}%`; params.push(q, q, q, q, q); }
-    if (filters.category) { where += " AND p.category = ?"; params.push(filters.category); }
+    if (filters.category) { where += " AND p.category LIKE ? ESCAPE '\\'"; params.push(`%${this.escapeLike(filters.category)}%`); }
     if (filters.package) { where += " AND p.package = ?"; params.push(filters.package); }
     if (filters.location) { where += " AND p.location LIKE ?"; params.push(`%${filters.location}%`); }
     if (filters.brand) { where += " AND p.brand LIKE ?"; params.push(`%${filters.brand}%`); }
@@ -139,6 +139,19 @@ export class SqliteAdapter implements DatabaseAdapter {
     const rawParts = this.db.prepare(`SELECT p.*, s.quantity as stockQuantity FROM parts p LEFT JOIN stock s ON s.partId = p.id ${where} ORDER BY ${orderBy} LIMIT ? OFFSET ?`).all(...params, pageSize, offset) as Record<string, unknown>[];
     const parts = rawParts.map(p => ({ ...p, stock: { quantity: (p.stockQuantity as number) ?? 0 } }));
     return { parts: parts as unknown as Part[], total };
+  }
+
+  private escapeLike(s: string): string {
+    return s.replace(/[\\%_]/g, (c) => "\\" + c);
+  }
+
+  async listPartCategories(): Promise<string[]> {
+    const partCats = this.db.prepare("SELECT category, COUNT(1) as cnt FROM parts WHERE category != '' GROUP BY category ORDER BY cnt DESC, category").all() as { category: string }[];
+    const catNames = this.db.prepare("SELECT name FROM categories ORDER BY sortOrder, name").all() as { name: string }[];
+    const set = new Set<string>();
+    for (const c of partCats) set.add(c.category);
+    for (const c of catNames) set.add(c.name);
+    return [...set];
   }
 
   async getPart(id: string): Promise<PartDetail | null> {

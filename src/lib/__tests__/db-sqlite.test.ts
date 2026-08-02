@@ -171,3 +171,34 @@ describe("checkoutBomItems", () => {
     expect(mv.movements).toHaveLength(1); // 只有入库流水，无出库
   });
 });
+
+describe("listPartCategories", () => {
+  it("合并 parts 在用分类与 settings 分类并去重", async () => {
+    await db.createPart({ code: "Z0001", name: "A", category: "贴片电阻" });
+    await db.createPart({ code: "Z0002", name: "B", category: "电阻" });
+    await db.createPart({ code: "Z0003", name: "C", category: "贴片电阻" });
+    await db.createCategory({ name: "电容" });
+    const cats = await db.listPartCategories();
+    expect(cats).toEqual(expect.arrayContaining(["贴片电阻", "电阻", "电容"]));
+    expect(new Set(cats).size).toBe(cats.length); // 无重复
+  });
+});
+
+describe("listParts category 包含匹配", () => {
+  it("选电阻命中电阻与贴片电阻", async () => {
+    await db.createPart({ code: "Z0001", name: "A", category: "电阻" });
+    await db.createPart({ code: "Z0002", name: "B", category: "贴片电阻" });
+    await db.createPart({ code: "Z0003", name: "C", category: "电容" });
+    const r = await db.listParts({ category: "电阻" });
+    expect(r.parts.map(p => p.code).sort()).toEqual(["Z0001", "Z0002"]);
+    expect(r.total).toBe(2);
+  });
+
+  it("分类含 LIKE 通配符时转义不误命中", async () => {
+    await db.createPart({ code: "Z0001", name: "A", category: "100%电阻" });
+    await db.createPart({ code: "Z0002", name: "B", category: "100X电阻" });
+    const r = await db.listParts({ category: "100%电阻" });
+    expect(r.parts.map(p => p.code)).toEqual(["Z0001"]);
+    expect(r.total).toBe(1);
+  });
+});

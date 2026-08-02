@@ -232,6 +232,7 @@ export interface DatabaseAdapter {
   listSettings(): Promise<Record<string, string>>;
 
   // Categories
+  listPartCategories(): Promise<string[]>;
   listCategories(): Promise<Category[]>;
   getCategory(id: string): Promise<Category | null>;
   createCategory(data: { name: string; description?: string }): Promise<Category>;
