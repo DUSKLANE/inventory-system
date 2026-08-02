@@ -30,7 +30,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="bg-[var(--background)] antialiased noise-texture">
+      <body className="bg-[var(--background)] antialiased">
         <ThemeProvider>
           <ToastProvider>
             <ConfirmProvider>
