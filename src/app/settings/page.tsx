@@ -11,12 +11,14 @@ import {
   Plus,
   Pencil,
   Trash2,
-  X,
-  Check,
   Loader2,
+  Sun,
+  Moon,
+  Monitor,
 } from "lucide-react";
 import Breadcrumb from "@/components/Breadcrumb";
-import { PageHeader } from "@/components/ui";
+import { useToast } from "@/components/ToastProvider";
+import { PageHeader, Button, Modal, SelectField, inputClass, textareaClass } from "@/components/ui";
 
 interface Category {
   id: string;
@@ -44,11 +46,11 @@ const defaultSettings: AppSettings = {
 
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
+  const { toast } = useToast();
   const [settings, setSettings] = useState<AppSettings>(defaultSettings);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
@@ -78,11 +80,6 @@ export default function SettingsPage() {
     fetchData();
   }, [fetchData]);
 
-  const showMessage = (type: "success" | "error", text: string) => {
-    setMessage({ type, text });
-    setTimeout(() => setMessage(null), 3000);
-  };
-
   const handleSaveSettings = async () => {
     setSaving(true);
     try {
@@ -92,15 +89,20 @@ export default function SettingsPage() {
         body: JSON.stringify(settings),
       });
       if (res.ok) {
-        showMessage("success", "设置已保存");
+        toast("已保存", "success");
       } else {
-        showMessage("error", "保存失败");
+        toast("保存失败", "error");
       }
     } catch {
-      showMessage("error", "保存失败");
+      toast("保存失败", "error");
     } finally {
       setSaving(false);
     }
+  };
+
+  const closeCategoryModal = () => {
+    setShowCategoryModal(false);
+    setEditingCategory(null);
   };
 
   const handleSaveCategory = async () => {
@@ -128,12 +130,12 @@ export default function SettingsPage() {
         setCategoryName("");
         setCategoryDesc("");
         fetchData();
-        showMessage("success", editingCategory ? "分类已更新" : "分类已创建");
+        toast(editingCategory ? "分类已更新" : "分类已创建", "success");
       } else {
-        showMessage("error", data.error || "操作失败");
+        toast(data.error || "操作失败", "error");
       }
     } catch {
-      showMessage("error", "操作失败");
+      toast("操作失败", "error");
     }
   };
 
@@ -143,12 +145,12 @@ export default function SettingsPage() {
       const res = await fetch(`/api/categories/${id}`, { method: "DELETE" });
       if (res.ok) {
         fetchData();
-        showMessage("success", "分类已删除");
+        toast("分类已删除", "success");
       } else {
-        showMessage("error", "删除失败");
+        toast("删除失败", "error");
       }
     } catch {
-      showMessage("error", "删除失败");
+      toast("删除失败", "error");
     } finally {
       setDeletingId(null);
     }
@@ -164,7 +166,7 @@ export default function SettingsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+        <Loader2 className="w-8 h-8 animate-spin text-[var(--accent)]" />
       </div>
     );
   }
@@ -177,25 +179,10 @@ export default function SettingsPage() {
         subtitle="偏好与系统配置"
       />
 
-      {message && (
-        <div
-          className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-xl shadow-lg animate-fade-in ${
-            message.type === "success"
-              ? "bg-emerald-500 text-white"
-              : "bg-red-500 text-white"
-          }`}
-        >
-          <div className="flex items-center gap-2">
-            {message.type === "success" ? <Check className="w-4 h-4" /> : <X className="w-4 h-4" />}
-            {message.text}
-          </div>
-        </div>
-      )}
-
       {/* 外观设置 */}
-      <section className="bg-white dark:bg-[var(--card)] rounded-2xl border border-gray-200 dark:border-[var(--card-border)] p-6">
+      <section className="bg-white dark:bg-[var(--card)] rounded-lg border border-[var(--card-border)] p-6">
         <div className="flex items-center gap-2 mb-4">
-          <Palette className="w-5 h-5 text-indigo-500" />
+          <Palette className="w-5 h-5 text-[var(--accent)]" />
           <h2 className="text-lg font-semibold text-gray-900 dark:text-[var(--card-foreground)]">外观设置</h2>
         </div>
         <div className="space-y-4">
@@ -205,34 +192,35 @@ export default function SettingsPage() {
             </label>
             <div className="grid grid-cols-3 gap-3">
               {[
-                { value: "light", label: "浅色", icon: "☀️" },
-                { value: "dark", label: "深色", icon: "🌙" },
-                { value: "system", label: "跟随系统", icon: "💻" },
-              ].map((option) => (
-                <button
-                  key={option.value}
-                  onClick={() => setTheme(option.value as "light" | "dark" | "system")}
-                  className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${
-                    theme === option.value
-                      ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10"
-                      : "border-gray-200 dark:border-[var(--card-border)] hover:border-gray-300"
-                  }`}
-                >
-                  <span className="text-2xl">{option.icon}</span>
-                  <span className="text-sm font-medium text-gray-900 dark:text-[var(--card-foreground)]">
-                    {option.label}
-                  </span>
-                </button>
-              ))}
+                { value: "light", label: "浅色", icon: Sun },
+                { value: "dark", label: "深色", icon: Moon },
+                { value: "system", label: "跟随系统", icon: Monitor },
+              ].map((option) => {
+                const Icon = option.icon;
+                return (
+                  <button
+                    key={option.value}
+                    onClick={() => setTheme(option.value as "light" | "dark" | "system")}
+                    className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all ${
+                      theme === option.value
+                        ? "border-[var(--accent)] bg-[var(--accent-subtle)] text-[var(--accent)]"
+                        : "border-[var(--border)] text-[var(--foreground)] hover:border-[var(--border-hover)]"
+                    }`}
+                  >
+                    <Icon className="w-6 h-6" />
+                    <span className="text-sm font-medium">{option.label}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>
       </section>
 
       {/* 库存设置 */}
-      <section className="bg-white dark:bg-[var(--card)] rounded-2xl border border-gray-200 dark:border-[var(--card-border)] p-6">
+      <section className="bg-white dark:bg-[var(--card)] rounded-lg border border-[var(--card-border)] p-6">
         <div className="flex items-center gap-2 mb-4">
-          <Package className="w-5 h-5 text-indigo-500" />
+          <Package className="w-5 h-5 text-[var(--accent)]" />
           <h2 className="text-lg font-semibold text-gray-900 dark:text-[var(--card-foreground)]">库存设置</h2>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -244,7 +232,7 @@ export default function SettingsPage() {
               type="number"
               value={settings.low_stock_threshold}
               onChange={(e) => setSettings({ ...settings, low_stock_threshold: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-[var(--card-border)] rounded-lg bg-white dark:bg-[var(--background-subtle)] text-gray-900 dark:text-[var(--card-foreground)]"
+              className={inputClass}
               min="0"
             />
             <p className="text-xs text-gray-500 dark:text-[var(--foreground-subtle)] mt-1">
@@ -259,7 +247,7 @@ export default function SettingsPage() {
               type="text"
               value={settings.default_unit}
               onChange={(e) => setSettings({ ...settings, default_unit: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-[var(--card-border)] rounded-lg bg-white dark:bg-[var(--background-subtle)] text-gray-900 dark:text-[var(--card-foreground)]"
+              className={inputClass}
               placeholder="pcs"
             />
           </div>
@@ -267,9 +255,9 @@ export default function SettingsPage() {
       </section>
 
       {/* 操作偏好 */}
-      <section className="bg-white dark:bg-[var(--card)] rounded-2xl border border-gray-200 dark:border-[var(--card-border)] p-6">
+      <section className="bg-white dark:bg-[var(--card)] rounded-lg border border-[var(--card-border)] p-6">
         <div className="flex items-center gap-2 mb-4">
-          <List className="w-5 h-5 text-indigo-500" />
+          <List className="w-5 h-5 text-[var(--accent)]" />
           <h2 className="text-lg font-semibold text-gray-900 dark:text-[var(--card-foreground)]">操作偏好</h2>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -277,79 +265,72 @@ export default function SettingsPage() {
             <label className="block text-sm font-medium text-gray-700 dark:text-[var(--foreground-muted)] mb-1">
               默认排序字段
             </label>
-            <select
+            <SelectField
               value={settings.default_sort_field}
               onChange={(e) => setSettings({ ...settings, default_sort_field: e.target.value })}
-              className="w-full px-4 py-3 border border-gray-200 dark:border-[var(--card-border)] rounded-xl text-sm bg-gray-50 dark:bg-[var(--background-subtle)] text-gray-900 dark:text-[var(--card-foreground)] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-[var(--card)] transition-all duration-200 cursor-pointer appearance-none"
             >
               <option value="createdAt">创建时间</option>
               <option value="updatedAt">更新时间</option>
               <option value="name">名称</option>
               <option value="code">编号</option>
-            </select>
+            </SelectField>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-[var(--foreground-muted)] mb-1">
               默认排序方向
             </label>
-            <select
+            <SelectField
               value={settings.default_sort_order}
               onChange={(e) => setSettings({ ...settings, default_sort_order: e.target.value })}
-              className="w-full px-4 py-3 border border-gray-200 dark:border-[var(--card-border)] rounded-xl text-sm bg-gray-50 dark:bg-[var(--background-subtle)] text-gray-900 dark:text-[var(--card-foreground)] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-[var(--card)] transition-all duration-200 cursor-pointer appearance-none"
             >
               <option value="desc">降序</option>
               <option value="asc">升序</option>
-            </select>
+            </SelectField>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-[var(--foreground-muted)] mb-1">
               每页显示条数
             </label>
-            <select
+            <SelectField
               value={settings.page_size}
               onChange={(e) => setSettings({ ...settings, page_size: e.target.value })}
-              className="w-full px-4 py-3 border border-gray-200 dark:border-[var(--card-border)] rounded-xl text-sm bg-gray-50 dark:bg-[var(--background-subtle)] text-gray-900 dark:text-[var(--card-foreground)] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-[var(--card)] transition-all duration-200 cursor-pointer appearance-none"
             >
               <option value="10">10 条</option>
               <option value="20">20 条</option>
               <option value="50">50 条</option>
               <option value="100">100 条</option>
-            </select>
+            </SelectField>
           </div>
         </div>
       </section>
 
       {/* 保存按钮 */}
       <div className="flex justify-end">
-        <button
-          onClick={handleSaveSettings}
-          disabled={saving}
-          className="flex items-center gap-2 px-6 py-3 bg-indigo-500 text-white rounded-xl font-medium hover:bg-indigo-600 transition-colors disabled:opacity-50"
-        >
+        <Button onClick={handleSaveSettings} disabled={saving} className="px-6 py-3">
           {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
           {saving ? "保存中..." : "保存设置"}
-        </button>
+        </Button>
       </div>
 
       {/* 分类管理 */}
-      <section className="bg-white dark:bg-[var(--card)] rounded-2xl border border-gray-200 dark:border-[var(--card-border)] p-6">
+      <section className="bg-white dark:bg-[var(--card)] rounded-lg border border-[var(--card-border)] p-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <Tags className="w-5 h-5 text-indigo-500" />
+            <Tags className="w-5 h-5 text-[var(--accent)]" />
             <h2 className="text-lg font-semibold text-gray-900 dark:text-[var(--card-foreground)]">分类管理</h2>
           </div>
-          <button
+          <Button
+            size="sm"
             onClick={() => {
               setEditingCategory(null);
               setCategoryName("");
               setCategoryDesc("");
               setShowCategoryModal(true);
             }}
-            className="flex items-center gap-1 px-3 py-2 bg-indigo-500 text-white rounded-lg text-sm font-medium hover:bg-indigo-600 transition-colors"
           >
             <Plus className="w-4 h-4" />
             新增分类
-          </button>
+          </Button>
         </div>
 
         {categories.length === 0 ? (
@@ -361,12 +342,12 @@ export default function SettingsPage() {
             {categories.map((cat) => (
               <div
                 key={cat.id}
-                className="flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-[var(--background-subtle)] hover:bg-gray-100 dark:hover:bg-[var(--background-muted)] transition-colors"
+                className="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-[var(--background-subtle)] hover:bg-gray-100 dark:hover:bg-[var(--background-muted)] transition-colors"
               >
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="font-medium text-gray-900 dark:text-[var(--card-foreground)]">{cat.name}</span>
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400">
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-[var(--accent-subtle)] text-[var(--accent)]">
                       {cat.partCount} 个器件
                     </span>
                   </div>
@@ -377,7 +358,7 @@ export default function SettingsPage() {
                 <div className="flex items-center gap-1 ml-4">
                   <button
                     onClick={() => openEditCategory(cat)}
-                    className="p-2 text-gray-400 dark:text-[var(--foreground-subtle)] hover:text-indigo-500 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition-colors"
+                    className="p-2 text-gray-400 dark:text-[var(--foreground-subtle)] hover:text-[var(--accent)] rounded-lg hover:bg-[var(--accent-subtle)] transition-colors"
                   >
                     <Pencil className="w-4 h-4" />
                   </button>
@@ -400,60 +381,49 @@ export default function SettingsPage() {
       </section>
 
       {/* 分类编辑弹窗 */}
-      {showCategoryModal && (
-        <div className="fixed inset-0 modal-backdrop z-50 flex items-center justify-center p-4 animate-fade-in">
-          <div className="bg-white dark:bg-[var(--card)] rounded-2xl p-6 w-full max-w-md shadow-xl">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-[var(--card-foreground)] mb-4">
-              {editingCategory ? "编辑分类" : "新增分类"}
-            </h3>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-[var(--foreground-muted)] mb-1">
-                  分类名称 <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={categoryName}
-                  onChange={(e) => setCategoryName(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-[var(--card-border)] rounded-lg bg-white dark:bg-[var(--background-subtle)] text-gray-900 dark:text-[var(--card-foreground)]"
-                  placeholder="请输入分类名称"
-                  autoFocus
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-[var(--foreground-muted)] mb-1">
-                  描述
-                </label>
-                <textarea
-                  value={categoryDesc}
-                  onChange={(e) => setCategoryDesc(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-[var(--card-border)] rounded-lg bg-white dark:bg-[var(--background-subtle)] text-gray-900 dark:text-[var(--card-foreground)] resize-none"
-                  rows={3}
-                  placeholder="可选描述"
-                />
-              </div>
-            </div>
-            <div className="flex justify-end gap-3 mt-6">
-              <button
-                onClick={() => {
-                  setShowCategoryModal(false);
-                  setEditingCategory(null);
-                }}
-                className="px-4 py-2 text-gray-700 dark:text-[var(--foreground-muted)] hover:bg-gray-100 dark:hover:bg-[var(--background-subtle)] rounded-lg transition-colors"
-              >
-                取消
-              </button>
-              <button
-                onClick={handleSaveCategory}
-                disabled={!categoryName.trim()}
-                className="px-4 py-2 bg-indigo-500 text-white rounded-lg font-medium hover:bg-indigo-600 transition-colors disabled:opacity-50"
-              >
-                {editingCategory ? "更新" : "创建"}
-              </button>
-            </div>
+      <Modal
+        open={showCategoryModal}
+        onClose={closeCategoryModal}
+        title={editingCategory ? "编辑分类" : "新增分类"}
+        width="max-w-md"
+        footer={
+          <>
+            <Button type="button" variant="outline" onClick={closeCategoryModal}>
+              取消
+            </Button>
+            <Button type="button" onClick={handleSaveCategory} disabled={!categoryName.trim()}>
+              {editingCategory ? "更新" : "创建"}
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-[var(--foreground-muted)] mb-1">
+              分类名称 <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              value={categoryName}
+              onChange={(e) => setCategoryName(e.target.value)}
+              className={inputClass}
+              placeholder="请输入分类名称"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-[var(--foreground-muted)] mb-1">
+              描述
+            </label>
+            <textarea
+              value={categoryDesc}
+              onChange={(e) => setCategoryDesc(e.target.value)}
+              className={textareaClass}
+              rows={3}
+              placeholder="可选描述"
+            />
           </div>
         </div>
-      )}
+      </Modal>
     </div>
   );
 }

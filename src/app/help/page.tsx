@@ -71,9 +71,9 @@ export default function HelpPage() {
               <button
                 key={section.id}
                 onClick={() => setActiveSection(section.id)}
-                className={`flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium whitespace-nowrap transition-all ${
+                className={`flex items-center gap-2 px-4 py-3 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
                   activeSection === section.id
-                    ? "bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400"
+                    ? "bg-[var(--accent-subtle)] text-[var(--accent)]"
                     : "text-gray-600 dark:text-[var(--foreground-muted)] hover:bg-gray-100 dark:hover:bg-[var(--background-muted)]"
                 }`}
               >
@@ -98,7 +98,7 @@ export default function HelpPage() {
 function QuickStartSection() {
   return (
     <div className="space-y-6 animate-fade-in">
-      <section className="bg-white dark:bg-[var(--card)] rounded-2xl border border-gray-200 dark:border-[var(--card-border)] p-6">
+      <section className="bg-white dark:bg-[var(--card)] rounded-lg border border-[var(--card-border)] p-6">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-[var(--card-foreground)] mb-4">
           欢迎使用元器件库存管理系统
         </h2>
@@ -106,9 +106,9 @@ function QuickStartSection() {
           本系统专为个人实验室和小型团队设计，帮助您高效管理电子元器件库存。
           通过直观的界面和便捷的操作，让库存管理变得简单。
         </p>
-        <div className="bg-indigo-50 dark:bg-indigo-500/10 rounded-xl p-4">
-          <h3 className="font-medium text-indigo-700 dark:text-indigo-300 mb-2">核心功能</h3>
-          <ul className="space-y-2 text-sm text-indigo-600 dark:text-indigo-400">
+        <div className="bg-[var(--accent-subtle)] rounded-lg p-4">
+          <h3 className="font-medium text-[var(--accent)] mb-2">核心功能</h3>
+          <ul className="space-y-2 text-sm text-[var(--accent)]">
             <li className="flex items-center gap-2">
               <ChevronRight className="w-4 h-4" />
               器件信息管理与快速搜索
@@ -133,7 +133,7 @@ function QuickStartSection() {
         </div>
       </section>
 
-      <section className="bg-white dark:bg-[var(--card)] rounded-2xl border border-gray-200 dark:border-[var(--card-border)] p-6">
+      <section className="bg-white dark:bg-[var(--card)] rounded-lg border border-[var(--card-border)] p-6">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-[var(--card-foreground)] mb-4">
           快速开始
         </h2>
@@ -167,7 +167,7 @@ function QuickStartSection() {
 function StepCard({ number, title, description }: { number: number; title: string; description: string }) {
   return (
     <div className="flex gap-4">
-      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-indigo-500 text-white flex items-center justify-center font-bold text-sm">
+      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[var(--accent)] text-white flex items-center justify-center font-bold text-sm">
         {number}
       </div>
       <div>
@@ -277,13 +277,13 @@ function FeatureCard({
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <div className="bg-white dark:bg-[var(--card)] rounded-2xl border border-gray-200 dark:border-[var(--card-border)] overflow-hidden">
+    <div className="bg-white dark:bg-[var(--card)] rounded-lg border border-[var(--card-border)] overflow-hidden">
       <button
         onClick={() => setExpanded(!expanded)}
         className="w-full flex items-center gap-4 p-5 text-left hover:bg-gray-50 dark:hover:bg-[var(--background-subtle)] transition-colors"
       >
-        <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center">
-          <Icon className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+        <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-[var(--accent-subtle)] flex items-center justify-center">
+          <Icon className="w-5 h-5 text-[var(--accent)]" />
         </div>
         <div className="flex-1 min-w-0">
           <h3 className="font-semibold text-gray-900 dark:text-[var(--card-foreground)]">{title}</h3>
@@ -302,7 +302,7 @@ function FeatureCard({
                 key={index}
                 className="flex items-center gap-2 text-sm text-gray-700 dark:text-[var(--foreground-muted)]"
               >
-                <div className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
+                <div className="w-1.5 h-1.5 rounded-full bg-[var(--accent)]" />
                 {item}
               </li>
             ))}
@@ -316,7 +316,7 @@ function FeatureCard({
 function ShortcutsSection() {
   return (
     <div className="space-y-6 animate-fade-in">
-      <section className="bg-white dark:bg-[var(--card)] rounded-2xl border border-gray-200 dark:border-[var(--card-border)] p-6">
+      <section className="bg-white dark:bg-[var(--card)] rounded-lg border border-[var(--card-border)] p-6">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-[var(--card-foreground)] mb-4">
           全局快捷键
         </h2>
@@ -333,7 +333,7 @@ function ShortcutsSection() {
       {Object.entries(pageShortcuts).map(([page, shortcuts]) => (
         <section
           key={page}
-          className="bg-white dark:bg-[var(--card)] rounded-2xl border border-gray-200 dark:border-[var(--card-border)] p-6"
+          className="bg-white dark:bg-[var(--card)] rounded-lg border border-[var(--card-border)] p-6"
         >
           <h2 className="text-lg font-semibold text-gray-900 dark:text-[var(--card-foreground)] mb-4">
             {page}
@@ -346,11 +346,11 @@ function ShortcutsSection() {
         </section>
       ))}
 
-      <section className="bg-indigo-50 dark:bg-indigo-500/10 rounded-2xl p-6">
-        <h3 className="font-medium text-indigo-700 dark:text-indigo-300 mb-2">
+      <section className="bg-[var(--accent-subtle)] rounded-lg p-6">
+        <h3 className="font-medium text-[var(--accent)] mb-2">
           提示
         </h3>
-        <p className="text-sm text-indigo-600 dark:text-indigo-400">
+        <p className="text-sm text-[var(--accent)]">
           在任何页面按下 <kbd className="px-1.5 py-0.5 bg-white dark:bg-[var(--card)] rounded text-xs font-mono">?</kbd> 键
           可以随时查看快捷键帮助。
         </p>
