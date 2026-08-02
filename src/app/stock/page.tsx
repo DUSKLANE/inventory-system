@@ -7,7 +7,7 @@ import QRScanner from "@/components/QRScanner";
 import Breadcrumb from "@/components/Breadcrumb";
 import { useConfirm } from "@/components/ConfirmProvider";
 import { useToast } from "@/components/ToastProvider";
-import { PageHeader } from "@/components/ui";
+import { PageHeader, Button, EmptyState, cardClass, inputClass, textareaClass } from "@/components/ui";
 import StockItemCard from "@/components/StockItemCard";
 import { fetchProductInfo } from "@/lib/api/lceda";
 import { parseScanData, extractPartCode } from "@/lib/parse-qr";
@@ -335,12 +335,12 @@ function StockPageContent() {
           subtitle="扫码 / 手动输入，支持批量操作"
         />
 
-        <div className="grid grid-cols-2 gap-1 p-1 bg-gray-100 dark:bg-[var(--background-muted)] rounded-2xl">
+        <div className="grid grid-cols-2 gap-1 p-1 bg-gray-100 dark:bg-[var(--background-muted)] rounded-lg">
           <button
             onClick={() => switchMode("IN")}
-            className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 ${
+            className={`flex items-center justify-center gap-2 px-4 py-3 rounded text-sm font-medium transition-all duration-200 ${
               mode === "IN"
-                ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-md shadow-blue-500/25"
+                ? "bg-white dark:bg-[var(--card)] shadow-sm text-[var(--accent)]"
                 : "text-gray-600 dark:text-[var(--foreground-muted)] hover:bg-white dark:hover:bg-[var(--card)]"
             }`}
           >
@@ -348,9 +348,9 @@ function StockPageContent() {
           </button>
           <button
             onClick={() => switchMode("OUT")}
-            className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 ${
+            className={`flex items-center justify-center gap-2 px-4 py-3 rounded text-sm font-medium transition-all duration-200 ${
               mode === "OUT"
-                ? "bg-gradient-to-r from-red-600 to-rose-700 text-white shadow-md shadow-red-500/25"
+                ? "bg-white dark:bg-[var(--card)] shadow-sm text-[var(--accent)]"
                 : "text-gray-600 dark:text-[var(--foreground-muted)] hover:bg-white dark:hover:bg-[var(--card)]"
             }`}
           >
@@ -389,41 +389,34 @@ function StockPageContent() {
       </div>
 
       {submitResult && (
-        <div className={`p-4 rounded-xl animate-fade-in section ${
+        <div className={`p-4 rounded-lg animate-fade-in section ${
           submitResult.failed === 0
-            ? "bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30"
-            : "bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30"
+            ? "bg-[var(--success-subtle)] text-[var(--success)]"
+            : "bg-[var(--error-subtle)] text-[var(--error)]"
         }`}>
           <div className="flex items-center gap-2">
             {submitResult.failed === 0
-              ? <Check className="w-5 h-5 text-emerald-500" />
-              : <AlertTriangle className="w-5 h-5 text-amber-500" />}
-            <span className={`font-medium ${submitResult.failed === 0 ? "text-emerald-700 dark:text-emerald-400" : "text-amber-700 dark:text-amber-400"}`}>
-              {submitResult.message}
-            </span>
+              ? <Check className="w-5 h-5" />
+              : <AlertTriangle className="w-5 h-5" />}
+            <span className="font-medium">{submitResult.message}</span>
           </div>
         </div>
       )}
 
       {items.length === 0 ? (
-        <div className="bg-white dark:bg-[var(--card)] rounded-2xl border border-gray-200 dark:border-[var(--card-border)] p-12 text-center section">
-          <div className="w-20 h-20 rounded-full bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center mx-auto mb-4">
-            <ShoppingCart className="w-10 h-10 text-indigo-500" />
-          </div>
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-[var(--card-foreground)] mb-2">
-            {mode === "IN" ? "开始扫码入库" : "开始扫码出库"}
-          </h2>
-          <p className="text-sm text-gray-500 dark:text-[var(--foreground-subtle)] mb-6">
-            {mode === "IN"
+        <div className={`${cardClass} section`}>
+          <EmptyState
+            icon={<ShoppingCart className="w-7 h-7 text-[var(--foreground-subtle)]" />}
+            title={mode === "IN" ? "开始扫码入库" : "开始扫码出库"}
+            description={mode === "IN"
               ? "扫描元器件包装上的二维码，自动获取产品信息；新器件将自动创建并入库"
               : "扫描或选择已有器件，批量出库"}
-          </p>
-          <button
-            onClick={() => setShowScanner(true)}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-indigo-500 text-white rounded-xl font-medium hover:bg-indigo-600 transition-colors"
-          >
-            <ScanBarcode className="w-5 h-5" /> 开始扫码
-          </button>
+            action={
+              <Button onClick={() => setShowScanner(true)}>
+                <ScanBarcode className="w-4 h-4" /> 开始扫码
+              </Button>
+            }
+          />
         </div>
       ) : (
         <>
@@ -445,7 +438,7 @@ function StockPageContent() {
             ))}
           </div>
 
-          <div className="sticky bottom-20 md:bottom-4 bg-white dark:bg-[var(--card)] rounded-2xl border border-gray-200 dark:border-[var(--card-border)] p-4 shadow-lg mt-4">
+          <div className="sticky bottom-20 md:bottom-4 bg-white dark:bg-[var(--card)] rounded-lg border border-gray-200 dark:border-[var(--card-border)] p-4 shadow-lg mt-4">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-[var(--foreground-muted)]">
                 <span>共 <span className="font-semibold text-gray-900 dark:text-[var(--card-foreground)]">{items.length}</span> 件</span>
@@ -458,37 +451,34 @@ function StockPageContent() {
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               placeholder={mode === "IN" ? "入库原因（如：采购、退货等）" : "出库原因（如：领用、借用等）"}
-              className="w-full mb-3 px-4 py-2.5 bg-gray-50 dark:bg-[var(--background-subtle)] border border-gray-200 dark:border-[var(--card-border)] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className={`${inputClass} mb-3`}
             />
-            <button
+            <Button
               onClick={handleSubmit}
               disabled={readyCount === 0 || isSubmitting}
-              className={`w-full flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
-                mode === "IN"
-                  ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800"
-                  : "bg-gradient-to-r from-red-600 to-rose-700 text-white hover:from-red-700 hover:to-rose-800"
-              }`}
+              variant={mode === "IN" ? "primary" : "danger"}
+              className="w-full py-3"
             >
               {isSubmitting ? (
                 <><Loader2 className="w-5 h-5 animate-spin" /> 提交中...</>
               ) : (
                 <>{mode === "IN" ? <ArrowDownToLine className="w-5 h-5" /> : <ArrowUpFromLine className="w-5 h-5" />} 全部{mode === "IN" ? "入库" : "出库"} ({readyCount})</>
               )}
-            </button>
+            </Button>
           </div>
         </>
       )}
 
       {showManualInput && (
         <div className="fixed inset-0 modal-backdrop z-50 flex items-center justify-center p-4 animate-fade-in">
-          <div className="bg-white dark:bg-[var(--card)] rounded-2xl p-6 w-full max-w-md shadow-xl">
+          <div className="bg-white dark:bg-[var(--card)] rounded-lg p-6 w-full max-w-md shadow-xl">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-[var(--card-foreground)] mb-2">手动输入</h3>
             <p className="text-sm text-gray-500 dark:text-[var(--foreground-subtle)] mb-4">输入立创编号（如 C2907002）或完整二维码内容</p>
             <textarea
               value={manualCode}
               onChange={(e) => setManualCode(e.target.value)}
               placeholder="C2907002 或 {on:...,pc:C2907002,...}"
-              className="w-full h-24 px-4 py-3 border border-gray-300 dark:border-[var(--card-border)] rounded-xl bg-white dark:bg-[var(--card)] text-gray-900 dark:text-[var(--card-foreground)] resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className={`${textareaClass} h-24 resize-none`}
               autoFocus
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
@@ -511,7 +501,7 @@ function StockPageContent() {
 
       {showSearchParts && (
         <div className="fixed inset-0 modal-backdrop z-50 flex items-center justify-center p-4 animate-fade-in">
-          <div className="bg-white dark:bg-[var(--card)] rounded-2xl p-6 w-full max-w-lg shadow-xl max-h-[80vh] flex flex-col">
+          <div className="bg-white dark:bg-[var(--card)] rounded-lg p-6 w-full max-w-lg shadow-xl max-h-[80vh] flex flex-col">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-[var(--card-foreground)] mb-2">添加已有器件</h3>
             <p className="text-sm text-gray-500 dark:text-[var(--foreground-subtle)] mb-4">搜索器件名称或编码</p>
             <div className="flex gap-2 mb-4">
@@ -521,18 +511,18 @@ function StockPageContent() {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Enter") handleSearch(); }}
                 placeholder="搜索器件名称、编码..."
-                className="flex-1 px-4 py-2.5 border border-gray-300 dark:border-[var(--card-border)] rounded-xl bg-white dark:bg-[var(--card)] text-gray-900 dark:text-[var(--card-foreground)] focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className={`${inputClass} flex-1`}
               />
-              <button onClick={handleSearch} disabled={searching} className="px-4 py-2.5 bg-indigo-500 text-white rounded-xl font-medium hover:bg-indigo-600 transition-colors disabled:opacity-50 flex items-center gap-1">
+              <Button onClick={handleSearch} disabled={searching} className="shrink-0">
                 <Search className="w-4 h-4" /> 搜索
-              </button>
+              </Button>
             </div>
             <div className="flex-1 overflow-y-auto space-y-2">
               {searchResults.map((part) => (
                 <button
                   key={part.id}
                   onClick={() => addPart(part)}
-                  className="w-full flex items-center justify-between p-3 rounded-xl border border-gray-200 dark:border-[var(--card-border)] hover:border-indigo-300 dark:hover:border-indigo-500/50 hover:bg-indigo-50/50 dark:hover:bg-indigo-500/10 transition-colors text-left"
+                  className="w-full flex items-center justify-between p-3 rounded-lg border border-[var(--card-border)] hover:border-[var(--border-hover)] hover:bg-[var(--background-subtle)] transition-colors text-left"
                 >
                   <div className="min-w-0">
                     <p className="text-sm font-medium text-gray-900 dark:text-[var(--card-foreground)] truncate">{part.name}</p>

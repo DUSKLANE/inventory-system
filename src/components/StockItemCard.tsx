@@ -2,6 +2,7 @@
 
 import { Check, Loader2, MapPin, RefreshCw, Trash2, AlertTriangle } from "lucide-react";
 import NumberInput from "@/components/NumberInput";
+import { Badge } from "@/components/ui";
 import { isOutItemBlocked, type StockItem, type StockMode } from "@/lib/stock-pending";
 
 interface Props {
@@ -25,33 +26,27 @@ export default function StockItemCard({
   const isIn = mode === "IN";
 
   return (
-    <div className={`bg-white dark:bg-[var(--card)] rounded-xl border overflow-hidden transition-colors ${
+    <div className={`bg-white dark:bg-[var(--card)] rounded-lg border overflow-hidden transition-colors ${
       insufficient
         ? "border-red-300 dark:border-red-500/50"
-        : "border-gray-200 dark:border-[var(--card-border)]"
+        : "border-[var(--card-border)]"
     }`}>
       <div className="p-4">
         <div className="flex items-start gap-3">
           {showCheckbox && (
-            <button
-              onClick={() => onToggleChecked(item.id)}
+            <input
+              type="checkbox"
+              checked={checked}
+              onChange={() => onToggleChecked(item.id)}
               disabled={item.status !== "ready" || insufficient}
-              className={`mt-0.5 p-1.5 rounded-lg transition-colors shrink-0 ${
-                checked
-                  ? "text-red-600 dark:text-red-400"
-                  : "text-gray-400 dark:text-[var(--foreground-subtle)]"
-              } ${item.status !== "ready" || insufficient ? "opacity-40 cursor-not-allowed" : "hover:bg-gray-100 dark:hover:bg-[var(--background-subtle)]"}`}
+              className="mt-1 h-4 w-4 shrink-0 rounded border-[var(--border)] accent-[var(--accent)] disabled:opacity-40 disabled:cursor-not-allowed"
               title={insufficient ? (item.stock === undefined ? "未关联器件，无法出库" : "库存不足，无法出库") : "选择"}
-            >
-              <Check className={`w-5 h-5 ${checked ? "fill-red-500 text-white rounded" : ""}`} />
-            </button>
+            />
           )}
 
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1 flex-wrap">
-              <span className="text-xs font-mono px-2 py-0.5 bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 rounded">
-                {item.code}
-              </span>
+              <Badge variant="category" className="font-mono">{item.code}</Badge>
               {item.partId && (
                 <span className="text-xs px-2 py-0.5 bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 rounded">
                   已有库存
@@ -99,7 +94,7 @@ export default function StockItemCard({
 
             {!isIn && item.category && (
               <div className="flex flex-wrap gap-1.5 mt-2 text-xs">
-                <span className="px-2 py-0.5 bg-gray-100 dark:bg-[var(--background-muted)] text-gray-600 dark:text-[var(--foreground-muted)] rounded">{item.category}</span>
+                <Badge variant="category">{item.category}</Badge>
               </div>
             )}
           </div>
@@ -127,7 +122,7 @@ export default function StockItemCard({
                 value={item.location}
                 onChange={(e) => onUpdateLocation(item.id, e.target.value)}
                 placeholder="输入库位"
-                className="flex-1 min-w-0 py-1 px-2 border border-gray-200 dark:border-[var(--card-border)] rounded-lg bg-white dark:bg-[var(--card)] text-gray-900 dark:text-[var(--card-foreground)] text-sm placeholder-gray-400 dark:placeholder-[var(--foreground-subtle)]"
+                className="flex-1 min-w-0 py-1 px-2 border border-[var(--card-border)] rounded-lg bg-white dark:bg-[var(--card)] text-gray-900 dark:text-[var(--card-foreground)] text-sm placeholder-gray-400 dark:placeholder-[var(--foreground-subtle)]"
               />
             </div>
           )}
