@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import { Clock, Filter, Trash2, Edit, Plus } from "lucide-react";
 import Breadcrumb from "@/components/Breadcrumb";
-import { PageHeader, EmptyState, Pagination, SelectField } from "@/components/ui";
+import { PageHeader, EmptyState, Pagination, SelectField, Badge } from "@/components/ui";
 
 interface OperationLog {
   id: string;
@@ -121,7 +121,7 @@ export default function LogsPage() {
       />
 
       {/* Filters */}
-      <div className="bg-white dark:bg-[var(--card)] rounded-2xl border border-gray-200/80 dark:border-[var(--card-border)] p-6 section shadow-sm">
+      <div className="bg-white dark:bg-[var(--card)] rounded-lg border border-[var(--card-border)] p-6 section shadow-sm">
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="relative w-52">
             <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-[var(--foreground-subtle)] pointer-events-none z-10" />
@@ -153,7 +153,7 @@ export default function LogsPage() {
       </div>
 
       {/* Logs List */}
-      <div className="bg-white dark:bg-[var(--card)] rounded-2xl border border-gray-200/80 dark:border-[var(--card-border)] overflow-hidden section shadow-sm">
+      <div className="bg-white dark:bg-[var(--card)] rounded-lg border border-[var(--card-border)] overflow-hidden section shadow-sm">
         {!data || data.logs.length === 0 ? (
           <EmptyState
             icon={<Clock className="w-7 h-7 text-[var(--foreground-subtle)]" />}
@@ -163,14 +163,14 @@ export default function LogsPage() {
           <div className="divide-y divide-gray-100 dark:divide-[var(--card-border)]">
             {data.logs.map((log) => (
               <div key={log.id} className="px-8 py-5 flex items-start gap-4">
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${getActionColor(log.action)}`}>
+                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${getActionColor(log.action)}`}>
                   {getActionIcon(log.action)}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${getActionColor(log.action)}`}>
+                    <Badge variant="neutral">
                       {log.action === "CREATE" ? "创建" : log.action === "UPDATE" ? "更新" : "删除"}
-                    </span>
+                    </Badge>
                     <span className="text-xs text-gray-500 dark:text-[var(--foreground-subtle)]">
                       {getEntityTypeLabel(log.entityType)}
                     </span>

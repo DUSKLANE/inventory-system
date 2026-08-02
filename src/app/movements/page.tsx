@@ -104,7 +104,7 @@ function MovementsContent() {
       />
 
       <div className="flex flex-col sm:flex-row sm:items-center gap-3 section">
-        <div className="flex items-center gap-1 p-1 bg-gray-100 dark:bg-[var(--background-muted)] rounded-xl">
+        <div className="flex items-center gap-1 p-1 bg-gray-100 dark:bg-[var(--background-muted)] rounded-lg">
           {typeTabs.map((t) => (
             <button
               key={t.value}
@@ -122,7 +122,7 @@ function MovementsContent() {
 
         <div className="flex-1 flex items-center gap-2 min-w-0">
           {partId ? (
-            <div className="flex items-center gap-2 px-3 py-2 bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/30 rounded-xl text-sm text-blue-700 dark:text-blue-300 max-w-full">
+            <div className="flex items-center gap-2 px-3 py-2 bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/30 rounded-lg text-sm text-blue-700 dark:text-blue-300 max-w-full">
               <span className="truncate">{partLabel}</span>
               <button onClick={clearPart} className="shrink-0 p-0.5 hover:text-blue-900 dark:hover:text-blue-200">
                 <X className="w-3.5 h-3.5" />
@@ -143,7 +143,7 @@ function MovementsContent() {
               </div>
               <button
                 onClick={searchParts}
-                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-[var(--foreground-muted)] border border-gray-200 dark:border-[var(--card-border)] rounded-xl hover:bg-gray-50 dark:hover:bg-[var(--background-subtle)] transition-colors shrink-0"
+                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-[var(--foreground-muted)] border border-gray-200 dark:border-[var(--card-border)] rounded-lg hover:bg-gray-50 dark:hover:bg-[var(--background-subtle)] transition-colors shrink-0"
               >
                 搜索
               </button>
@@ -164,7 +164,7 @@ function MovementsContent() {
                 setPartQuery("");
                 setPage(1);
               }}
-              className="w-full flex items-center justify-between p-3 rounded-xl border border-gray-200 dark:border-[var(--card-border)] hover:border-blue-300 dark:hover:border-blue-500/50 hover:bg-blue-50/50 dark:hover:bg-blue-500/10 transition-colors text-left"
+              className="w-full flex items-center justify-between p-3 rounded-lg border hover:border-[var(--accent)] hover:bg-[var(--accent-subtle)] transition-colors text-left"
             >
               <p className="text-sm font-medium text-gray-900 dark:text-[var(--card-foreground)]">{p.name}</p>
               <p className="text-xs text-gray-500 dark:text-[var(--foreground-subtle)] font-mono">{p.code}</p>
@@ -173,7 +173,7 @@ function MovementsContent() {
         </div>
       )}
 
-      <div className="bg-white dark:bg-[var(--card)] rounded-2xl border border-gray-200 dark:border-[var(--card-border)] overflow-hidden section">
+      <div className="bg-white dark:bg-[var(--card)] rounded-lg border border-gray-200 dark:border-[var(--card-border)] overflow-hidden section">
         {loading && data === null ? (
           <div className="p-16 text-center text-sm text-gray-400 dark:text-[var(--foreground-subtle)]">加载中...</div>
         ) : !data || data.movements.length === 0 ? (
@@ -192,9 +192,9 @@ function MovementsContent() {
                   <Link
                     key={m.id}
                     href={`/parts/${m.partId}`}
-                    className="px-4 sm:px-8 py-4 flex items-center gap-4 hover:bg-gray-50/80 dark:hover:bg-[var(--background-subtle)] transition-colors duration-150"
+                    className="px-6 py-3.5 flex items-center gap-4 hover:bg-[var(--background-subtle)] transition-colors"
                   >
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${
                       isIn
                         ? "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
                         : "bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400"
