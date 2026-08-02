@@ -911,7 +911,7 @@ function PartsPageContent() {
                         </td>
                         <td className="px-8 py-5">
                           {part.category && (
-                            <span className="inline-flex items-center px-3 py-1 rounded-lg text-xs font-medium bg-[var(--accent-subtle)] text-[var(--accent)]">
+                            <span className="inline-flex items-center px-3 py-1 rounded-lg text-xs font-medium bg-[var(--background-subtle)] text-[var(--foreground-muted)]">
                               {part.category}
                             </span>
                           )}
@@ -1013,7 +1013,7 @@ function PartsPageContent() {
                           </div>
                           <div className="flex items-center gap-2 mt-3 flex-wrap">
                             {part.category && (
-                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-medium bg-[var(--accent-subtle)] text-[var(--accent)]">
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-medium bg-[var(--background-subtle)] text-[var(--foreground-muted)]">
                                 {part.category}
                               </span>
                             )}
