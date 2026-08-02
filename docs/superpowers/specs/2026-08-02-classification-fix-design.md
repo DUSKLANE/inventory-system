@@ -39,7 +39,7 @@
   - `src/lib/db-sqlite.ts`：`SELECT category, COUNT(1) as cnt FROM parts WHERE category != '' GROUP BY category ORDER BY cnt DESC` + `SELECT name FROM categories ORDER BY sortOrder, name`，合并 `Set` 去重
   - `src/lib/db-redis.ts`：遍历 parts hash 收集非空 category + categories set，同样合并去重
 - `src/app/api/parts/categories/route.ts`（新建）：`GET` → `db.listPartCategories()`，`force-dynamic`，错误返回 500 `{error:"获取分类失败"}`
-- 匹配改包含：`db-sqlite.ts:116` `p.category = ?` → `p.category LIKE ?`，参数 `%${category}%`，并带 `ESCAPE '\'` 转义分类中的 `%`/`_`（`category.replace(/[\\%_]/g, (c) => "\\" + c)`）；`db-redis.ts:156` `===` → `includes(filters.category)`（大小写敏感与 sqlite LIKE 默认一致）
+- 匹配改包含：`db-sqlite.ts:116` `p.category = ?` → `p.category LIKE ?`，参数 `%${category}%`，并带 `ESCAPE '\'` 转义分类中的 `%`/`_`（`category.replace(/[\\%_]/g, (c) => "\\" + c)`）；`db-redis.ts:156` `===` → `includes`，两侧 `toLowerCase` 双端归一——sqlite LIKE 默认对 ASCII 大小写不敏感（local 手输 "ic" 命中 "IC"），redis 做同样小写归一以对齐两种部署行为（与 `q`/`location`/`brand` 过滤惯例一致）
 
 **2.2 前端：CategoryInput 动态选项 + Combobox 样式对齐**
 
