@@ -541,6 +541,7 @@ function PartsPageContent() {
                 value={category}
                 onChange={(val) => { setCategory(val); setPage(1); }}
                 placeholder="全部分类"
+                inputClassName="pl-12"
               />
             </div>
             
