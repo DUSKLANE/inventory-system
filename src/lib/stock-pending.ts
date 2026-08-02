@@ -127,13 +127,29 @@ export function buildStockInPayload(items: StockItem[], reason: string) {
   };
 }
 
+export function isOutItemBlocked(item: StockItem, mode: StockMode): boolean {
+  if (mode !== "OUT") return false;
+  if (item.stock !== undefined) return item.stock < item.quantity;
+  return !item.partId;
+}
+
 export function buildStockOutPayload(items: StockItem[], reason: string) {
+  const skipped: StockItem[] = [];
+  const outItems: Array<{ partId: string; quantity: number }> = [];
+  for (const item of items) {
+    if (item.partId) outItems.push({ partId: item.partId, quantity: item.quantity });
+    else skipped.push(item);
+  }
   return {
-    action: "movement",
-    type: "OUT",
-    reason,
-    items: items.map((i) => ({ partId: i.partId as string, quantity: i.quantity })),
+    payload: { action: "movement", type: "OUT", reason, items: outItems },
+    skipped,
   };
+}
+
+export function mergePendingByCode(items: StockItem[], code: string, qty: number): StockItem[] {
+  return items.some((i) => i.code === code)
+    ? items.map((i) => (i.code === code ? { ...i, quantity: i.quantity + qty } : i))
+    : items;
 }
 
 export function applyBatchResults(

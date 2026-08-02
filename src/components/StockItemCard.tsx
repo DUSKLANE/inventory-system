@@ -2,7 +2,7 @@
 
 import { Check, Loader2, MapPin, RefreshCw, Trash2, AlertTriangle } from "lucide-react";
 import NumberInput from "@/components/NumberInput";
-import type { StockItem, StockMode } from "@/lib/stock-pending";
+import { isOutItemBlocked, type StockItem, type StockMode } from "@/lib/stock-pending";
 
 interface Props {
   item: StockItem;
@@ -21,7 +21,7 @@ export default function StockItemCard({
   item, mode, checked, showCheckbox,
   onToggleChecked, onSetQuantity, onUpdateLocation, onUpdateName, onRemove, onRetry,
 }: Props) {
-  const insufficient = mode === "OUT" && item.stock !== undefined && item.stock < item.quantity;
+  const insufficient = isOutItemBlocked(item, mode);
   const isIn = mode === "IN";
 
   return (
@@ -41,7 +41,7 @@ export default function StockItemCard({
                   ? "text-red-600 dark:text-red-400"
                   : "text-gray-400 dark:text-[var(--foreground-subtle)]"
               } ${item.status !== "ready" || insufficient ? "opacity-40 cursor-not-allowed" : "hover:bg-gray-100 dark:hover:bg-[var(--background-subtle)]"}`}
-              title={insufficient ? "库存不足，无法出库" : "选择"}
+              title={insufficient ? (item.stock === undefined ? "未关联器件，无法出库" : "库存不足，无法出库") : "选择"}
             >
               <Check className={`w-5 h-5 ${checked ? "fill-red-500 text-white rounded" : ""}`} />
             </button>
@@ -87,7 +87,7 @@ export default function StockItemCard({
             )}
             {insufficient && (
               <p className="text-xs text-red-600 dark:text-red-400 mt-1 flex items-center gap-1">
-                <AlertTriangle className="w-3 h-3" /> 库存不足（现有 {item.stock}），未勾选
+                <AlertTriangle className="w-3 h-3" /> {item.stock === undefined ? "未关联器件，无法出库" : `库存不足（现有 ${item.stock}），未勾选`}
               </p>
             )}
 

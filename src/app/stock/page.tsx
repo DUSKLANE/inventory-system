@@ -9,11 +9,12 @@ import { useConfirm } from "@/components/ConfirmProvider";
 import { useToast } from "@/components/ToastProvider";
 import StockItemCard from "@/components/StockItemCard";
 import { fetchProductInfo } from "@/lib/api/lceda";
-import { parseScanData } from "@/lib/parse-qr";
+import { parseScanData, extractPartCode } from "@/lib/parse-qr";
 import {
   normalizeMode, isDuplicateScan, migratePendingKey, migrateLegacyItems,
   loadPendingItems, savePendingItems,
   buildStockInPayload, buildStockOutPayload, applyBatchResults,
+  mergePendingByCode, isOutItemBlocked,
   type StockItem, type StockMode,
 } from "@/lib/stock-pending";
 
@@ -107,28 +108,32 @@ function StockPageContent() {
 
   const addByCode = useCallback(async (raw: string) => {
     const scanData = parseScanData(raw);
-    if (!scanData || !scanData.pc) return;
+    const code = scanData?.pc || extractPartCode(raw);
+    if (!code) {
+      toast("无法识别编码", "error");
+      return;
+    }
     const now = Date.now();
-    if (isDuplicateScan(lastScanRef.current, scanData.pc, now)) return;
-    lastScanRef.current = { code: scanData.pc, time: now };
-    const scanQty = parseInt(scanData.qty || "1", 10) || 1;
-    if (itemsRef.current.some((i) => i.code === scanData.pc)) {
-      setItems((prev) => prev.map((i) => i.code === scanData.pc ? { ...i, quantity: i.quantity + scanQty } : i));
+    if (isDuplicateScan(lastScanRef.current, code, now)) return;
+    lastScanRef.current = { code, time: now };
+    const scanQty = parseInt(scanData?.qty || "1", 10) || 1;
+    if (itemsRef.current.some((i) => i.code === code)) {
+      setItems((prev) => mergePendingByCode(prev, code, scanQty));
       return;
     }
     const id = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
     const newItem: StockItem = {
       id,
-      code: scanData.pc,
-      name: scanData.pm || scanData.pc,
+      code,
+      name: scanData?.pm || code,
       category: "", package: "", brand: "", model: "", unit: "pcs",
-      location: "", orderCode: scanData.on || "", quantity: scanQty,
+      location: "", orderCode: scanData?.on || "", quantity: scanQty,
       status: "loading",
     };
     setItems((prev) => [newItem, ...prev]);
     if (modeRef.current === "OUT") setCheckedIds((prev) => new Set(prev).add(id));
     await resolveItem(newItem);
-  }, [resolveItem]);
+  }, [resolveItem, toast]);
 
   useEffect(() => {
     setMode(normalizeMode(searchParams.get("mode")));
@@ -147,8 +152,9 @@ function StockPageContent() {
       }
     }
     migratePendingKey(localStorage, STOCK_KEY, LEGACY_SCAN_KEY);
-    setItems(initial);
     const codeParam = searchParams.get("code");
+    if (codeParam) itemsRef.current = initial;
+    setItems(initial);
     if (codeParam) addByCode(codeParam);
     setMounted(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -194,7 +200,6 @@ function StockPageContent() {
   }, [toast]);
 
   const handleScan = (code: string) => {
-    setShowScanner(false);
     addByCode(code);
   };
 
@@ -252,8 +257,7 @@ function StockPageContent() {
     await resolveItem(item);
   };
 
-  const isInsufficient = (item: StockItem) =>
-    mode === "OUT" && item.stock !== undefined && item.stock < item.quantity;
+  const isInsufficient = (item: StockItem) => isOutItemBlocked(item, mode);
 
   const handleSubmit = async () => {
     const readyItems = items.filter((i) => i.status === "ready");
@@ -267,9 +271,22 @@ function StockPageContent() {
     setIsSubmitting(true);
     setSubmitResult(null);
     try {
-      const payload = mode === "IN"
-        ? buildStockInPayload(submitItems, reason || "扫码入库")
-        : buildStockOutPayload(submitItems, reason || "扫码出库");
+      let payload: ReturnType<typeof buildStockInPayload> | ReturnType<typeof buildStockOutPayload>["payload"];
+      const skippedIds = new Set<string>();
+      if (mode === "IN") {
+        payload = buildStockInPayload(submitItems, reason || "扫码入库");
+      } else {
+        const { payload: outPayload, skipped } = buildStockOutPayload(submitItems, reason || "扫码出库");
+        payload = outPayload;
+        skipped.forEach((i) => skippedIds.add(i.id));
+        if (skippedIds.size > 0) {
+          setItems((prev) => prev.map((i) => skippedIds.has(i.id) ? { ...i, status: "error" as const, errorMessage: "未关联器件，无法出库" } : i));
+        }
+        if (payload.items.length === 0) {
+          setSubmitResult({ success: 0, failed: skippedIds.size, message: "所选器件缺少器件关联，无法出库" });
+          return;
+        }
+      }
       const res = await fetch("/api/parts/batch", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -280,12 +297,17 @@ function StockPageContent() {
       const { removed } = applyBatchResults(submitItems, data.results ?? []);
       const removedIds = new Set(removed.map((r) => r.id));
       const failedByPart = new Map<string, string>();
-      for (const r of (data.results ?? []) as Array<{ partId?: string; success: boolean; message?: string }>) {
-        if (!r.success && r.partId && r.message) failedByPart.set(r.partId, r.message);
+      const failedByCode = new Map<string, string>();
+      for (const r of (data.results ?? []) as Array<{ partId?: string; code?: string; success: boolean; message?: string }>) {
+        if (!r.success && r.message) {
+          if (r.partId) failedByPart.set(r.partId, r.message);
+          if (r.code) failedByCode.set(r.code, r.message);
+        }
       }
-      setItems((prev) => prev.filter((i) => !removedIds.has(i.id)).map((i) =>
-        i.partId && failedByPart.has(i.partId) ? { ...i, errorMessage: failedByPart.get(i.partId) } : i
-      ));
+      setItems((prev) => prev.filter((i) => !removedIds.has(i.id)).map((i) => {
+        const message = (i.partId && failedByPart.get(i.partId)) || failedByCode.get(i.code);
+        return message ? { ...i, errorMessage: message } : i;
+      }));
       setCheckedIds((prev) => { const n = new Set(prev); removedIds.forEach((id) => n.delete(id)); return n; });
       setReason("");
       setSubmitResult({

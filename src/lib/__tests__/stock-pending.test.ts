@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   normalizeMode, isDuplicateScan, migrateLegacyItems, migratePendingKey,
   loadPendingItems, savePendingItems, buildStockInPayload, buildStockOutPayload,
-  applyBatchResults, type StockItem,
+  applyBatchResults, mergePendingByCode, isOutItemBlocked, type StockItem,
 } from "../stock-pending";
 
 const baseItem = (over: Partial<StockItem> = {}): StockItem => ({
@@ -143,12 +143,56 @@ describe("buildStockInPayload", () => {
 
 describe("buildStockOutPayload", () => {
   it("映射 movement OUT 请求体", () => {
-    expect(buildStockOutPayload([baseItem({ partId: "p1" })], "领用")).toEqual({
+    const { payload, skipped } = buildStockOutPayload([baseItem({ partId: "p1" })], "领用");
+    expect(payload).toEqual({
       action: "movement",
       type: "OUT",
       reason: "领用",
       items: [{ partId: "p1", quantity: 100 }],
     });
+    expect(skipped).toEqual([]);
+  });
+  it("缺少 partId 的就绪条目被跳过，载荷中不出现 partId: undefined", () => {
+    const noPart = baseItem();
+    const { payload, skipped } = buildStockOutPayload([noPart], "领用");
+    expect(skipped.map((i) => i.id)).toEqual([noPart.id]);
+    expect(payload.items).toEqual([]);
+  });
+  it("混合列表只发送有 partId 的条目", () => {
+    const { payload, skipped } = buildStockOutPayload(
+      [baseItem({ id: "a", partId: "p1" }), baseItem({ id: "b", code: "C2" })],
+      "领用"
+    );
+    expect(payload.items).toEqual([{ partId: "p1", quantity: 100 }]);
+    expect(skipped.map((i) => i.id)).toEqual(["b"]);
+  });
+});
+
+describe("mergePendingByCode", () => {
+  it("同码已存在时合并数量，不产生重复条目", () => {
+    const items = [baseItem({ id: "a" }), baseItem({ id: "b", code: "C2" })];
+    const merged = mergePendingByCode(items, "C12345", 1);
+    expect(merged).toHaveLength(2);
+    expect(merged.find((i) => i.id === "a")?.quantity).toBe(101);
+  });
+  it("同码不存在时原样返回", () => {
+    const items = [baseItem()];
+    expect(mergePendingByCode(items, "C999", 3)).toEqual(items);
+  });
+});
+
+describe("isOutItemBlocked", () => {
+  it("OUT 且无 partId 时不可出库", () => {
+    expect(isOutItemBlocked(baseItem(), "OUT")).toBe(true);
+  });
+  it("OUT 库存不足时不可出库", () => {
+    expect(isOutItemBlocked(baseItem({ partId: "p1", stock: 5, quantity: 10 }), "OUT")).toBe(true);
+  });
+  it("OUT 库存充足时可出库", () => {
+    expect(isOutItemBlocked(baseItem({ partId: "p1", stock: 100, quantity: 10 }), "OUT")).toBe(false);
+  });
+  it("IN 模式永不拦截", () => {
+    expect(isOutItemBlocked(baseItem(), "IN")).toBe(false);
   });
 });
 
