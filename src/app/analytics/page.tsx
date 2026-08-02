@@ -107,8 +107,6 @@ export default function AnalyticsPage() {
 
   return (
     <div className="page-container">
-      <Breadcrumb items={[{ label: "数据分析" }]} />
-
       {/* Header */}
       <PageHeader
         breadcrumb={<Breadcrumb items={[{ label: "数据分析" }]} />}
