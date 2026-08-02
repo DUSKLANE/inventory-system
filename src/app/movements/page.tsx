@@ -164,7 +164,7 @@ function MovementsContent() {
                 setPartQuery("");
                 setPage(1);
               }}
-              className="w-full flex items-center justify-between p-3 rounded-lg border hover:border-[var(--accent)] hover:bg-[var(--accent-subtle)] transition-colors text-left"
+              className="w-full flex items-center justify-between p-3 rounded-lg border border-[var(--card-border)] hover:border-[var(--accent)] hover:bg-[var(--accent-subtle)] transition-colors text-left"
             >
               <p className="text-sm font-medium text-gray-900 dark:text-[var(--card-foreground)]">{p.name}</p>
               <p className="text-xs text-gray-500 dark:text-[var(--foreground-subtle)] font-mono">{p.code}</p>
