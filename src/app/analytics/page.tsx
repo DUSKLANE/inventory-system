@@ -232,7 +232,7 @@ export default function AnalyticsPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 section">
         {/* Category Stats */}
-        <div className="bg-white dark:bg-[var(--card)] rounded-2xl border border-gray-200/80 dark:border-[var(--card-border)] p-6">
+        <div className="bg-white dark:bg-[var(--card)] rounded-lg border border-gray-200/80 dark:border-[var(--card-border)] p-6">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-10 h-10 rounded-lg bg-violet-100 dark:bg-violet-500/10 flex items-center justify-center">
               <Package className="w-5 h-5 text-violet-600 dark:text-violet-400" />
@@ -270,7 +270,7 @@ export default function AnalyticsPage() {
         </div>
 
         {/* Stock Distribution */}
-        <div className="bg-white dark:bg-[var(--card)] rounded-2xl border border-gray-200/80 dark:border-[var(--card-border)] p-6">
+        <div className="bg-white dark:bg-[var(--card)] rounded-lg border border-gray-200/80 dark:border-[var(--card-border)] p-6">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-10 h-10 rounded-lg bg-amber-100 dark:bg-amber-500/10 flex items-center justify-center">
               <Boxes className="w-5 h-5 text-amber-600 dark:text-amber-400" />
@@ -311,7 +311,7 @@ export default function AnalyticsPage() {
       </div>
 
       {/* Top Moved Parts */}
-      <div className="bg-white dark:bg-[var(--card)] rounded-2xl border border-gray-200/80 dark:border-[var(--card-border)] overflow-hidden section">
+      <div className="bg-white dark:bg-[var(--card)] rounded-lg border border-gray-200/80 dark:border-[var(--card-border)] overflow-hidden section">
         <div className="px-6 py-5 border-b border-gray-100 dark:border-[var(--card-border)] flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-emerald-100 dark:bg-emerald-500/10 flex items-center justify-center">
