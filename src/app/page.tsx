@@ -393,7 +393,7 @@ export default function Home() {
       {/* Quick actions */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 section">
         <Link
-          href="/stock-in"
+          href="/stock?mode=IN"
           className="group relative flex items-center justify-center gap-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-2xl py-7 text-base font-semibold hover:from-blue-700 hover:to-blue-800 transition-all duration-300 shadow-lg shadow-blue-500/25 dark:shadow-none hover:shadow-xl hover:shadow-blue-500/30 overflow-hidden"
         >
           <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
@@ -401,7 +401,7 @@ export default function Home() {
           <span className="relative z-10">快速入库</span>
         </Link>
         <Link
-          href="/stock-out"
+          href="/stock?mode=OUT"
           className="group relative flex items-center justify-center gap-4 bg-white dark:bg-[var(--card)] border border-gray-200/80 dark:border-[var(--card-border)] text-gray-700 dark:text-[var(--foreground-muted)] rounded-2xl py-7 text-base font-semibold hover:bg-gray-50 dark:hover:bg-[var(--background-subtle)] hover:border-gray-300 dark:hover:border-[var(--card-border)] transition-all duration-300 shadow-sm dark:shadow-none hover:shadow-md overflow-hidden"
         >
           <ArrowUpFromLine className="w-6 h-6" />
@@ -444,14 +444,14 @@ export default function Home() {
                 </div>
                 <div className="flex gap-1.5 sm:gap-2 mt-2 sm:mt-3">
                   <Link
-                    href={`/stock-in?code=${encodeURIComponent(part.code)}`}
+                    href={`/stock?mode=IN&code=${encodeURIComponent(part.code)}`}
                     className="flex-1 text-center text-[10px] sm:text-xs py-1.5 sm:py-2.5 bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-500/20 transition-colors font-medium"
                     onClick={(e) => e.stopPropagation()}
                   >
                     入库
                   </Link>
                   <Link
-                    href={`/stock-out?code=${encodeURIComponent(part.code)}`}
+                    href={`/stock?mode=OUT&code=${encodeURIComponent(part.code)}`}
                     className="flex-1 text-center text-[10px] sm:text-xs py-1.5 sm:py-2.5 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-100 dark:hover:bg-red-500/20 transition-colors font-medium"
                     onClick={(e) => e.stopPropagation()}
                   >
@@ -500,14 +500,14 @@ export default function Home() {
                 </div>
                 <div className="flex gap-2 mt-4">
                   <Link
-                    href={`/stock-in?code=${encodeURIComponent(part.code)}`}
+                    href={`/stock?mode=IN&code=${encodeURIComponent(part.code)}`}
                     className="flex-1 text-center text-xs py-2.5 bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-500/20 transition-colors font-medium"
                     onClick={(e) => e.stopPropagation()}
                   >
                     入库
                   </Link>
                   <Link
-                    href={`/stock-out?code=${encodeURIComponent(part.code)}`}
+                    href={`/stock?mode=OUT&code=${encodeURIComponent(part.code)}`}
                     className="flex-1 text-center text-xs py-2.5 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-100 dark:hover:bg-red-500/20 transition-colors font-medium"
                     onClick={(e) => e.stopPropagation()}
                   >

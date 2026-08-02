@@ -182,13 +182,13 @@ export default function PartDetailPage() {
               <Edit className="w-3.5 h-3.5" /> 编辑
             </button>
             <Link
-              href={`/stock-in?code=${encodeURIComponent(part.code)}`}
+              href={`/stock?mode=IN&code=${encodeURIComponent(part.code)}`}
               className="px-3 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg text-xs font-medium hover:from-blue-700 hover:to-blue-800 transition-all duration-200 flex items-center gap-1.5 shadow-lg shadow-blue-500/25 dark:shadow-blue-500/10"
             >
               <ArrowDownToLine className="w-3.5 h-3.5" /> 入库
             </Link>
             <Link
-              href={`/stock-out?code=${encodeURIComponent(part.code)}`}
+              href={`/stock?mode=OUT&code=${encodeURIComponent(part.code)}`}
               className="px-3 py-2 bg-gradient-to-r from-red-600 to-rose-700 text-white rounded-lg text-xs font-medium hover:from-red-700 hover:to-rose-800 transition-all duration-200 flex items-center gap-1.5 shadow-lg shadow-red-500/25 dark:shadow-red-500/10"
             >
               <ArrowUpFromLine className="w-3.5 h-3.5" /> 出库

@@ -15,6 +15,16 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // 旧出入库路由 → /stock
+  if (pathname === "/stock-in" || pathname === "/stock-out" || pathname === "/scan") {
+    const url = new URL("/stock", request.url);
+    if (pathname !== "/scan") url.searchParams.set("mode", pathname === "/stock-in" ? "IN" : "OUT");
+    for (const [key, value] of request.nextUrl.searchParams) {
+      if (key !== "mode") url.searchParams.set(key, value);
+    }
+    return NextResponse.redirect(url);
+  }
+
   // Check signed session cookie
   const session = await verifySessionToken(request.cookies.get(AUTH_COOKIE)?.value);
   if (!session) {

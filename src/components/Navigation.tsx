@@ -2,16 +2,14 @@
 
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { LayoutDashboard, Package, ArrowDownToLine, ArrowUpFromLine, Cpu, Settings, HelpCircle, BarChart3, FileText, Sun, Moon, Clock, MoreHorizontal, ScanBarcode, LogOut } from "lucide-react";
+import { LayoutDashboard, Package, ArrowDownToLine, Cpu, Settings, HelpCircle, BarChart3, FileText, Sun, Moon, Clock, MoreHorizontal, LogOut } from "lucide-react";
 import { useTheme } from "./ThemeProvider";
 import { useState, useEffect } from "react";
 
 const mainLinks = [
   { href: "/", label: "仪表盘", icon: LayoutDashboard },
   { href: "/parts", label: "器件列表", icon: Package },
-  { href: "/stock-in", label: "入库", icon: ArrowDownToLine },
-  { href: "/stock-out", label: "出库", icon: ArrowUpFromLine },
-  { href: "/scan", label: "扫描识别", icon: ScanBarcode },
+  { href: "/stock", label: "出入库", icon: ArrowDownToLine },
   { href: "/analytics", label: "数据分析", icon: BarChart3 },
   { href: "/boms", label: "BOM清单", icon: FileText },
   { href: "/logs", label: "操作日志", icon: Clock },
@@ -21,8 +19,7 @@ const mainLinks = [
 const mobileLinks = [
   { href: "/", label: "首页", icon: LayoutDashboard },
   { href: "/parts", label: "器件", icon: Package },
-  { href: "/stock-in", label: "入库", icon: ArrowDownToLine },
-  { href: "/stock-out", label: "出库", icon: ArrowUpFromLine },
+  { href: "/stock", label: "出入库", icon: ArrowDownToLine },
   { href: "#", label: "更多", icon: MoreHorizontal },
 ];
 

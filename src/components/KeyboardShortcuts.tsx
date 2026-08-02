@@ -19,12 +19,13 @@ const globalShortcuts: Shortcut[] = [
 const pageShortcuts: Record<string, Shortcut[]> = {
   "/": [
     { key: "g p", label: "器件列表", description: "跳转到器件列表" },
-    { key: "g i", label: "入库", description: "跳转入库页面" },
-    { key: "g o", label: "出库", description: "跳转出库页面" },
+    { key: "g i", label: "出入库（入库）", description: "跳转出入库页入库模式" },
+    { key: "g o", label: "出入库（出库）", description: "跳转出入库页出库模式" },
     { key: "g a", label: "数据分析", description: "跳转数据分析" },
     { key: "g b", label: "BOM清单", description: "跳转BOM清单" },
     { key: "g l", label: "操作日志", description: "跳转操作日志" },
-    { key: "g s", label: "扫描识别", description: "跳转扫描识别" },
+    { key: "g m", label: "流水记录", description: "跳转流水记录" },
+    { key: "g s", label: "出入库", description: "跳转出入库页" },
     { key: "g t", label: "设置", description: "跳转设置" },
     { key: "g h", label: "帮助", description: "跳转帮助" },
   ],
@@ -72,10 +73,10 @@ export default function KeyboardShortcuts() {
             router.push("/parts");
             return;
           case "i":
-            router.push("/stock-in");
+            router.push("/stock?mode=IN");
             return;
           case "o":
-            router.push("/stock-out");
+            router.push("/stock?mode=OUT");
             return;
           case "a":
             router.push("/analytics");
@@ -87,7 +88,10 @@ export default function KeyboardShortcuts() {
             router.push("/logs");
             return;
           case "s":
-            router.push("/scan");
+            router.push("/stock");
+            return;
+          case "m":
+            router.push("/movements");
             return;
           case "t":
             router.push("/settings");

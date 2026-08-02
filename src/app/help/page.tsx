@@ -36,12 +36,13 @@ const globalShortcuts = [
 const pageShortcuts: Record<string, { key: string; description: string }[]> = {
   "全局导航": [
     { key: "g p", description: "跳转到器件列表" },
-    { key: "g i", description: "跳转入库页面" },
-    { key: "g o", description: "跳转出库页面" },
+    { key: "g i", description: "跳转出入库（入库模式）" },
+    { key: "g o", description: "跳转出入库（出库模式）" },
     { key: "g a", description: "跳转数据分析" },
     { key: "g b", description: "跳转BOM清单" },
     { key: "g l", description: "跳转操作日志" },
-    { key: "g s", description: "跳转扫码入库" },
+    { key: "g m", description: "跳转流水记录" },
+    { key: "g s", description: "跳转出入库" },
     { key: "g t", description: "跳转设置" },
     { key: "g h", description: "跳转帮助" },
   ],
@@ -116,7 +117,7 @@ function QuickStartSection() {
             </li>
             <li className="flex items-center gap-2">
               <ChevronRight className="w-4 h-4" />
-              扫码入库工作台（连续扫码批量入库）
+              出入库工作台（扫码/手动批量出入库）
             </li>
             <li className="flex items-center gap-2">
               <ChevronRight className="w-4 h-4" />
@@ -143,12 +144,12 @@ function QuickStartSection() {
           <StepCard
             number={2}
             title="入库操作"
-            description="进入「入库」页面，搜索或输入器件编号，填写入库数量和原因，完成入库。"
+            description="进入「出入库」页面（入库模式），搜索或输入器件编号，填写入库数量和原因，完成入库。"
           />
           <StepCard
             number={3}
             title="出库操作"
-            description="进入「出库」页面，搜索或输入器件编号，填写出库数量和原因，完成出库。"
+            description="进入「出入库」页面（出库模式），搜索或输入器件编号，填写出库数量和原因，完成出库。"
           />
           <StepCard
             number={4}
@@ -185,9 +186,9 @@ function FeaturesSection() {
     },
     {
       icon: ScanBarcode,
-      title: "扫码入库工作台",
-      description: "连续扫描 LCSC 二维码，自动识别器件信息并批量入库。",
-      items: ["连续扫码自动去重", "自动查询本地库存", "LCEDA API 获取产品信息", "批量入库提交"],
+      title: "出入库工作台",
+      description: "统一扫码与手动出入库工作台，连续扫描 LCSC 二维码自动识别器件信息并批量出入库。",
+      items: ["扫码/手动输入器件编号", "连续扫码自动去重", "自动查询本地库存", "LCEDA API 获取产品信息", "批量入库/出库提交"],
     },
     {
       icon: ArrowDownToLine,
