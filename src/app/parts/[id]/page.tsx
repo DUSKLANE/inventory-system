@@ -7,6 +7,7 @@ import { ArrowDownToLine, ArrowUpFromLine, Tag, Package, MapPin, Building2, File
 import Breadcrumb from "@/components/Breadcrumb";
 import PartFormModal from "@/components/PartFormModal";
 import { useToast } from "@/components/ToastProvider";
+import { Badge, Button } from "@/components/ui";
 
 interface PartDetail {
   id: string;
@@ -103,7 +104,7 @@ export default function PartDetailPage() {
 
   const qty = part.stock?.quantity ?? 0;
   const lowStock = part.minStock > 0 && qty < part.minStock;
-  const stockPercent = part.minStock > 0 ? Math.min(100, (qty / (part.minStock * 2)) * 100) : 100;
+  const stockPercent = part.minStock > 0 ? Math.max(0, Math.min(100, (Math.min(qty, part.minStock) / part.minStock) * 100)) : 100;
 
   const fields = [
     { label: "编码", value: part.code, icon: Hash, mono: true },
@@ -125,14 +126,14 @@ export default function PartDetailPage() {
       ]} />
 
       {/* Main info card */}
-      <div className="bg-white dark:bg-[var(--card)] rounded-2xl border border-gray-200/80 dark:border-[var(--card-border)] p-5 sm:p-10 section shadow-sm dark:shadow-black/20">
+      <div className="bg-white dark:bg-[var(--card)] rounded-lg border border-gray-200/80 dark:border-[var(--card-border)] p-6 section shadow-sm dark:shadow-black/20">
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 sm:gap-10">
           <div className="flex items-start gap-6">
             <div
-              className={`w-20 h-20 rounded-2xl shrink-0 overflow-hidden ${
+              className={`w-20 h-20 rounded-lg shrink-0 overflow-hidden ${
                 part.image
                   ? "bg-white dark:bg-[var(--background-subtle)] border border-gray-200 dark:border-[var(--card-border)] cursor-pointer hover:shadow-lg transition-shadow"
-                  : "bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/25 dark:shadow-blue-500/10"
+                  : "bg-[var(--accent)] flex items-center justify-center"
               }`}
               onClick={() => part.image && setShowImageModal(true)}
             >
@@ -151,14 +152,14 @@ export default function PartDetailPage() {
               <div className="flex items-center gap-3 mt-3 flex-wrap">
                 <span className="font-mono bg-gray-100 dark:bg-[var(--background-muted)] text-gray-600 dark:text-[var(--foreground-muted)] px-4 py-1.5 rounded-lg text-sm font-medium">{part.code}</span>
                 {part.category && (
-                  <span className="px-4 py-1.5 bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 text-sm font-medium rounded-lg">
+                  <Badge variant="category" className="px-4 py-1.5 text-[0.875rem] rounded-lg">
                     {part.category}
-                  </span>
+                  </Badge>
                 )}
                 {lowStock && (
-                  <span className="px-4 py-1.5 bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 text-sm font-medium rounded-lg flex items-center gap-2">
+                  <Badge variant="warning" className="px-4 py-1.5 text-[0.875rem] rounded-lg">
                     <AlertTriangle className="w-4 h-4" /> 低库存
-                  </span>
+                  </Badge>
                 )}
               </div>
             </div>
@@ -175,21 +176,22 @@ export default function PartDetailPage() {
               <Star className={`w-3.5 h-3.5 ${isFavorite ? "fill-amber-500" : ""}`} />
               {isFavorite ? "已收藏" : "收藏"}
             </button>
-            <button
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => setShowEdit(true)}
-              className="px-3 py-2 border border-gray-200 dark:border-[var(--card-border)] text-gray-700 dark:text-[var(--foreground-muted)] rounded-lg text-xs font-medium hover:bg-gray-50 dark:hover:bg-[var(--background-subtle)] hover:border-gray-300 dark:hover:border-[var(--card-border)] transition-all duration-200 flex items-center gap-1.5"
             >
               <Edit className="w-3.5 h-3.5" /> 编辑
-            </button>
+            </Button>
             <Link
               href={`/stock?mode=IN&code=${encodeURIComponent(part.code)}`}
-              className="px-3 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg text-xs font-medium hover:from-blue-700 hover:to-blue-800 transition-all duration-200 flex items-center gap-1.5 shadow-lg shadow-blue-500/25 dark:shadow-blue-500/10"
+              className="inline-flex items-center justify-center gap-1.5 rounded font-medium transition-colors px-3 py-1.5 text-sm bg-[var(--success)] text-white hover:opacity-90"
             >
               <ArrowDownToLine className="w-3.5 h-3.5" /> 入库
             </Link>
             <Link
               href={`/stock?mode=OUT&code=${encodeURIComponent(part.code)}`}
-              className="px-3 py-2 bg-gradient-to-r from-red-600 to-rose-700 text-white rounded-lg text-xs font-medium hover:from-red-700 hover:to-rose-800 transition-all duration-200 flex items-center gap-1.5 shadow-lg shadow-red-500/25 dark:shadow-red-500/10"
+              className="inline-flex items-center justify-center gap-1.5 rounded font-medium transition-colors px-3 py-1.5 text-sm bg-[var(--error)] text-white hover:opacity-90"
             >
               <ArrowUpFromLine className="w-3.5 h-3.5" /> 出库
             </Link>
@@ -199,12 +201,12 @@ export default function PartDetailPage() {
         {/* Stock display */}
         <div className="mt-5 sm:mt-10 pt-5 sm:pt-10 border-t border-gray-100 dark:border-[var(--card-border)]">
           <div className="flex items-end gap-3 sm:gap-5">
-            <span className="text-4xl sm:text-6xl font-bold text-gray-900 dark:text-[var(--card-foreground)] tracking-tight">{qty}</span>
-            <span className="text-gray-500 dark:text-[var(--foreground-subtle)] mb-2 sm:mb-3 font-medium text-base sm:text-lg">{part.unit}</span>
+            <span className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-[var(--card-foreground)] tracking-tight">{qty}</span>
+            <span className="text-gray-500 dark:text-[var(--foreground-subtle)] mb-2 sm:mb-3 font-medium text-base">{part.unit}</span>
             {lowStock && (
-              <span className="ml-auto text-sm text-amber-600 dark:text-amber-400 font-semibold flex items-center gap-2 px-5 py-2.5 bg-amber-50 dark:bg-amber-500/10 rounded-xl">
-                <AlertTriangle className="w-4 h-4" /> 库存不足
-              </span>
+              <Badge variant="warning" className="ml-auto font-semibold">
+                <AlertTriangle className="w-3.5 h-3.5" /> 库存不足
+              </Badge>
             )}
           </div>
           {part.minStock > 0 && (
@@ -213,8 +215,8 @@ export default function PartDetailPage() {
                 <div
                   className={`h-full rounded-full transition-all duration-500 ${
                     lowStock 
-                      ? "bg-gradient-to-r from-red-500 to-rose-500" 
-                      : "bg-gradient-to-r from-emerald-500 to-green-500"
+                      ? "bg-[var(--warning)]" 
+                      : "bg-[var(--success)]"
                   }`}
                   style={{ width: `${stockPercent}%` }}
                 />
@@ -233,9 +235,9 @@ export default function PartDetailPage() {
       </div>
 
       {/* Detail info card */}
-      <div className="bg-white dark:bg-[var(--card)] rounded-2xl border border-gray-200/80 dark:border-[var(--card-border)] p-10 section shadow-sm dark:shadow-black/20">
+      <div className="bg-white dark:bg-[var(--card)] rounded-lg border border-gray-200/80 dark:border-[var(--card-border)] p-6 section shadow-sm dark:shadow-black/20">
         <div className="flex items-center gap-5 mb-8">
-          <div className="w-11 h-11 rounded-xl bg-gray-100 dark:bg-[var(--background-muted)] flex items-center justify-center">
+          <div className="w-11 h-11 rounded-lg bg-gray-100 dark:bg-[var(--background-muted)] flex items-center justify-center">
             <Tag className="w-5 h-5 text-gray-500 dark:text-[var(--foreground-subtle)]" />
           </div>
           <h2 className="text-lg font-semibold text-gray-900 dark:text-[var(--card-foreground)]">器件信息</h2>
@@ -244,8 +246,8 @@ export default function PartDetailPage() {
           {fields.map((f) => {
             const Icon = f.icon;
             return (
-              <div key={f.label} className="flex items-center gap-5 p-5 rounded-xl hover:bg-gray-50 dark:hover:bg-[var(--background-subtle)] transition-colors duration-200">
-                <div className="w-14 h-14 rounded-xl bg-gray-100 dark:bg-[var(--background-muted)] flex items-center justify-center shrink-0">
+              <div key={f.label} className="flex items-center gap-5 p-5 rounded-lg hover:bg-gray-50 dark:hover:bg-[var(--background-subtle)] transition-colors duration-200">
+                <div className="w-14 h-14 rounded-lg bg-gray-100 dark:bg-[var(--background-muted)] flex items-center justify-center shrink-0">
                   <Icon className="w-6 h-6 text-gray-500 dark:text-[var(--foreground-subtle)]" />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -261,21 +263,21 @@ export default function PartDetailPage() {
       </div>
 
       {/* Movements history */}
-      <div className="bg-white dark:bg-[var(--card)] rounded-2xl border border-gray-200/80 dark:border-[var(--card-border)] overflow-hidden shadow-sm dark:shadow-black/20">
-        <div className="px-10 py-8 border-b border-gray-100 dark:border-[var(--card-border)] flex items-center justify-between">
+      <div className="bg-white dark:bg-[var(--card)] rounded-lg border border-gray-200/80 dark:border-[var(--card-border)] overflow-hidden shadow-sm dark:shadow-black/20">
+        <div className="px-6 py-6 border-b border-gray-100 dark:border-[var(--card-border)] flex items-center justify-between">
           <div className="flex items-center gap-5">
-            <div className="w-11 h-11 rounded-xl bg-gray-100 dark:bg-[var(--background-muted)] flex items-center justify-center">
+            <div className="w-11 h-11 rounded-lg bg-gray-100 dark:bg-[var(--background-muted)] flex items-center justify-center">
               <Activity className="w-5 h-5 text-gray-500 dark:text-[var(--foreground-subtle)]" />
             </div>
             <h2 className="text-lg font-semibold text-gray-900 dark:text-[var(--card-foreground)]">操作记录</h2>
           </div>
-          <span className="text-sm text-gray-400 dark:text-[var(--foreground-subtle)] font-medium flex items-center gap-2 px-5 py-2.5 bg-gray-50 dark:bg-[var(--background-subtle)] rounded-xl">
+          <span className="text-sm text-gray-400 dark:text-[var(--foreground-subtle)] font-medium flex items-center gap-2 px-5 py-2.5 bg-gray-50 dark:bg-[var(--background-subtle)] rounded-lg">
             <Clock className="w-4 h-4" /> {part.movements.length} 条
           </span>
         </div>
         {part.movements.length === 0 ? (
           <div className="p-20 text-center">
-            <div className="w-20 h-20 mx-auto mb-5 rounded-2xl bg-gray-100 dark:bg-[var(--background-muted)] flex items-center justify-center">
+            <div className="w-20 h-20 mx-auto mb-5 rounded-lg bg-gray-100 dark:bg-[var(--background-muted)] flex items-center justify-center">
               <Clock className="w-8 h-8 text-gray-400 dark:text-[var(--foreground-subtle)]" />
             </div>
             <p className="text-gray-500 dark:text-[var(--foreground-muted)] font-medium">暂无操作记录</p>
@@ -286,16 +288,16 @@ export default function PartDetailPage() {
             {part.movements.map((m) => (
               <div
                 key={m.id}
-                className="px-10 py-6 flex items-center justify-between hover:bg-gray-50/80 dark:hover:bg-[var(--background-subtle)] transition-colors duration-150"
+                className="px-6 py-6 flex items-center justify-between hover:bg-gray-50/80 dark:hover:bg-[var(--background-subtle)] transition-colors duration-150"
               >
                 <div className="flex items-center gap-6">
                   <div
-                    className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                    className={`w-12 h-12 rounded-lg flex items-center justify-center ${
                       m.type === "IN"
-                        ? "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                        ? "bg-[var(--success-subtle)] text-[var(--success)]"
                         : m.type === "OUT"
-                        ? "bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400"
-                        : "bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400"
+                        ? "bg-[var(--error-subtle)] text-[var(--error)]"
+                        : "bg-[var(--background-subtle)] text-[var(--foreground-muted)]"
                     }`}
                   >
                     {m.type === "IN" ? <TrendingDown className="w-5 h-5" /> : m.type === "OUT" ? <TrendingUp className="w-5 h-5" /> : <Settings className="w-5 h-5" />}
@@ -328,7 +330,7 @@ export default function PartDetailPage() {
       {/* Image zoom modal */}
       {showImageModal && part.image && (
         <div
-          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 animate-fade-in cursor-zoom-out"
+          className="fixed inset-0 modal-backdrop z-50 flex items-center justify-center p-4 animate-fade-in cursor-zoom-out"
           onClick={() => setShowImageModal(false)}
         >
           <img
