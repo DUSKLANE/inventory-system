@@ -245,13 +245,13 @@ export default function BomDetailPage() {
                 <input
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-50 dark:bg-[var(--background-subtle)] border border-gray-200 dark:border-[var(--card-border)] rounded-xl text-lg font-semibold text-gray-900 dark:text-[var(--card-foreground)] focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-3 bg-gray-50 dark:bg-[var(--background-subtle)] border border-gray-200 dark:border-[var(--card-border)] rounded-lg text-lg font-semibold text-gray-900 dark:text-[var(--card-foreground)] focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="BOM名称"
                 />
                 <textarea
                   value={editDescription}
                   onChange={(e) => setEditDescription(e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-50 dark:bg-[var(--background-subtle)] border border-gray-200 dark:border-[var(--card-border)] rounded-xl text-sm text-gray-900 dark:text-[var(--card-foreground)] focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                  className="w-full px-4 py-3 bg-gray-50 dark:bg-[var(--background-subtle)] border border-gray-200 dark:border-[var(--card-border)] rounded-lg text-sm text-gray-900 dark:text-[var(--card-foreground)] focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
                   rows={2}
                   placeholder="描述（可选）"
                 />
@@ -259,7 +259,7 @@ export default function BomDetailPage() {
             ) : (
               <>
                 <div className="flex items-start gap-3 mb-3">
-                  <div className="w-12 h-12 rounded-xl bg-orange-100 dark:bg-orange-500/10 flex items-center justify-center shrink-0">
+                  <div className="w-12 h-12 rounded-lg bg-orange-100 dark:bg-orange-500/10 flex items-center justify-center shrink-0">
                     <FileText className="w-6 h-6 text-orange-600 dark:text-orange-400" />
                   </div>
                   <div className="min-w-0">
@@ -277,20 +277,20 @@ export default function BomDetailPage() {
               <>
                 <button
                   onClick={() => setShowAddPart(true)}
-                  className="px-5 py-3 border border-blue-200 dark:border-blue-500/30 text-blue-600 dark:text-blue-400 rounded-xl text-sm font-medium hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-all flex items-center gap-2"
+                  className="px-5 py-3 border border-blue-200 dark:border-blue-500/30 text-blue-600 dark:text-blue-400 rounded-lg text-sm font-medium hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-all flex items-center gap-2"
                 >
                   <Plus className="w-4 h-4" /> 添加器件
                 </button>
                 <button
                   onClick={handleCancelEdit}
-                  className="px-5 py-3 border border-gray-200 dark:border-[var(--card-border)] text-gray-700 dark:text-[var(--foreground-muted)] rounded-xl text-sm font-medium hover:bg-gray-50 dark:hover:bg-[var(--background-subtle)] transition-all"
+                  className="px-5 py-3 border border-gray-200 dark:border-[var(--card-border)] text-gray-700 dark:text-[var(--foreground-muted)] rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-[var(--background-subtle)] transition-all"
                 >
                   取消
                 </button>
                 <button
                   onClick={handleSave}
                   disabled={saving}
-                  className="px-5 py-3 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 transition-all disabled:opacity-50 flex items-center gap-2"
+                  className="px-5 py-3 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-all disabled:opacity-50 flex items-center gap-2"
                 >
                   {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                   保存
@@ -300,19 +300,19 @@ export default function BomDetailPage() {
               <>
                 <button
                   onClick={() => setEditing(true)}
-                  className="px-5 py-3 border border-gray-200 dark:border-[var(--card-border)] text-gray-700 dark:text-[var(--foreground-muted)] rounded-xl text-sm font-medium hover:bg-gray-50 dark:hover:bg-[var(--background-subtle)] transition-all flex items-center gap-2"
+                  className="px-5 py-3 border border-gray-200 dark:border-[var(--card-border)] text-gray-700 dark:text-[var(--foreground-muted)] rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-[var(--background-subtle)] transition-all flex items-center gap-2"
                 >
                   <Edit className="w-4 h-4" /> 编辑
                 </button>
                 <button
                   onClick={openCheckout}
-                  className="px-5 py-3 border border-gray-200 dark:border-[var(--card-border)] text-gray-700 dark:text-[var(--foreground-muted)] rounded-xl text-sm font-medium hover:bg-gray-50 dark:hover:bg-[var(--background-subtle)] transition-all flex items-center gap-2"
+                  className="px-5 py-3 border border-gray-200 dark:border-[var(--card-border)] text-gray-700 dark:text-[var(--foreground-muted)] rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-[var(--background-subtle)] transition-all flex items-center gap-2"
                 >
                   <ArrowUpFromLine className="w-4 h-4" /> 领料出库
                 </button>
                 <button
                   onClick={() => { setEditing(true); setShowAddPart(true); }}
-                  className="px-5 py-3 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 transition-all flex items-center gap-2"
+                  className="px-5 py-3 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-all flex items-center gap-2"
                 >
                   <Plus className="w-4 h-4" /> 添加器件
                 </button>
@@ -475,14 +475,14 @@ export default function BomDetailPage() {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                    className="w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-[var(--background-subtle)] border border-gray-200 dark:border-[var(--card-border)] rounded-xl text-sm text-gray-900 dark:text-[var(--card-foreground)] focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-[var(--background-subtle)] border border-gray-200 dark:border-[var(--card-border)] rounded-lg text-sm text-gray-900 dark:text-[var(--card-foreground)] focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="搜索器件名称或编码"
                   />
                 </div>
                 <button
                   onClick={handleSearch}
                   disabled={searching}
-                  className="px-5 py-3 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
+                  className="px-5 py-3 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
                 >
                   {searching ? <Loader2 className="w-4 h-4 animate-spin" /> : "搜索"}
                 </button>
