@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { LayoutDashboard, Package, ArrowDownToLine, Cpu, Settings, HelpCircle, BarChart3, FileText, Sun, Moon, Clock, MoreHorizontal, LogOut } from "lucide-react";
+import { LayoutDashboard, Package, ArrowDownToLine, Cpu, Settings, HelpCircle, BarChart3, FileText, Sun, Moon, Clock, MoreHorizontal, LogOut, History } from "lucide-react";
 import { useTheme } from "./ThemeProvider";
 import { useState, useEffect } from "react";
 
@@ -13,6 +13,7 @@ const mainLinks = [
   { href: "/analytics", label: "数据分析", icon: BarChart3 },
   { href: "/boms", label: "BOM清单", icon: FileText },
   { href: "/logs", label: "操作日志", icon: Clock },
+  { href: "/movements", label: "流水记录", icon: History },
 ];
 
 // Mobile navigation - show only important links
